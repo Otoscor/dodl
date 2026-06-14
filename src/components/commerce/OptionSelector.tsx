@@ -96,7 +96,7 @@ export function OptionSelector({
         </div>
         {singleSku.stock > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-[13px] text-text-secondary">수량</span>
+            <span className="text-[13px] text-[#888]">수량</span>
             <QuantitySelector quantity={quantity} max={singleSku.stock} onChange={setQuantity} />
           </div>
         )}
@@ -114,24 +114,24 @@ export function OptionSelector({
         return (
           <div
             key={group.id}
-            className="border border-border-subtle rounded-xl overflow-hidden"
+            className="border border-[#e0e0e0] rounded-[10px] overflow-hidden"
           >
             {/* 그룹 헤더 행 */}
             <button
               onClick={() => setOpenGroupId(isOpen ? null : group.id)}
-              className="w-full flex items-center justify-between px-4 py-3.5 bg-surface-white hover:bg-surface-base transition-colors cursor-pointer"
+              className="w-full flex items-center justify-between px-4 py-3.5 bg-[#f5f5f5] hover:bg-[#ebebeb] transition-colors cursor-pointer"
             >
-              <span className="text-[12px] font-medium text-text-tertiary tracking-wide uppercase">
+              <span className="text-[12px] text-[#aaa] tracking-wide uppercase">
                 {group.name}
               </span>
 
               <div className="flex items-center gap-1.5">
                 {selected ? (
-                  <span className="text-[14px] text-text-primary font-medium">
+                  <span className="text-[14px] text-black">
                     {selected}
                   </span>
                 ) : (
-                  <span className="text-[13px] text-text-quaternary">
+                  <span className="text-[13px] text-[#cccccc]">
                     선택하세요
                   </span>
                 )}
@@ -145,7 +145,7 @@ export function OptionSelector({
                 isOpen ? "max-h-96" : "max-h-0"
               }`}
             >
-              <div className="border-t border-border-subtle">
+              <div className="border-t border-[#e0e0e0]">
                 {group.values.map((value) => {
                   const key = `${group.name}:${value.name}`;
                   const isDisabled = disabledKeys.has(key);
@@ -158,23 +158,23 @@ export function OptionSelector({
                       onClick={() => !isDisabled && handleSelect(group, value.name)}
                       className={`
                         w-full flex items-center justify-between px-4 py-3.5
-                        border-b border-border-subtle/50 last:border-b-0
+                        border-b border-[#e0e0e0]/50 last:border-b-0
                         transition-colors cursor-pointer
                         ${isSelected
-                          ? "bg-action-primary/5"
+                          ? "bg-[#ebebeb]"
                           : isDisabled
-                          ? "bg-surface-base cursor-not-allowed"
-                          : "bg-surface-white hover:bg-surface-base"
+                          ? "bg-white cursor-not-allowed"
+                          : "bg-[#f5f5f5] hover:bg-[#ebebeb]"
                         }
                       `}
                     >
                       <span
                         className={`text-[14px] ${
                           isSelected
-                            ? "text-action-primary font-medium"
+                            ? "text-black"
                             : isDisabled
-                            ? "text-text-quaternary line-through"
-                            : "text-text-primary"
+                            ? "text-[#cccccc] line-through"
+                            : "text-black"
                         }`}
                       >
                         {value.name}
@@ -196,7 +196,7 @@ export function OptionSelector({
 
       {/* 옵션 확정 후: 가격 + 재고 임박 + 수량 */}
       {selectedSku && (
-        <div className="pt-2 space-y-3 border-t border-border-subtle mt-3">
+        <div className="pt-2 space-y-3 border-t border-[#e0e0e0] mt-3">
           <div className="flex items-center justify-between">
             <PriceDisplay price={selectedSku.price} size="lg" />
             {selectedSku.stock === 0 ? (
@@ -208,7 +208,7 @@ export function OptionSelector({
 
           {selectedSku.stock > 0 && (
             <div className="flex items-center justify-between">
-              <span className="text-[13px] text-text-secondary">수량</span>
+              <span className="text-[13px] text-[#888]">수량</span>
               <QuantitySelector
                 quantity={quantity}
                 max={selectedSku.stock}
@@ -230,7 +230,7 @@ function ChevronIcon({ open }: { open: boolean }) {
       height="16"
       viewBox="0 0 16 16"
       fill="none"
-      className={`text-text-tertiary shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+      className={`text-[#aaa] shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
     >
       <path
         d="M4 6l4 4 4-4"
@@ -248,7 +248,7 @@ function CheckIcon() {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path
         d="M3 8l4 4 6-6"
-        stroke="#5e6ad2"
+        stroke="#000000"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"

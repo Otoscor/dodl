@@ -9,9 +9,23 @@ export const ORDER_STATUS = {
   SHIPPING: "배송중",
   DELIVERED: "배송완료",
   CANCELLED: "취소완료",
+  RETURN_REQUESTED: "반품요청",
+  RETURN_COMPLETED: "반품완료",
+  EXCHANGE_REQUESTED: "교환요청",
+  EXCHANGE_COMPLETED: "교환완료",
 } as const;
 
 export const CANCELLABLE_STATUSES = [ORDER_STATUS.PAID, ORDER_STATUS.PREPARING];
+
+export const RETURNABLE_STATUSES = [ORDER_STATUS.DELIVERED];
+
+export const RETURN_REASONS = [
+  "단순 변심", "상품 불량", "상품이 설명과 다름", "배송 중 파손", "기타",
+] as const;
+
+export const EXCHANGE_REASONS = [
+  "상품 불량", "오배송 (다른 상품 수령)", "상품이 설명과 다름", "배송 중 파손", "기타",
+] as const;
 
 export const WALLET_TX_TYPE = {
   GRANT: "적립",

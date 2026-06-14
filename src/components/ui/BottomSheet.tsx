@@ -41,14 +41,14 @@ export function BottomSheet({ open, onClose, children }: BottomSheetProps) {
       {/* Sheet — 430px에 맞춤 */}
       <div
         className={`
-          relative w-full max-w-[430px] bg-surface-white rounded-t-2xl
+          relative w-full max-w-[430px] bg-white rounded-t-[10px]
           transition-transform duration-300 ease-out
           ${visible ? "translate-y-0" : "translate-y-full"}
         `}
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-9 h-[3px] bg-border-subtle rounded-full" />
+          <div className="w-12 h-[2px] bg-[#e0e0e0]" />
         </div>
         {children}
       </div>

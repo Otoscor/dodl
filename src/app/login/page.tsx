@@ -37,14 +37,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f7f8f8]">
-      <div className="w-full max-w-sm mx-4 p-8 bg-white rounded-2xl shadow-sm border border-[#e2e4e7]">
-        <h1 className="text-xl font-semibold text-[#08090a] mb-1">dodl</h1>
-        <p className="text-sm text-[#8a8f98] mb-8">계속하려면 로그인하세요.</p>
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="w-full max-w-sm mx-4 p-8">
+        <h1 className="text-xl font-bold text-black mb-1 uppercase tracking-[0.12em]">dodl</h1>
+        <p className="text-sm text-[#888] mb-8">계속하려면 로그인하세요.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#52575e] mb-1.5">
+            <label className="block text-xs text-[#888] mb-1.5 uppercase tracking-[0.08em]">
               아이디
             </label>
             <input
@@ -53,12 +53,12 @@ export default function LoginPage() {
               onChange={(e) => setId(e.target.value)}
               autoComplete="username"
               required
-              className="w-full px-3 py-2 border border-[#e2e4e7] rounded-lg text-sm text-[#08090a] placeholder:text-[#c0c4cc] focus:outline-none focus:border-[#5e6ad2] transition-colors"
+              className="w-full px-3 py-2 border border-[#e0e0e0] rounded-[10px] text-sm text-black placeholder:text-[#cccccc] focus:outline-none focus:border-black transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#52575e] mb-1.5">
+            <label className="block text-xs text-[#888] mb-1.5 uppercase tracking-[0.08em]">
               비밀번호
             </label>
             <input
@@ -67,7 +67,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
-              className="w-full px-3 py-2 border border-[#e2e4e7] rounded-lg text-sm text-[#08090a] focus:outline-none focus:border-[#5e6ad2] transition-colors"
+              className="w-full px-3 py-2 border border-[#e0e0e0] rounded-[10px] text-sm text-black focus:outline-none focus:border-black transition-colors"
             />
           </div>
 
@@ -78,7 +78,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-[#5e6ad2] text-white text-sm font-medium rounded-lg hover:bg-[#4d59c4] disabled:opacity-50 transition-colors mt-2"
+            className="w-full py-2.5 bg-black text-white text-sm hover:bg-[#333] rounded-[10px] disabled:opacity-50 transition-colors mt-2 uppercase tracking-[0.06em]"
           >
             {loading ? '로그인 중...' : '로그인'}
           </button>

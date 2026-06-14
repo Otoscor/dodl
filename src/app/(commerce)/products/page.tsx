@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { ProductCard } from "@/components/commerce/ProductCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { TitleBar } from "@/components/layout/TitleBar";
 import type { ProductListItem, Category } from "@/types/product";
 
 export default function ProductsPage() {
@@ -44,20 +45,20 @@ function ProductsContent() {
   }, [activeCategory]);
 
   return (
-    <div>
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-surface-base/80 backdrop-blur-md border-b border-border-subtle">
-        <div className="px-4 py-3">
-          <h1 className="text-[17px] font-medium text-text-primary">상품</h1>
-        </div>
-        {/* Category filter */}
-        <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+    <div className="min-h-screen bg-white">
+      <TitleBar title="상품" />
+      {/* Spacer for fixed title bar */}
+      <div className="h-16" />
+
+      {/* Category filter */}
+      <div className="sticky top-16 z-20 bg-white/80 backdrop-blur-md">
+        <div className="flex gap-3 px-6 py-2 overflow-x-auto scrollbar-hide">
           <button
             onClick={() => setActiveCategory(null)}
-            className={`shrink-0 px-3 py-1.5 text-[12px] font-medium rounded-pill border transition-colors cursor-pointer ${
+            className={`shrink-0 px-3 py-1.5 text-[13px] uppercase tracking-[0.08em] border rounded-[10px] transition-colors cursor-pointer ${
               !activeCategory
-                ? "border-action-primary bg-action-primary/10 text-action-primary"
-                : "border-border-subtle text-text-tertiary hover:text-text-secondary"
+                ? "border-black bg-black text-white"
+                : "border-[#e0e0e0] bg-[#f5f5f5] text-[#888] hover:text-black"
             }`}
           >
             전체
@@ -66,30 +67,30 @@ function ProductsContent() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.slug)}
-              className={`shrink-0 px-3 py-1.5 text-[12px] font-medium rounded-pill border transition-colors cursor-pointer ${
+              className={`shrink-0 px-3 py-1.5 text-[13px] uppercase tracking-[0.08em] border rounded-[10px] transition-colors cursor-pointer ${
                 activeCategory === cat.slug
-                  ? "border-action-primary bg-action-primary/10 text-action-primary"
-                  : "border-border-subtle text-text-tertiary hover:text-text-secondary"
+                  ? "border-black bg-black text-white"
+                  : "border-[#e0e0e0] bg-[#f5f5f5] text-[#888] hover:text-black"
               }`}
             >
               {cat.name}
             </button>
           ))}
         </div>
-      </header>
+      </div>
 
       {/* Products grid */}
-      <div className="px-4 py-4">
+      <div className="px-6 pt-3 pb-24">
         {loading ? (
           <LoadingSpinner />
         ) : products.length === 0 ? (
           <EmptyState
-            icon="🔍"
+            icon="search"
             title="상품이 없습니다"
             description="다른 카테고리를 선택해보세요."
           />
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-10">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

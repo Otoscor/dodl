@@ -4,6 +4,7 @@ import { BannerCarousel } from "@/components/commerce/BannerCarousel";
 import { CategoryGrid } from "@/components/commerce/CategoryGrid";
 import { ProductCard } from "@/components/commerce/ProductCard";
 import { HomeCartIcon } from "@/components/layout/HomeCartIcon";
+import { TitleBar } from "@/components/layout/TitleBar";
 
 export default function HomePage() {
   const categories = getCategories();
@@ -14,29 +15,24 @@ export default function HomePage() {
   const featured = products.filter((p) => !p.all_sold_out).slice(0, 6);
 
   return (
-    <div className="space-y-8 pb-6">
-      {/* Header */}
-      <header className="px-4 pt-6 flex items-center justify-between">
-        <div>
-          <Link href="/" className="text-[22px] font-semibold text-text-primary tracking-tight">dodl</Link>
-          <p className="text-[13px] text-text-tertiary mt-0.5">건강을 더하다</p>
-        </div>
-        <HomeCartIcon />
-      </header>
+    <div className="min-h-screen bg-white space-y-14 pb-10">
+      <TitleBar title="prototype" titleHref="/" rightAction={<HomeCartIcon />} />
+      {/* Spacer for fixed header */}
+      <div className="h-16" />
 
       {/* Banner */}
       <BannerCarousel banners={banners} />
 
       {/* Categories */}
       <section>
-        <h2 className="text-[15px] font-medium text-text-primary px-4 mb-3">카테고리</h2>
+        <h2 className="text-[16px] text-black px-6 mb-6 uppercase tracking-[0.12em]">카테고리</h2>
         <CategoryGrid categories={categories} />
       </section>
 
       {/* Featured Products */}
       <section>
-        <h2 className="text-[15px] font-medium text-text-primary px-4 mb-3">추천 상품</h2>
-        <div className="grid grid-cols-2 gap-3 px-4">
+        <h2 className="text-[16px] text-black px-6 mb-6 uppercase tracking-[0.12em]">추천 상품</h2>
+        <div className="grid grid-cols-2 gap-x-5 gap-y-10 px-6">
           {featured.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

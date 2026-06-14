@@ -8,13 +8,13 @@ interface PriceDisplayProps {
 
 export function PriceDisplay({ price, size = "md", className = "" }: PriceDisplayProps) {
   const sizeStyles = {
-    sm: "text-[13px]",
-    md: "text-[15px]",
-    lg: "text-[18px]",
+    sm: "text-[14px]",
+    md: "text-[17px]",
+    lg: "text-[24px]",
   };
 
   return (
-    <span className={`font-mono font-medium text-text-primary ${sizeStyles[size]} ${className}`}>
+    <span className={`font-mono text-black ${sizeStyles[size]} ${className}`}>
       {formatPrice(price)}
     </span>
   );

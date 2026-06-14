@@ -42,8 +42,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// DESIGN.md: white-surface(#ffffff)가 토스트 기본 배경.
-// Light 모드: surface-white 배경 + border-subtle + 타입별 좌측 액센트 바
 function ToastItem({ toast }: { toast: ToastMessage }) {
   const [visible, setVisible] = useState(false);
 
@@ -53,17 +51,12 @@ function ToastItem({ toast }: { toast: ToastMessage }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const accentColor =
-    toast.type === "error"   ? "border-l-accent-red"
-    : toast.type === "info"  ? "border-l-text-tertiary"
-    :                          "border-l-accent-green";
-
   return (
     <div
       className={`
-        bg-surface-white border border-border-subtle border-l-4 ${accentColor}
-        text-text-primary text-[13px] px-4 py-3 rounded-lg
-        shadow-none transition-all duration-300
+        bg-white border border-[#e0e0e0]
+        text-black text-[13px] tracking-[0.04em] px-5 py-3.5
+        rounded-[10px] shadow-none transition-all duration-300
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}
       `}
     >

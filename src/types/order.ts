@@ -10,8 +10,13 @@ export interface Order {
   product_total: number;
   shipping_fee: number;
   total_amount: number;
+  payment_method: string;
+  expected_delivery_date: string | null;
   created_at: string;
   cancelled_at: string | null;
+  return_reason: string | null;
+  return_note: string;
+  returned_at: string | null;
 }
 
 export interface OrderItem {

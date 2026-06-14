@@ -6,9 +6,11 @@ import { BackHeader } from "@/components/layout/BackHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { BottomSheet } from "@/components/ui/BottomSheet";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useToast } from "@/components/ui/Toast";
-import { formatPrice, isCancellable } from "@/lib/utils";
+import { formatPrice, isCancellable, isReturnable } from "@/lib/utils";
+import { RETURN_REASONS, EXCHANGE_REASONS } from "@/lib/constants";
 import type { OrderDetail } from "@/types/order";
 
 const STATUS_BADGE: Record<string, "indigo" | "amber" | "green" | "red" | "muted"> = {
@@ -17,6 +19,8 @@ const STATUS_BADGE: Record<string, "indigo" | "amber" | "green" | "red" | "muted
   "배송중": "amber",
   "배송완료": "green",
   "취소완료": "red",
+  "반품완료": "red",
+  "교환완료": "amber",
 };
 
 export default function OrderDetailPage({ params }: { params: Promise<{ orderId: string }> }) {
@@ -28,6 +32,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
   const [loading, setLoading] = useState(true);
   const [cancelModal, setCancelModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+
+  const [returnSheet, setReturnSheet] = useState(false);
+  const [exchangeSheet, setExchangeSheet] = useState(false);
+  const [selectedReason, setSelectedReason] = useState("");
+  const [note, setNote] = useState("");
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     fetch(`/api/orders/${orderId}`)
@@ -44,7 +54,58 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
 
     if (data.success) {
       showToast("주문이 취소되었습니다.");
-      // Refresh order
+      const updated = await fetch(`/api/orders/${orderId}`).then((r) => r.json());
+      setOrder(updated);
+    } else {
+      showToast(data.message, "error");
+    }
+  };
+
+  const handleReturn = async () => {
+    if (!selectedReason) {
+      showToast("사유를 선택해주세요.", "error");
+      return;
+    }
+    setProcessing(true);
+    const res = await fetch(`/api/orders/${orderId}/return`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: selectedReason, note }),
+    });
+    const data = await res.json();
+    setProcessing(false);
+    setReturnSheet(false);
+    setSelectedReason("");
+    setNote("");
+
+    if (data.success) {
+      showToast("반품이 완료되었습니다.");
+      const updated = await fetch(`/api/orders/${orderId}`).then((r) => r.json());
+      setOrder(updated);
+    } else {
+      showToast(data.message, "error");
+    }
+  };
+
+  const handleExchange = async () => {
+    if (!selectedReason) {
+      showToast("사유를 선택해주세요.", "error");
+      return;
+    }
+    setProcessing(true);
+    const res = await fetch(`/api/orders/${orderId}/exchange`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: selectedReason, note }),
+    });
+    const data = await res.json();
+    setProcessing(false);
+    setExchangeSheet(false);
+    setSelectedReason("");
+    setNote("");
+
+    if (data.success) {
+      showToast("교환이 완료되었습니다.");
       const updated = await fetch(`/api/orders/${orderId}`).then((r) => r.json());
       setOrder(updated);
     } else {
@@ -53,49 +114,59 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
   };
 
   if (loading) return <><BackHeader title="주문 상세" /><LoadingSpinner /></>;
-  if (!order) return <><BackHeader title="주문 상세" /><div className="p-8 text-center text-text-tertiary">주문을 찾을 수 없습니다.</div></>;
+  if (!order) return <><BackHeader title="주문 상세" /><div className="p-8 text-center text-[#aaa]">주문을 찾을 수 없습니다.</div></>;
 
   return (
-    <div className="pb-8">
+    <div className="min-h-screen bg-white pb-8">
       <BackHeader title="주문 상세" />
 
       {/* Order status header */}
-      <div className="px-4 py-5 border-b border-border-subtle">
+      <div className="px-6 py-6 border-b border-[#e0e0e0]">
         <div className="flex items-center justify-between mb-2">
-          <Badge variant={STATUS_BADGE[order.status] || "muted"} className="text-[11px] px-3 py-1">
+          <Badge variant={STATUS_BADGE[order.status] || "muted"} className="text-[12px] px-3 py-1">
             {order.status}
           </Badge>
-          <span className="font-mono text-[11px] text-text-quaternary">{order.order_number}</span>
+          <span className="font-mono text-[13px] text-[#cccccc]">{order.order_number}</span>
         </div>
-        <p className="text-[12px] text-text-tertiary">
+        <p className="text-[14px] text-[#aaa]">
           주문일: {new Date(order.created_at).toLocaleString("ko-KR")}
         </p>
+        {order.expected_delivery_date && !["취소완료", "반품완료"].includes(order.status) && (
+          <p className="text-[14px] text-[#888] mt-0.5">
+            배송 예정일: {order.expected_delivery_date}
+          </p>
+        )}
         {order.cancelled_at && (
-          <p className="text-[12px] text-accent-red mt-0.5">
+          <p className="text-[14px] text-[#888] mt-0.5">
             취소일: {new Date(order.cancelled_at).toLocaleString("ko-KR")}
           </p>
         )}
       </div>
 
+      {/* Delivery tracking timeline */}
+      {!["취소완료", "반품완료", "교환완료"].includes(order.status) && (
+        <DeliveryTimeline status={order.status} />
+      )}
+
       {/* Order items */}
-      <section className="px-4 py-4 border-b border-border-subtle">
-        <h2 className="text-[14px] font-medium text-text-primary mb-3">주문 상품</h2>
+      <section className="px-6 py-5 border-b border-[#e0e0e0]">
+        <h2 className="text-[13px] uppercase tracking-[0.08em] text-black mb-3">주문 상품</h2>
         <div className="space-y-3">
           {order.items.map((item) => (
             <div key={item.id} className="flex gap-3">
-              <div className="w-12 h-12 bg-surface-elevated rounded-lg flex items-center justify-center shrink-0">
-                <span className="text-lg">💊</span>
+              <div className="w-12 h-12 bg-[#f5f5f5] rounded-[10px] flex items-center justify-center shrink-0">
+                <span className="material-icons-outlined text-[20px] text-[#cccccc]">medication</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] text-text-primary">{item.product_name}</p>
+                <p className="text-[15px] text-black">{item.product_name}</p>
                 {item.option_summary && (
-                  <p className="text-[11px] text-text-tertiary">{item.option_summary}</p>
+                  <p className="text-[13px] text-[#aaa]">{item.option_summary}</p>
                 )}
-                <p className="text-[12px] text-text-secondary mt-0.5">
+                <p className="text-[14px] text-[#888] mt-0.5">
                   {formatPrice(item.unit_price)} × {item.quantity}개
                 </p>
               </div>
-              <span className="font-mono text-[13px] text-text-primary shrink-0">
+              <span className="font-mono text-[15px] text-black shrink-0">
                 {formatPrice(item.subtotal)}
               </span>
             </div>
@@ -104,20 +175,20 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
       </section>
 
       {/* Delivery info */}
-      <section className="px-4 py-4 border-b border-border-subtle">
-        <h2 className="text-[14px] font-medium text-text-primary mb-3">배송 정보</h2>
-        <dl className="space-y-2 text-[13px]">
+      <section className="px-6 py-5 border-b border-[#e0e0e0]">
+        <h2 className="text-[13px] uppercase tracking-[0.08em] text-black mb-3">배송 정보</h2>
+        <dl className="space-y-2 text-[15px]">
           <div className="flex">
-            <dt className="text-text-tertiary w-16 shrink-0">수령인</dt>
-            <dd className="text-text-primary">{order.recipient_name}</dd>
+            <dt className="text-[#aaa] w-16 shrink-0">수령인</dt>
+            <dd className="text-black">{order.recipient_name}</dd>
           </div>
           <div className="flex">
-            <dt className="text-text-tertiary w-16 shrink-0">연락처</dt>
-            <dd className="text-text-primary">{order.recipient_phone}</dd>
+            <dt className="text-[#aaa] w-16 shrink-0">연락처</dt>
+            <dd className="text-black">{order.recipient_phone}</dd>
           </div>
           <div className="flex">
-            <dt className="text-text-tertiary w-16 shrink-0">주소</dt>
-            <dd className="text-text-primary">
+            <dt className="text-[#aaa] w-16 shrink-0">주소</dt>
+            <dd className="text-black">
               {order.address_line1}
               {order.address_line2 && ` ${order.address_line2}`}
             </dd>
@@ -125,18 +196,49 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
         </dl>
       </section>
 
+      {/* Return/Exchange info */}
+      {order.returned_at && (
+        <section className="px-6 py-5 border-b border-[#e0e0e0]">
+          <h2 className="text-[13px] uppercase tracking-[0.08em] text-black mb-3">
+            {order.status === "반품완료" ? "반품" : "교환"} 정보
+          </h2>
+          <dl className="space-y-2 text-[15px]">
+            <div className="flex">
+              <dt className="text-[#aaa] w-16 shrink-0">사유</dt>
+              <dd className="text-black">{order.return_reason}</dd>
+            </div>
+            {order.return_note && (
+              <div className="flex">
+                <dt className="text-[#aaa] w-16 shrink-0">메모</dt>
+                <dd className="text-black">{order.return_note}</dd>
+              </div>
+            )}
+            <div className="flex">
+              <dt className="text-[#aaa] w-16 shrink-0">처리일</dt>
+              <dd className="text-black">
+                {new Date(order.returned_at).toLocaleString("ko-KR")}
+              </dd>
+            </div>
+          </dl>
+        </section>
+      )}
+
       {/* Price breakdown */}
-      <section className="px-4 py-4 border-b border-border-subtle space-y-2 text-[13px]">
-        <h2 className="text-[14px] font-medium text-text-primary mb-3">결제 정보</h2>
-        <div className="flex justify-between text-text-secondary">
+      <section className="px-6 py-4 border-b border-[#e0e0e0] space-y-2 text-[14px]">
+        <h2 className="text-[13px] uppercase tracking-[0.08em] text-black mb-3">결제 정보</h2>
+        <div className="flex justify-between text-[#888]">
           <span>상품금액</span>
           <span className="font-mono">{formatPrice(order.product_total)}</span>
         </div>
-        <div className="flex justify-between text-text-secondary">
+        <div className="flex justify-between text-[#888]">
           <span>배송비</span>
           <span className="font-mono">{order.shipping_fee === 0 ? "무료" : formatPrice(order.shipping_fee)}</span>
         </div>
-        <div className="flex justify-between text-text-primary font-medium text-[15px] pt-2 border-t border-border-subtle">
+        <div className="flex justify-between text-[#888]">
+          <span>결제수단</span>
+          <span>{order.payment_method}</span>
+        </div>
+        <div className="flex justify-between text-black text-[18px] pt-2 border-t border-[#e0e0e0]">
           <span>총 결제금액</span>
           <span className="font-mono">{formatPrice(order.total_amount)}</span>
         </div>
@@ -144,13 +246,33 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
 
       {/* Cancel button */}
       {isCancellable(order.status) && (
-        <div className="px-4 pt-4">
+        <div className="px-6 pt-5">
           <Button
             variant="danger"
             fullWidth
             onClick={() => setCancelModal(true)}
           >
             주문 취소
+          </Button>
+        </div>
+      )}
+
+      {/* Return/Exchange buttons */}
+      {isReturnable(order.status) && (
+        <div className="px-6 pt-5 space-y-3">
+          <Button
+            variant="danger"
+            fullWidth
+            onClick={() => { setSelectedReason(""); setNote(""); setReturnSheet(true); }}
+          >
+            반품 신청
+          </Button>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => { setSelectedReason(""); setNote(""); setExchangeSheet(true); }}
+          >
+            교환 신청
           </Button>
         </div>
       )}
@@ -174,6 +296,121 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
         주문을 취소하면 결제 금액이 가상 지갑으로 환불됩니다.
         취소 후에는 되돌릴 수 없습니다.
       </Modal>
+
+      {/* Return BottomSheet */}
+      <BottomSheet open={returnSheet} onClose={() => setReturnSheet(false)}>
+        <div className="px-4 pb-6">
+          <h3 className="text-[18px] text-black mb-4">반품 신청</h3>
+
+          <p className="text-[14px] text-[#aaa] mb-3">사유를 선택해주세요</p>
+          <div className="space-y-2 mb-4">
+            {RETURN_REASONS.map((reason) => (
+              <label key={reason} className="flex items-center gap-3 px-3 py-2.5 border border-[#e0e0e0] rounded-[10px] cursor-pointer hover:bg-[#ebebeb] transition-colors">
+                <input
+                  type="radio"
+                  name="return-reason"
+                  value={reason}
+                  checked={selectedReason === reason}
+                  onChange={(e) => setSelectedReason(e.target.value)}
+                  className="w-4 h-4 accent-black"
+                />
+                <span className="text-[15px] text-black">{reason}</span>
+              </label>
+            ))}
+          </div>
+
+          <textarea
+            placeholder="추가 메모 (선택)"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="w-full h-20 px-3 py-2 text-[14px] border border-[#e0e0e0] bg-white text-black placeholder:text-[#cccccc] resize-none focus:outline-none focus:border-black rounded-[10px] mb-3"
+          />
+
+          <p className="text-[14px] text-[#aaa] mb-4">
+            환불금은 가상 지갑으로 입금됩니다.
+          </p>
+
+          <Button variant="danger" fullWidth onClick={handleReturn} disabled={processing || !selectedReason}>
+            {processing ? "처리 중..." : "반품 신청"}
+          </Button>
+        </div>
+      </BottomSheet>
+
+      {/* Exchange BottomSheet */}
+      <BottomSheet open={exchangeSheet} onClose={() => setExchangeSheet(false)}>
+        <div className="px-4 pb-6">
+          <h3 className="text-[18px] text-black mb-4">교환 신청</h3>
+
+          <p className="text-[14px] text-[#aaa] mb-3">사유를 선택해주세요</p>
+          <div className="space-y-2 mb-4">
+            {EXCHANGE_REASONS.map((reason) => (
+              <label key={reason} className="flex items-center gap-3 px-3 py-2.5 border border-[#e0e0e0] rounded-[10px] cursor-pointer hover:bg-[#ebebeb] transition-colors">
+                <input
+                  type="radio"
+                  name="exchange-reason"
+                  value={reason}
+                  checked={selectedReason === reason}
+                  onChange={(e) => setSelectedReason(e.target.value)}
+                  className="w-4 h-4 accent-black"
+                />
+                <span className="text-[15px] text-black">{reason}</span>
+              </label>
+            ))}
+          </div>
+
+          <textarea
+            placeholder="추가 메모 (선택)"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="w-full h-20 px-3 py-2 text-[14px] border border-[#e0e0e0] bg-white text-black placeholder:text-[#cccccc] resize-none focus:outline-none focus:border-black rounded-[10px] mb-4"
+          />
+
+          <Button variant="primary" fullWidth onClick={handleExchange} disabled={processing || !selectedReason}>
+            {processing ? "처리 중..." : "교환 신청"}
+          </Button>
+        </div>
+      </BottomSheet>
+    </div>
+  );
+}
+
+const TIMELINE_STEPS = [
+  { key: "결제완료", label: "결제완료", icon: "payment" },
+  { key: "배송준비", label: "배송준비", icon: "inventory_2" },
+  { key: "배송중", label: "배송중", icon: "local_shipping" },
+  { key: "배송완료", label: "배송완료", icon: "check_circle" },
+] as const;
+
+function DeliveryTimeline({ status }: { status: string }) {
+  const statusOrder = TIMELINE_STEPS.map((s) => s.key);
+  const currentIdx = statusOrder.indexOf(status as typeof statusOrder[number]);
+  const activeIdx = currentIdx === -1 ? 0 : currentIdx;
+
+  return (
+    <div className="px-6 py-5 border-b border-[#e0e0e0]">
+      <h2 className="text-[13px] uppercase tracking-[0.08em] text-black mb-4">배송 추적</h2>
+      <div className="flex items-start justify-between relative">
+        {/* progress bar — 첫 번째 원 중심(12.5%)부터 마지막 원 중심(87.5%)까지 */}
+        <div className="absolute top-[13px] left-[12.5%] right-[12.5%] h-[2px]">
+          <div className="absolute inset-0 bg-[#e0e0e0]" />
+          <div
+            className="absolute left-0 top-0 h-full bg-black transition-all"
+            style={{ width: activeIdx === 0 ? "0%" : `${(activeIdx / (TIMELINE_STEPS.length - 1)) * 100}%` }}
+          />
+        </div>
+
+        {TIMELINE_STEPS.map((step, i) => {
+          const isActive = i <= activeIdx;
+          return (
+            <div key={step.key} className="flex flex-col items-center relative z-10" style={{ width: `${100 / TIMELINE_STEPS.length}%` }}>
+              <div className={`w-[28px] h-[28px] rounded-full flex items-center justify-center ${isActive ? "bg-black" : "bg-[#e0e0e0]"}`}>
+                <span className={`material-icons-outlined text-[16px] ${isActive ? "text-white" : "text-[#aaa]"}`}>{step.icon}</span>
+              </div>
+              <span className={`text-[12px] mt-1.5 ${isActive ? "text-black" : "text-[#aaa]"}`}>{step.label}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

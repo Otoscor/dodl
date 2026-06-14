@@ -22,6 +22,9 @@ export interface ProductListItem extends Product {
   max_price: number;
   all_sold_out: boolean;
   category_name: string;
+  review_count: number;
+  average_rating: number;
+  key_specs: string[];
 }
 
 export interface OptionGroup {
@@ -50,10 +53,36 @@ export interface Sku {
   option_values?: { group_name: string; value_name: string }[];
 }
 
+export interface Review {
+  id: string;
+  product_id: string;
+  author_name: string;
+  rating: number;
+  body: string;
+  photo_urls: string[];
+  created_at: string;
+}
+
+export interface ReviewSummary {
+  average_rating: number;
+  review_count: number;
+  rating_distribution: { 1: number; 2: number; 3: number; 4: number; 5: number };
+}
+
+export interface ProductDetailInfo {
+  shipping: string;
+  keySpecs: string[];
+  dosage: string;
+  caution: string;
+  manufacturer: string;
+}
+
 export interface ProductDetail extends Product {
   category_name: string;
   option_groups: OptionGroup[];
   skus: Sku[];
+  review_summary: ReviewSummary;
+  detail_info: ProductDetailInfo;
 }
 
 export interface Banner {

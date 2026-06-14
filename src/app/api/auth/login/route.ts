@@ -29,5 +29,12 @@ export async function POST(request: NextRequest) {
     path: '/',
     maxAge: 60 * 60 * 24 * 7, // 7일
   });
+  // 데모 앱: 시드 데이터와 동일한 세션 ID 사용
+  response.cookies.set('dodl_session', 'demo-session-001', {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 30,
+  });
   return response;
 }

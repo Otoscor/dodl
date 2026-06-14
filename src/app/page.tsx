@@ -4,7 +4,7 @@ const cards = [
   {
     href: "/home",
     external: false,
-    emoji: "🛍️",
+    icon: "storefront",
     title: "프로토타입",
     description: "커머스 탭 실제 동작 확인",
     cta: "열기",
@@ -13,7 +13,7 @@ const cards = [
   {
     href: "/docs/screen-design.html",
     external: true,
-    emoji: "📐",
+    icon: "design_services",
     title: "화면설계서",
     description: "9개 화면 구성요소 · 인터랙션 · 상태 명세",
     cta: "보기",
@@ -22,7 +22,7 @@ const cards = [
   {
     href: "/docs/policy.html",
     external: true,
-    emoji: "📋",
+    icon: "description",
     title: "정책설명서",
     description: "상품 · 결제 · 주문 · 지갑 비즈니스 규칙",
     cta: "보기",
@@ -31,9 +31,18 @@ const cards = [
   {
     href: "/docs/design-system.html",
     external: true,
-    emoji: "🎨",
+    icon: "palette",
     title: "디자인 시스템",
     description: "토큰 · 컴포넌트 Variant × State 매트릭스",
+    cta: "보기",
+    primary: false,
+  },
+  {
+    href: "/docs/figma-checklist.html",
+    external: true,
+    icon: "check_circle",
+    title: "피그마 체크리스트",
+    description: "12개 화면 캡처 · 작업 진행 체크",
     cta: "보기",
     primary: false,
   },
@@ -44,7 +53,7 @@ export default function LandingPage() {
     <div className="min-h-screen flex flex-col px-6 py-12 bg-surface-base">
       {/* 헤더 */}
       <header className="mb-12">
-        <h1 className="text-[28px] font-semibold text-text-primary tracking-tight">
+        <h1 className="text-[28px] text-text-primary tracking-tight">
           dodl
         </h1>
         <p className="text-[14px] text-text-secondary mt-1">
@@ -59,20 +68,20 @@ export default function LandingPage() {
           const inner = (
             <div
               className={`
-                flex items-center gap-4 p-5 rounded-2xl border transition-colors
+                flex items-center gap-4 p-5 rounded-[10px] border transition-colors
                 ${card.primary
                   ? "bg-action-primary border-action-primary text-white"
-                  : "bg-surface-elevated border-border-subtle hover:border-text-quaternary"
+                  : "bg-surface-elevated border-border-subtle hover:bg-[#ebebeb]"
                 }
               `}
             >
-              {/* 이모지 */}
-              <span className="text-2xl shrink-0">{card.emoji}</span>
+              {/* 아이콘 */}
+              <span className={`material-icons-outlined text-[24px] shrink-0 ${card.primary ? "text-white" : "text-[#888]"}`}>{card.icon}</span>
 
               {/* 텍스트 */}
               <div className="flex-1 min-w-0">
                 <p
-                  className={`text-[15px] font-medium ${
+                  className={`text-[15px] ${
                     card.primary ? "text-white" : "text-text-primary"
                   }`}
                 >
@@ -89,7 +98,7 @@ export default function LandingPage() {
 
               {/* CTA 레이블 */}
               <span
-                className={`text-[12px] font-medium shrink-0 ${
+                className={`text-[12px] shrink-0 ${
                   card.primary ? "text-white/80" : "text-text-quaternary"
                 }`}
               >

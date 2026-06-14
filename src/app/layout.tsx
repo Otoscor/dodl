@@ -1,15 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/Toast";
-
-// Inter Variable — next/font/google의 Inter는 Variable 폰트로 제공됨
-// weight range 100-900, 소수점 굵기(510, 590)는 Variable 축으로 지원
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "dodl — 건강을 더하다",
@@ -21,6 +12,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#f5f5f5",
 };
 
 export default function RootLayout({
@@ -29,10 +21,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${inter.variable} h-full`}>
-      <body className="h-full">
+    <html lang="ko" className="min-h-full">
+      <head>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+      </head>
+      <body className="min-h-full bg-[#f5f5f5]">
         <ToastProvider>
-          <div className="mx-auto max-w-[430px] min-h-full bg-surface-base relative">
+          <div className="mx-auto max-w-[430px] min-h-full bg-surface-base relative ">
             {children}
           </div>
         </ToastProvider>

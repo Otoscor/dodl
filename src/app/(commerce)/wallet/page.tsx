@@ -37,29 +37,29 @@ export default function WalletPage() {
   if (!wallet) return <div className="p-8 text-center text-text-tertiary">지갑을 불러올 수 없습니다.</div>;
 
   return (
-    <div>
+    <div className="min-h-screen bg-white">
       <BackHeader title="가상 지갑" />
 
       {/* Balance card */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="bg-surface-elevated border border-border-subtle rounded-2xl p-6 text-center">
-          <p className="text-[12px] text-text-tertiary mb-2">잔액</p>
-          <p className="font-mono text-[28px] text-text-primary font-semibold">
+      <div className="px-6 pt-5 pb-3">
+        <div className="bg-[#f5f5f5] rounded-[10px] p-10 text-center">
+          <p className="text-[14px] text-text-tertiary mb-2">잔액</p>
+          <p className="font-mono text-[40px] text-text-primary font-bold">
             {formatPrice(wallet.balance)}
           </p>
         </div>
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-2 px-4 py-3">
+      <div className="flex gap-3 px-6 py-4">
         {(["전체", "적립", "사용"] as FilterType[]).map((f) => (
           <button
             key={f}
             onClick={() => { setFilter(f); setLoading(true); }}
-            className={`px-3 py-1.5 text-[12px] font-medium rounded-pill border transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-[12px] uppercase tracking-[0.08em] border rounded-[10px] transition-colors cursor-pointer ${
               filter === f
-                ? "border-action-primary bg-action-primary/10 text-action-primary"
-                : "border-border-subtle text-text-tertiary hover:text-text-secondary"
+                ? "border-black bg-black text-white"
+                : "border-[#e0e0e0] bg-[#f5f5f5] text-[#888] hover:text-black"
             }`}
           >
             {f}
@@ -70,30 +70,30 @@ export default function WalletPage() {
       {/* Transaction list */}
       {transactions.length === 0 ? (
         <EmptyState
-          icon="💰"
+          icon="account_balance_wallet"
           title="거래 내역이 없습니다"
           description={filter !== "전체" ? "다른 필터를 선택해보세요." : undefined}
         />
       ) : (
         <div className="divide-y divide-border-subtle">
           {transactions.map((tx) => (
-            <div key={tx.id} className="px-4 py-3 flex items-center justify-between">
+            <div key={tx.id} className="px-6 py-4 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-0.5">
                   <Badge variant={TX_BADGE[tx.type] || "muted"}>{tx.type}</Badge>
-                  <span className="text-[13px] text-text-primary">{tx.description}</span>
+                  <span className="text-[15px] text-text-primary">{tx.description}</span>
                 </div>
-                <p className="text-[11px] text-text-quaternary">
+                <p className="text-[12px] text-text-quaternary">
                   {new Date(tx.created_at).toLocaleString("ko-KR")}
                 </p>
               </div>
               <div className="text-right">
-                <p className={`font-mono text-[14px] font-medium ${
+                <p className={`font-mono text-[16px] font-semibold ${
                   tx.type === "사용" ? "text-accent-red" : "text-accent-green"
                 }`}>
                   {tx.type === "사용" ? "-" : "+"}{formatPrice(tx.amount)}
                 </p>
-                <p className="font-mono text-[11px] text-text-quaternary">
+                <p className="font-mono text-[12px] text-text-quaternary">
                   잔액 {formatPrice(tx.balance_after)}
                 </p>
               </div>

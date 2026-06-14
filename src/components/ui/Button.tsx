@@ -12,16 +12,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<Variant, string> = {
-  primary: "bg-action-primary text-white hover:bg-action-primary-hover",
-  secondary: "bg-surface-elevated text-text-primary border border-border-subtle hover:bg-surface-elevated/80",
-  ghost: "text-text-secondary hover:text-text-primary hover:bg-surface-elevated",
-  danger: "bg-accent-red/10 text-accent-red border border-accent-red/20 hover:bg-accent-red/20",
+  primary: "bg-black text-white hover:bg-[#333]",
+  secondary: "bg-[#f5f5f5] text-black border border-[#e0e0e0] hover:bg-[#ebebeb]",
+  ghost: "text-[#888] hover:text-black hover:bg-[#f5f5f5]",
+  danger: "bg-[#f5f5f5] text-black border border-[#e0e0e0] hover:bg-[#ebebeb]",
 };
 
 const sizeStyles: Record<Size, string> = {
-  sm: "px-3 py-1.5 text-[13px]",
-  md: "px-4 py-2.5 text-[14px]",
-  lg: "px-6 py-3.5 text-[15px] font-medium",
+  sm: "px-4 py-2 text-[14px] tracking-[0.08em] uppercase",
+  md: "px-5 py-3 text-[14px] tracking-[0.06em] uppercase",
+  lg: "px-8 py-4 text-[14px] tracking-[0.06em] uppercase",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -31,7 +31,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled}
         className={`
-          inline-flex items-center justify-center rounded-xl transition-colors
+          inline-flex items-center justify-center transition-colors rounded-[10px]
           ${variantStyles[variant]}
           ${sizeStyles[size]}
           ${fullWidth ? "w-full" : ""}

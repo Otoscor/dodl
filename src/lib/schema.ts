@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS products (
   description TEXT NOT NULL DEFAULT '',
   image_url TEXT NOT NULL DEFAULT '',
   base_price INTEGER NOT NULL,
+  detail_info TEXT NOT NULL DEFAULT '{}',
   is_active INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -69,8 +70,13 @@ CREATE TABLE IF NOT EXISTS orders (
   product_total INTEGER NOT NULL,
   shipping_fee INTEGER NOT NULL,
   total_amount INTEGER NOT NULL,
+  payment_method TEXT NOT NULL DEFAULT '가상지갑',
+  expected_delivery_date TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  cancelled_at TEXT
+  cancelled_at TEXT,
+  return_reason TEXT,
+  return_note TEXT NOT NULL DEFAULT '',
+  returned_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -117,4 +123,18 @@ CREATE INDEX IF NOT EXISTS idx_skus_product ON skus(product_id);
 CREATE INDEX IF NOT EXISTS idx_cart_session ON cart_items(session_id);
 CREATE INDEX IF NOT EXISTS idx_orders_session ON orders(session_id);
 CREATE INDEX IF NOT EXISTS idx_wallet_tx_wallet ON wallet_transactions(wallet_id);
+
+CREATE TABLE IF NOT EXISTS reviews (
+  id           TEXT    PRIMARY KEY,
+  product_id   TEXT    NOT NULL REFERENCES products(id),
+  author_name  TEXT    NOT NULL,
+  rating       INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+  body         TEXT    NOT NULL DEFAULT '',
+  session_id   TEXT    NOT NULL DEFAULT '',
+  photo_urls   TEXT    NOT NULL DEFAULT '[]',
+  created_at   TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_reviews_session_product ON reviews(session_id, product_id);
 `;

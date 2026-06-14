@@ -1,4 +1,4 @@
-import { SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, CANCELLABLE_STATUSES } from "./constants";
+import { SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, CANCELLABLE_STATUSES, RETURNABLE_STATUSES } from "./constants";
 
 export function formatPrice(price: number): string {
   return price.toLocaleString("ko-KR") + "원";
@@ -19,4 +19,8 @@ export function calculateShippingFee(productTotal: number): number {
 
 export function isCancellable(status: string): boolean {
   return CANCELLABLE_STATUSES.includes(status as typeof CANCELLABLE_STATUSES[number]);
+}
+
+export function isReturnable(status: string): boolean {
+  return RETURNABLE_STATUSES.includes(status as typeof RETURNABLE_STATUSES[number]);
 }
