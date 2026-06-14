@@ -12,11 +12,9 @@ function getUsers(): Record<string, string> {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.text();
-    // DEBUG: return raw body to inspect
-    if (process.env.VERCEL && body.includes('debug_body')) {
-      return NextResponse.json({ raw: body, len: body.length, chars: [...body].map((c,i) => `${i}:${c}(${c.charCodeAt(0)})`) });
-    }
+    const raw = await request.text();
+    // Vercel proxy escapes '!' as '\!' which is invalid JSON — fix it
+    const body = raw.replace(/\\!/g, '!');
     const { id, password } = JSON.parse(body);
     const users = getUsers();
     const secret = process.env.AUTH_SECRET ?? '';
