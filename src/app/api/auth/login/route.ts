@@ -11,30 +11,35 @@ function getUsers(): Record<string, string> {
 }
 
 export async function POST(request: NextRequest) {
-  const { id, password } = await request.json();
-  const users = getUsers();
-  const secret = process.env.AUTH_SECRET ?? '';
+  try {
+    const { id, password } = await request.json();
+    const users = getUsers();
+    const secret = process.env.AUTH_SECRET ?? '';
 
-  if (!secret || !id || users[id] !== password) {
-    return NextResponse.json(
-      { error: '아이디 또는 비밀번호가 올바르지 않습니다.' },
-      { status: 401 }
-    );
+    if (!secret || !id || users[id] !== password) {
+      return NextResponse.json(
+        { error: '아이디 또는 비밀번호가 올바르지 않습니다.' },
+        { status: 401 }
+      );
+    }
+
+    const response = NextResponse.json({ ok: true });
+    response.cookies.set('dodl_auth', secret, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    response.cookies.set('dodl_session', 'demo-session-001', {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+    });
+    return response;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : '';
+    return NextResponse.json({ error: message, stack }, { status: 500 });
   }
-
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set('dodl_auth', secret, {
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7일
-  });
-  // 데모 앱: 시드 데이터와 동일한 세션 ID 사용
-  response.cookies.set('dodl_session', 'demo-session-001', {
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 30,
-  });
-  return response;
 }
