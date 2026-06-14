@@ -10,6 +10,18 @@ function getUsers(): Record<string, string> {
   );
 }
 
+// DEBUG: env var check (remove after fixing)
+export async function GET() {
+  const secret = process.env.AUTH_SECRET ?? '';
+  const users = process.env.AUTH_USERS ?? '';
+  return NextResponse.json({
+    hasSecret: !!secret,
+    secretLen: secret.length,
+    usersRaw: users,
+    usersLen: users.length,
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const raw = await request.text();
