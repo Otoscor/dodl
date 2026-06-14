@@ -1,21 +1,29 @@
 import type Database from "better-sqlite3";
-import { v4 as uuidv4 } from "uuid";
+import { v5 as uuidv5 } from "uuid";
 import { INITIAL_WALLET_BALANCE, WALLET_TX_TYPE, ORDER_STATUS } from "./constants";
 
 const DEMO_SESSION = "demo-session-001";
+const NS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"; // DNS namespace
+let _seedCounter = 0;
+/** 결정론적 UUID — 같은 시드 순서면 항상 같은 ID */
+function deterministicId(label?: string): string {
+  _seedCounter++;
+  return uuidv5(label ?? `seed-${_seedCounter}`, NS);
+}
 
 export function seedDatabase(db: Database.Database) {
   const existing = db.prepare("SELECT COUNT(*) as cnt FROM categories").get() as { cnt: number };
   if (existing.cnt > 0) return;
+  _seedCounter = 0;
 
   // --- Categories ---
   const categories = [
-    { id: uuidv4(), name: "비타민", slug: "vitamin", image_url: "/categories/vitamin.svg", sort_order: 1 },
-    { id: uuidv4(), name: "프로바이오틱스", slug: "probiotics", image_url: "/categories/probiotics.svg", sort_order: 2 },
-    { id: uuidv4(), name: "오메가3", slug: "omega3", image_url: "/categories/omega3.svg", sort_order: 3 },
-    { id: uuidv4(), name: "미네랄", slug: "mineral", image_url: "/categories/mineral.svg", sort_order: 4 },
-    { id: uuidv4(), name: "콜라겐", slug: "collagen", image_url: "/categories/collagen.svg", sort_order: 5 },
-    { id: uuidv4(), name: "어린이", slug: "kids", image_url: "/categories/kids.svg", sort_order: 6 },
+    { id: deterministicId(), name: "비타민", slug: "vitamin", image_url: "/categories/vitamin.svg", sort_order: 1 },
+    { id: deterministicId(), name: "프로바이오틱스", slug: "probiotics", image_url: "/categories/probiotics.svg", sort_order: 2 },
+    { id: deterministicId(), name: "오메가3", slug: "omega3", image_url: "/categories/omega3.svg", sort_order: 3 },
+    { id: deterministicId(), name: "미네랄", slug: "mineral", image_url: "/categories/mineral.svg", sort_order: 4 },
+    { id: deterministicId(), name: "콜라겐", slug: "collagen", image_url: "/categories/collagen.svg", sort_order: 5 },
+    { id: deterministicId(), name: "어린이", slug: "kids", image_url: "/categories/kids.svg", sort_order: 6 },
   ];
 
   const insertCategory = db.prepare(
@@ -56,24 +64,24 @@ export function seedDatabase(db: Database.Database) {
     skuDefs: { optionKeys: string[]; price: number; stock: number; code: string }[],
     detailInfo?: Record<string, unknown>
   ) {
-    const pid = uuidv4();
+    const pid = deterministicId();
     insertProduct.run(pid, catMap[catSlug], name, desc, imgUrl, basePrice, JSON.stringify(detailInfo ?? {}));
 
     const ovMap: Record<string, string> = {};
 
     for (let gi = 0; gi < options.length; gi++) {
       const g = options[gi];
-      const gid = uuidv4();
+      const gid = deterministicId();
       insertOptionGroup.run(gid, pid, g.groupName, gi + 1);
       for (let vi = 0; vi < g.values.length; vi++) {
-        const vid = uuidv4();
+        const vid = deterministicId();
         insertOptionValue.run(vid, gid, g.values[vi], vi + 1);
         ovMap[g.values[vi]] = vid;
       }
     }
 
     for (const s of skuDefs) {
-      const sid = uuidv4();
+      const sid = deterministicId();
       insertSku.run(sid, pid, s.code, s.price, s.stock);
       for (const key of s.optionKeys) {
         if (ovMap[key]) {
@@ -256,7 +264,7 @@ export function seedDatabase(db: Database.Database) {
 
   for (const { pid, items } of reviewSeeds) {
     for (const r of items) {
-      insertReview.run(uuidv4(), pid, `seed-${uuidv4()}`, r.name, r.rating, r.body, JSON.stringify(r.photos ?? []), `-${r.daysAgo}`);
+      insertReview.run(deterministicId(), pid, `seed-${deterministicId()}`, r.name, r.rating, r.body, JSON.stringify(r.photos ?? []), `-${r.daysAgo}`);
     }
   }
 
@@ -264,17 +272,17 @@ export function seedDatabase(db: Database.Database) {
   const insertBanner = db.prepare(
     "INSERT INTO banners (id, title, subtitle, image_url, link_url, sort_order) VALUES (?, ?, ?, ?, ?, ?)"
   );
-  insertBanner.run(uuidv4(), "여름 건강 챙기기", "인기 비타민 최대 30% 할인", "/banners/summer.jpg", "/products?category=vitamin", 1);
-  insertBanner.run(uuidv4(), "프로바이오틱스 기획전", "장 건강의 시작, 유산균", "/banners/probiotics.jpg", "/products?category=probiotics", 2);
-  insertBanner.run(uuidv4(), "우리 아이 영양제", "성장기 필수 영양소 모음", "/banners/kids.jpg", "/products?category=kids", 3);
+  insertBanner.run(deterministicId(), "여름 건강 챙기기", "인기 비타민 최대 30% 할인", "/banners/summer.jpg", "/products?category=vitamin", 1);
+  insertBanner.run(deterministicId(), "프로바이오틱스 기획전", "장 건강의 시작, 유산균", "/banners/probiotics.jpg", "/products?category=probiotics", 2);
+  insertBanner.run(deterministicId(), "우리 아이 영양제", "성장기 필수 영양소 모음", "/banners/kids.jpg", "/products?category=kids", 3);
 
   // --- Demo wallet + orders for demo session ---
-  const walletId = uuidv4();
+  const walletId = deterministicId();
   const DEMO_GRANT = 1000000;
   db.prepare("INSERT INTO wallets (id, session_id, balance) VALUES (?, ?, ?)").run(walletId, DEMO_SESSION, DEMO_GRANT);
   db.prepare(
     "INSERT INTO wallet_transactions (id, wallet_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?, ?)"
-  ).run(uuidv4(), walletId, WALLET_TX_TYPE.GRANT, DEMO_GRANT, DEMO_GRANT, "가상 지갑 초기 부여");
+  ).run(deterministicId(), walletId, WALLET_TX_TYPE.GRANT, DEMO_GRANT, DEMO_GRANT, "가상 지갑 초기 부여");
 
   // --- 주문 생성 헬퍼 ---
   const insertOrder = db.prepare(
@@ -311,7 +319,7 @@ export function seedDatabase(db: Database.Database) {
   }
 
   function seedOrder(o: DemoOrder) {
-    const oid = uuidv4();
+    const oid = deterministicId();
     const productTotal = o.items.reduce((s, i) => s + i.price * i.qty, 0);
     const shippingFee = productTotal >= 30000 ? 0 : 3000;
     const total = productTotal + shippingFee;
@@ -341,18 +349,18 @@ export function seedDatabase(db: Database.Database) {
     }
 
     for (const item of o.items) {
-      insertOrderItem.run(uuidv4(), oid, `demo-sku-${uuidv4().slice(0,4)}`, item.name, item.option, item.price, item.qty, item.price * item.qty);
+      insertOrderItem.run(deterministicId(), oid, `demo-sku-${deterministicId().slice(0,4)}`, item.name, item.option, item.price, item.qty, item.price * item.qty);
     }
 
     // 결제 트랜잭션
-    insertWalletTx.run(uuidv4(), walletId, WALLET_TX_TYPE.PAYMENT, total, 0, "주문 결제", oid, `-${o.daysAgo}`);
+    insertWalletTx.run(deterministicId(), walletId, WALLET_TX_TYPE.PAYMENT, total, 0, "주문 결제", oid, `-${o.daysAgo}`);
 
     // 취소/반품 환불 트랜잭션
     if (o.status === ORDER_STATUS.CANCELLED && o.cancelledDaysAgo) {
-      insertWalletTx.run(uuidv4(), walletId, WALLET_TX_TYPE.REFUND, total, 0, "주문 취소 환불", oid, `-${o.cancelledDaysAgo}`);
+      insertWalletTx.run(deterministicId(), walletId, WALLET_TX_TYPE.REFUND, total, 0, "주문 취소 환불", oid, `-${o.cancelledDaysAgo}`);
     }
     if (o.status === ORDER_STATUS.RETURN_COMPLETED && o.returnedDaysAgo) {
-      insertWalletTx.run(uuidv4(), walletId, WALLET_TX_TYPE.REFUND, total, 0, "반품 환불", oid, `-${o.returnedDaysAgo}`);
+      insertWalletTx.run(deterministicId(), walletId, WALLET_TX_TYPE.REFUND, total, 0, "반품 환불", oid, `-${o.returnedDaysAgo}`);
     }
     return total;
   }
@@ -489,6 +497,6 @@ export function seedDatabase(db: Database.Database) {
   );
   const cartQuantities = [2, 1, 1];
   for (let i = 0; i < cartSkus.length; i++) {
-    insertCartItem.run(uuidv4(), DEMO_SESSION, cartSkus[i].id, cartQuantities[i]);
+    insertCartItem.run(deterministicId(), DEMO_SESSION, cartSkus[i].id, cartQuantities[i]);
   }
 }
