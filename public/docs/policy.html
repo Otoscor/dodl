@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dodl 커머스 — 정책설명서</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f4f5f7;
+    --text: #0d0f11;
+    --text2: #374151;
+    --text3: #6b7280;
+    --text4: #9ca3af;
+    --border: rgba(0,0,0,0.1);
+    --accent: #5e6ad2;
+    --pink: #f79ce0;
+    --amber: #f7bf8b;
+    --green: #4ade80;
+    --red: #f87171;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    display: flex;
+  }
+  aside {
+    position: fixed;
+    top: 0; left: 0;
+    width: 220px;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    z-index: 10;
+  }
+  aside h2 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  aside a {
+    display: block;
+    color: var(--text3);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    transition: all 0.15s;
+  }
+  aside a:hover { color: var(--text); background: rgba(0,0,0,0.05); }
+  main {
+    margin-left: 220px;
+    padding: 48px;
+    max-width: 800px;
+    width: 100%;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .subtitle { font-size: 14px; color: var(--text3); margin-bottom: 48px; }
+  section {
+    margin-bottom: 56px;
+    scroll-margin-top: 24px;
+  }
+  section > h2 {
+    font-size: 20px;
+    font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text2);
+    margin: 20px 0 8px;
+  }
+  p, li { font-size: 14px; color: var(--text2); line-height: 1.7; }
+  ul, ol { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 4px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--text3); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { color: var(--text2); }
+  code {
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-size: 12px;
+    background: rgba(0,0,0,0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+  .callout {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .flow-arrow { color: var(--text4); font-size: 14px; }
+  @media (max-width: 768px) {
+    aside { display: none; }
+    main { margin-left: 0; padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+<aside>
+  <h2><a href="/" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:6px;">&#8592; 정책설명서</a></h2>
+  <a href="#product">상품/SKU 정책</a>
+  <a href="#pricing">가격 정책</a>
+  <a href="#shipping">배송 정책</a>
+  <a href="#cart">장바구니 정책</a>
+  <a href="#payment">결제 정책</a>
+  <a href="#order">주문 정책</a>
+  <a href="#wallet">지갑 정책</a>
+  <a href="#inventory">재고 정책</a>
+</aside>
+
+<main>
+<h1>dodl 커머스 — 정책설명서</h1>
+<p class="subtitle">건기식 미니 커머스 프로토타입 비즈니스 정책 및 기술 규칙</p>
+
+<!-- 1. Product/SKU -->
+<section id="product">
+  <h2>1. 상품/SKU 정책</h2>
+
+  <h3>상품 구조</h3>
+  <p>상품(Product)은 카테고리에 속하며, 하나 이상의 SKU를 가진다. 옵션이 있는 상품은 옵션 그룹(OptionGroup)과 옵션 값(OptionValue)으로 구성된다.</p>
+
+  <h3>옵션 유형</h3>
+  <table>
+    <tr><th>유형</th><th>옵션 그룹 수</th><th>SKU 수</th><th>예시</th></tr>
+    <tr><td>옵션 없음</td><td>0</td><td>1</td><td>비타민D3</td></tr>
+    <tr><td>단일 옵션</td><td>1</td><td>2~3</td><td>맛: 오렌지/딸기</td></tr>
+    <tr><td>조합형 옵션</td><td>2</td><td>4 (2×2)</td><td>맛×용량</td></tr>
+  </table>
+
+  <h3>SKU 코드 규칙</h3>
+  <p>형식: <code>{카테고리}-{상품약어}-{옵션약어}</code>. 예: <code>VIT-MV-OR30</code> (비타민-멀티비타민-오렌지30정)</p>
+
+  <h3>카테고리</h3>
+  <p>6종: 비타민, 프로바이오틱스, 오메가3, 미네랄, 콜라겐, 어린이</p>
+
+  <h3>상품 품절 판정</h3>
+  <p>상품의 <strong>모든 활성 SKU</strong>의 stock이 0이면 해당 상품은 "품절"로 표시한다.</p>
+</section>
+
+<!-- 2. Pricing -->
+<section id="pricing">
+  <h2>2. 가격 정책</h2>
+
+  <h3>가격 단위</h3>
+  <p>모든 가격은 <strong>KRW 정수</strong>(INTEGER)로 저장한다. 소수점 없음.</p>
+
+  <h3>가격 표시</h3>
+  <ul>
+    <li>리스트: 가격 범위 (min_price ~ max_price) 또는 단일 가격</li>
+    <li>상세: SKU 확정 후 해당 SKU 가격</li>
+    <li>포맷: <code>toLocaleString('ko-KR') + '원'</code></li>
+  </ul>
+
+  <h3>가격 변동</h3>
+  <p>프로토타입에서는 가격 변동 없음. 주문 시 현재 SKU 가격을 주문 항목에 스냅샷 저장한다.</p>
+</section>
+
+<!-- 3. Shipping -->
+<section id="shipping">
+  <h2>3. 배송 정책</h2>
+
+  <table>
+    <tr><th>항목</th><th>값</th></tr>
+    <tr><td>기본 배송비</td><td>3,000원</td></tr>
+    <tr><td>무료배송 기준</td><td>상품금액 30,000원 이상</td></tr>
+  </table>
+
+  <div class="callout">
+    배송비는 장바구니와 체크아웃에서 실시간 계산된다. 상품금액(product_total) 기준이며, 할인 후 금액이 아닌 합산 금액으로 판단한다.
+  </div>
+</section>
+
+<!-- 4. Cart -->
+<section id="cart">
+  <h2>4. 장바구니 정책</h2>
+
+  <h3>식별</h3>
+  <p>세션(쿠키) 기반. 동일 세션의 동일 SKU는 <code>UNIQUE(session_id, sku_id)</code>로 중복 방지한다.</p>
+
+  <h3>수량 규칙</h3>
+  <ul>
+    <li>최소 수량: 1개</li>
+    <li>최대 수량: 해당 SKU의 현재 재고(stock)</li>
+    <li>동일 SKU 재담기 시 수량 합산 (재고 이하로 cap)</li>
+  </ul>
+
+  <h3>품절 SKU 담기</h3>
+  <p>stock=0인 SKU는 장바구니에 담을 수 없다. API에서 거부.</p>
+
+  <h3>재고 변동</h3>
+  <p>장바구니에 담겨있는 상태에서 재고가 감소할 수 있다. 최종 검증은 체크아웃 시 수행.</p>
+</section>
+
+<!-- 5. Payment -->
+<section id="payment">
+  <h2>5. 결제 정책</h2>
+
+  <h3>결제 수단</h3>
+  <p><strong>가상 지갑</strong> 단일 결제. 실제 PG 연동 없음.</p>
+
+  <h3>검증 순서</h3>
+  <ol>
+    <li>장바구니 항목 + 현재 SKU 데이터 조회</li>
+    <li><strong>재고 재확인</strong>: 각 SKU stock ≥ 주문 수량</li>
+    <li><strong>가격 계산</strong>: 현재 SKU 가격으로 합계 + 배송비</li>
+    <li><strong>잔액 확인</strong>: 지갑 잔액 ≥ 총 결제금액</li>
+    <li><strong>원자적 처리</strong> (하단 참조)</li>
+  </ol>
+
+  <h3>원자적 트랜잭션</h3>
+  <div class="callout">
+    better-sqlite3의 <code>.transaction()</code>을 활용한다. 모든 단계가 동기적으로 실행되며, 예외 발생 시 자동 ROLLBACK된다.
+  </div>
+
+  <div class="flow">
+    <span class="flow-step">잔액 차감</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">재고 차감</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">주문 생성</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">주문 항목 생성</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">지갑 거래 기록</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">장바구니 비우기</span>
+  </div>
+
+  <h3>재고 차감 이중 안전장치</h3>
+  <p><code>UPDATE skus SET stock = stock - ? WHERE id = ? AND stock >= ?</code> — WHERE 조건으로 race condition 방지.</p>
+
+  <h3>실패 처리</h3>
+  <table>
+    <tr><th>실패 사유</th><th>UI 처리</th></tr>
+    <tr><td>재고 부족</td><td>모달: "상품명" 재고 부족 안내</td></tr>
+    <tr><td>잔액 부족</td><td>모달: 잔액/결제금액 표시</td></tr>
+    <tr><td>장바구니 비어있음</td><td>/cart로 리다이렉트</td></tr>
+  </table>
+</section>
+
+<!-- 6. Order -->
+<section id="order">
+  <h2>6. 주문 정책</h2>
+
+  <h3>주문번호 생성</h3>
+  <p>형식: <code>ORD-{YYMMDD}-{랜덤6자}</code>. 예: <code>ORD-260614-A3B7K2</code></p>
+
+  <h3>상태 플로우</h3>
+  <div class="flow">
+    <span class="flow-step" style="border-color:var(--accent)">결제완료</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="border-color:var(--amber)">배송준비</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="border-color:var(--amber)">배송중</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="border-color:var(--green)">배송완료</span>
+  </div>
+  <div class="flow" style="margin-top:4px">
+    <span class="flow-step" style="border-color:var(--accent)">결제완료</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="border-color:var(--red)">취소완료</span>
+  </div>
+
+  <h3>주문 취소 조건</h3>
+  <table>
+    <tr><th>규칙</th><th>상세</th></tr>
+    <tr><td>취소 가능 상태</td><td><code>결제완료</code>, <code>배송준비</code>만 가능</td></tr>
+    <tr><td>취소 범위</td><td>전체 취소만 (부분 취소 없음)</td></tr>
+    <tr><td>환불</td><td>결제 금액 전액 가상 지갑 환급</td></tr>
+    <tr><td>재고</td><td>주문 항목의 수량만큼 재고 원복</td></tr>
+  </table>
+
+  <h3>취소 원자적 처리</h3>
+  <div class="flow">
+    <span class="flow-step">재고 원복</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">잔액 환급</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">환불 거래 기록</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">상태 → 취소완료</span>
+  </div>
+
+  <h3>주문 항목 스냅샷</h3>
+  <p>주문 생성 시 <code>product_name</code>, <code>option_summary</code>, <code>unit_price</code>를 order_items에 복사 저장. 이후 상품 변경과 무관하게 원래 주문 정보를 보존.</p>
+</section>
+
+<!-- 7. Wallet -->
+<section id="wallet">
+  <h2>7. 지갑 정책</h2>
+
+  <h3>초기 부여</h3>
+  <ul>
+    <li>세션 최초 접근 시 자동 생성</li>
+    <li>초기 잔액: <strong>100,000원</strong></li>
+    <li>"가상 지갑 초기 부여" 거래 기록 생성</li>
+  </ul>
+
+  <h3>거래 유형</h3>
+  <table>
+    <tr><th>유형</th><th>발생 시점</th><th>설명</th></tr>
+    <tr><td>적립</td><td>지갑 생성</td><td>초기 부여금</td></tr>
+    <tr><td>사용</td><td>주문 결제</td><td>총 결제금액 차감</td></tr>
+    <tr><td>환불</td><td>주문 취소</td><td>결제 금액 전액 환급</td></tr>
+  </table>
+
+  <h3>잔액 일관성</h3>
+  <p>모든 잔액 변경은 트랜잭션 내에서 수행. <code>balance_after</code>는 거래 후 잔액을 기록하여 추적 가능.</p>
+
+  <h3>세션 격리</h3>
+  <p><code>UNIQUE(session_id)</code> 제약. 세션별 독립 지갑.</p>
+</section>
+
+<!-- 8. Inventory -->
+<section id="inventory">
+  <h2>8. 재고 정책</h2>
+
+  <h3>재고 단위</h3>
+  <p>SKU 단위 관리. <code>skus.stock</code> (INTEGER, ≥ 0)</p>
+
+  <h3>재고 분포 (시드 데이터)</h3>
+  <table>
+    <tr><th>범위</th><th>설명</th><th>해당 SKU</th></tr>
+    <tr><td>20~100</td><td>일반 재고</td><td>대부분</td></tr>
+    <tr><td>0</td><td>품절</td><td>2~3개 SKU (포도60정, 김치유산균3개월, 콜라겐 전체)</td></tr>
+    <tr><td>1~5</td><td>재고 임박</td><td>2~3개 SKU (포도30정, 비타민C180정, 콜라겐젤리 블루베리)</td></tr>
+  </table>
+
+  <h3>재고 임박 표시</h3>
+  <p>stock ≤ 5 → amber 뱃지 <strong>"N개 남음"</strong> 표시 (상세 페이지 옵션 선택 후)</p>
+
+  <h3>품절 표시</h3>
+  <ul>
+    <li><strong>상품 카드</strong>: 전체 SKU 품절 시 이미지 위 품절 뱃지</li>
+    <li><strong>옵션 버튼</strong>: 해당 옵션값의 모든 SKU 품절 시 비활성 + 취소선 + "(품절)"</li>
+    <li><strong>구매 버튼</strong>: 선택된 SKU 품절 시 비활성</li>
+  </ul>
+
+  <h3>재고 차감 시점</h3>
+  <p>결제 완료 시점(체크아웃 트랜잭션)에만 차감. 장바구니 담기 시에는 차감하지 않음.</p>
+
+  <h3>재고 원복</h3>
+  <p>주문 취소 시 해당 주문 항목의 수량만큼 원복.</p>
+</section>
+
+</main>
+</body>
+</html>

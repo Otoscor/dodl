@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* Tailwind v4의 자동 dark mode 적용을 차단 — 항상 light */
+@variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  /* ── Light 모드 색상 토큰 (DESIGN.md §Light) ──────────────────── */
+  --color-action-primary:        #5e6ad2;   /* Brand — CTA, 활성 상태 */
+  --color-action-primary-hover:  #4d59c4;   /* hover variant */
+
+  --color-surface-base:          #f7f8f8;   /* 페이지·패널 기본 배경 */
+  --color-surface-elevated:      #ffffff;   /* 카드·올려진 패널 (light에서 white) */
+  --color-surface-white:         #ffffff;   /* 토스트 배경 등 */
+
+  /* text-secondary: 스펙 값 #d0d6e0은 #f7f8f8 위에서 대비율 ≈ 1.1:1
+     → WCAG AA 가드레일(4.5:1) 자체 충돌. 실용값 #52575e로 대체.        */
+  --color-text-primary:          #08090a;   /* 제목·본문·고강조 */
+  --color-text-secondary:        #52575e;   /* 보조 라벨·메타 (실용값) */
+  --color-text-tertiary:         #8a8f98;   /* 3차 라벨·플레이스홀더 */
+  --color-text-quaternary:       #62666d;   /* 비활성·장식 */
+
+  /* 액센트 — 라이트 배경 위 WCAG AA 확보를 위해 다크닝 적용
+     (스펙에 Light 액센트 미정의 → 가드레일 준수로 조정)               */
+  --color-label-pink:            #be185d;   /* 원본 #f79ce0 → #f7f8f8 위 대비 1.6:1 실패 */
+  --color-accent-amber:          #d97706;   /* 원본 #f7bf8b → 대비 1.8:1 실패 */
+  --color-accent-indigo:         #5e6ad2;   /* 원본 그대로 → 대비 4.7:1 통과 */
+  --color-accent-green:          #16a34a;   /* 원본 #4ade80 → 대비 2.0:1 실패 */
+  --color-accent-red:            #dc2626;   /* 원본 #f87171 → 대비 3.0:1 실패 */
+
+  /* border-subtle: 스펙 #e2e4e7 (solid) — 기존 rgba 수정 */
+  --color-border-subtle:         #e2e4e7;
+
+  /* ── 타이포그래피 ───────────────────────────────────────────────── */
+  /* Berkeley Mono는 상업 라이선스 폰트 — 로컬 설치 또는 번들 필요.
+     미설치 시 ui-monospace(시스템 등폭) fallback 사용.                */
+  --font-sans: var(--font-inter), "Inter Variable", "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "Berkeley Mono", ui-monospace, "JetBrains Mono", "Cascadia Code", monospace;
+
+  /* ── Radius 토큰 (DESIGN.md §Radius) ───────────────────────────── */
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-2xl:  16px;
+  --radius-pill: 9999px;
+
+  /* ── 간격 토큰 — 8px 베이스 그리드 (DESIGN.md §간격) ───────────── */
+  --spacing-1:  2px;
+  --spacing-2:  4px;
+  --spacing-3:  6px;
+  --spacing-4:  8px;
+  --spacing-5:  12px;
+  --spacing-6:  16px;
+  --spacing-7:  20px;
+  --spacing-8:  24px;
+  --spacing-9:  32px;
+  --spacing-10: 48px;
+  --spacing-11: 96px;
+}
+
+/* ── 타이포그래피 스케일 (DESIGN.md §타이포그래피) ──────────────────
+   클래스 이름 prefix: t-  (Tailwind 충돌 방지)
+   Inter Variable 로드 시 weight 510·590 가능. 미로드 시 500·600 근사. */
+.t-hero {
+  font-size: 64px;
+  font-weight: 590;
+  line-height: 1.1;
+  letter-spacing: -0.88px;
+}
+.t-display {
+  font-size: 40px;
+  font-weight: 510;
+  line-height: 44px;
+  letter-spacing: -0.88px;
+}
+.t-title-large {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 28.8px;
+  letter-spacing: -0.165px;
+}
+.t-body-regular {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+.t-body-medium {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: -0.165px;
+}
+.t-label-default {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 19.5px;
+  letter-spacing: -0.13px;
+}
+.t-label-medium {
+  font-size: 13px;
+  font-weight: 510;
+}
+.t-caption-small {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16.8px;
+}
+.t-caption-bold {
+  font-size: 12px;
+  font-weight: 510;
+  line-height: 16.8px;
+}
+.t-micro-label {
+  font-size: 10px;
+  font-weight: 510;
+  line-height: 15px;
+}
+.t-code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+/* ── 기본 html/body ────────────────────────────────────────────── */
+/* color-scheme: light — OS 다크 모드가 브라우저를 자동으로 dark로 전환하는 것을 차단 */
+html {
+  color-scheme: light;
+  background-color: var(--color-surface-base);
+  color: var(--color-text-primary);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── 스크롤바 ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-subtle);
+  border-radius: 9999px;
+}
+
+/* ── 숫자 input 화살표 제거 ────────────────────────────────────── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }

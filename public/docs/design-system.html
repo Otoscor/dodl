@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dodl 커머스 — 디자인 시스템</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f4f5f7;
+    --text: #0d0f11;
+    --text2: #374151;
+    --text3: #6b7280;
+    --text4: #9ca3af;
+    --border: rgba(0,0,0,0.1);
+    --accent: #5e6ad2;
+    --accent-hover: #4d59c4;
+    --pink: #f79ce0;
+    --amber: #f7bf8b;
+    --green: #4ade80;
+    --red: #f87171;
+    /* App tokens (for component previews) */
+    --app-bg: #f7f8f8;
+    --app-elevated: #ffffff;
+    --app-text: #08090a;
+    --app-text2: #52575e;
+    --app-text3: #8a8f98;
+    --app-text4: #62666d;
+    --app-border: #e2e4e7;
+    --app-accent: #5e6ad2;
+    --app-accent-hover: #4d59c4;
+    --app-pink: #be185d;
+    --app-amber: #d97706;
+    --app-indigo: #5e6ad2;
+    --app-green: #16a34a;
+    --app-red: #dc2626;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    display: flex;
+  }
+  /* Sidebar */
+  aside {
+    position: fixed;
+    top: 0; left: 0;
+    width: 240px;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    z-index: 10;
+  }
+  aside h2 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 16px;
+    letter-spacing: -0.3px;
+  }
+  aside a {
+    display: block;
+    color: var(--text3);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    transition: all 0.15s;
+  }
+  aside a:hover { color: var(--text); background: rgba(0,0,0,0.05); }
+  aside .group-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 8px 4px;
+  }
+  /* Main */
+  main {
+    margin-left: 240px;
+    padding: 48px;
+    max-width: 960px;
+    width: 100%;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: var(--text3);
+    margin-bottom: 48px;
+  }
+  section {
+    margin-bottom: 56px;
+    scroll-margin-top: 24px;
+  }
+  section > h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    letter-spacing: -0.3px;
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text2);
+    margin: 20px 0 8px;
+  }
+  h4 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    margin: 16px 0 8px;
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  ul { padding-left: 20px; margin-bottom: 12px; }
+  li { margin-bottom: 4px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--text3); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { color: var(--text2); }
+  code {
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-size: 12px;
+    background: rgba(0,0,0,0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: rgba(94,106,210,0.08);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  /* Preview area — light background for actual component rendering */
+  .preview {
+    background: var(--app-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 12px 0 20px;
+  }
+  .preview-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .preview-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .preview-row:last-child { margin-bottom: 0; }
+  .preview-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .preview-grid {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .preview-grid:last-child { margin-bottom: 0; }
+  .state-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--app-text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .state-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  /* Color swatches */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 12px 0 20px;
+  }
+  .swatch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .swatch-color {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+  }
+  .swatch-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .swatch-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .swatch-hex {
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+  /* Typography specimen */
+  .type-specimen {
+    background: var(--app-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 8px 0 12px;
+    color: var(--app-text);
+  }
+  /* Spacing bars */
+  .spacing-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 6px 0;
+  }
+  .spacing-label {
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--text3);
+    width: 80px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .spacing-bar {
+    height: 12px;
+    background: var(--accent);
+    border-radius: 3px;
+    opacity: 0.7;
+  }
+  .spacing-px {
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--text4);
+    width: 40px;
+    flex-shrink: 0;
+  }
+  /* Radius preview */
+  .radius-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 16px;
+    margin: 12px 0 20px;
+  }
+  .radius-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .radius-box {
+    width: 56px;
+    height: 56px;
+    border: 2px solid var(--accent);
+    background: rgba(94,106,210,0.1);
+  }
+  .radius-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+  }
+  .radius-val {
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--text4);
+  }
+  /* Props table */
+  .props-table td:first-child {
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .props-table td:nth-child(2) {
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--amber);
+  }
+  /* Part divider */
+  .part-divider {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+  }
+  /* Anatomy */
+  .anatomy {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px 0 16px;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .anatomy dt {
+    font-weight: 500;
+    color: var(--text);
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .anatomy dt:first-child { margin-top: 0; }
+  .anatomy dd {
+    font-size: 12px;
+    color: var(--text3);
+    margin-left: 12px;
+    margin-top: 2px;
+  }
+  /* ---------- Inline component styles (light-mode rendering) ---------- */
+  /* Button */
+  .c-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-family: "Inter", system-ui, sans-serif;
+    font-weight: 400;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s, opacity 0.15s;
+    white-space: nowrap;
+  }
+  .c-btn-sm { padding: 6px 12px; font-size: 13px; }
+  .c-btn-md { padding: 10px 16px; font-size: 14px; }
+  .c-btn-lg { padding: 14px 24px; font-size: 15px; font-weight: 500; }
+  .c-btn-primary { background: var(--app-accent); color: #fff; }
+  .c-btn-primary.hover { background: var(--app-accent-hover); }
+  .c-btn-secondary { background: var(--app-elevated); color: var(--app-text); border-color: var(--app-border); }
+  .c-btn-secondary.hover { background: rgba(255,255,255,0.8); }
+  .c-btn-ghost { background: transparent; color: var(--app-text2); }
+  .c-btn-ghost.hover { background: var(--app-elevated); color: var(--app-text); }
+  .c-btn-danger { background: rgba(220,38,38,0.1); color: var(--app-red); border-color: rgba(220,38,38,0.2); }
+  .c-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+  .c-btn-full { width: 100%; }
+  /* Badge */
+  .c-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 500;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  /* Toast */
+  .c-toast {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--app-elevated);
+    border: 1px solid var(--app-border);
+    border-left-width: 4px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--app-text);
+    font-family: "Inter", system-ui, sans-serif;
+    max-width: 360px;
+  }
+  /* Modal */
+  .c-modal-backdrop {
+    position: relative;
+    background: rgba(0,0,0,0.6);
+    border-radius: 12px;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .c-modal {
+    background: var(--app-elevated);
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 360px;
+    width: 100%;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .c-modal-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--app-text);
+    margin-bottom: 8px;
+  }
+  .c-modal-body {
+    font-size: 14px;
+    color: var(--app-text2);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .c-modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  /* BottomSheet */
+  .c-sheet-wrap {
+    position: relative;
+    background: rgba(0,0,0,0.4);
+    border-radius: 12px;
+    padding-top: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    max-width: 380px;
+    width: 100%;
+    min-height: 260px;
+  }
+  .c-sheet {
+    background: var(--app-elevated);
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    padding: 12px 20px 24px;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .c-sheet-handle {
+    width: 36px;
+    height: 3px;
+    background: var(--app-border);
+    border-radius: 9999px;
+    margin: 0 auto 16px;
+  }
+  .c-sheet-content {
+    font-size: 14px;
+    color: var(--app-text2);
+    text-align: center;
+    padding: 12px 0;
+  }
+  /* EmptyState */
+  .c-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .c-empty-icon { font-size: 32px; margin-bottom: 12px; }
+  .c-empty-title { font-size: 15px; font-weight: 500; color: var(--app-text2); margin-bottom: 4px; }
+  .c-empty-desc { font-size: 13px; color: var(--app-text3); margin-bottom: 12px; }
+  /* Loading */
+  .c-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--app-text4);
+    border-top-color: var(--app-accent);
+    border-radius: 50%;
+  }
+  /* PriceDisplay */
+  .c-price {
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-weight: 500;
+    color: var(--app-text);
+  }
+  /* QuantitySelector */
+  .c-qty {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .c-qty-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--app-text2);
+    font-size: 16px;
+    font-weight: 300;
+  }
+  .c-qty-btn.disabled { opacity: 0.3; cursor: not-allowed; }
+  .c-qty-val {
+    text-align: center;
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    color: var(--app-text);
+  }
+  .c-qty-sm .c-qty-btn { width: 28px; height: 28px; font-size: 14px; }
+  .c-qty-sm .c-qty-val { width: 32px; font-size: 13px; }
+  .c-qty-md .c-qty-btn { width: 32px; height: 32px; font-size: 16px; }
+  .c-qty-md .c-qty-val { width: 40px; font-size: 14px; }
+  /* ProductCard */
+  .c-product {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--app-border);
+    background: var(--app-elevated);
+    width: 160px;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .c-product-img {
+    aspect-ratio: 1;
+    background: var(--app-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    position: relative;
+  }
+  .c-product-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .c-product-soldout {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--app-red);
+    padding: 4px 12px;
+    border-radius: 9999px;
+  }
+  .c-product-info { padding: 12px; }
+  .c-product-cat { font-size: 11px; color: var(--app-text3); margin-bottom: 2px; }
+  .c-product-name { font-size: 14px; font-weight: 500; color: var(--app-text); margin-bottom: 4px; }
+  .c-product-price {
+    font-size: 14px;
+    font-weight: 500;
+    font-family: "Berkeley Mono", ui-monospace, monospace;
+    color: var(--app-text);
+  }
+  /* OptionSelector */
+  .c-option-wrap {
+    border: 1px solid var(--app-border);
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: "Inter", system-ui, sans-serif;
+    max-width: 380px;
+    width: 100%;
+  }
+  .c-option-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--app-text3);
+    cursor: pointer;
+  }
+  .c-option-header-selected { color: var(--app-accent); }
+  .c-option-chevron { font-size: 10px; color: var(--app-text4); transition: transform 0.2s; }
+  .c-option-chevron.open { transform: rotate(180deg); }
+  .c-option-list {
+    border-top: 1px solid var(--app-border);
+    padding: 4px 0;
+  }
+  .c-option-val {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--app-text);
+    cursor: pointer;
+  }
+  .c-option-val.selected {
+    background: rgba(94,106,210,0.05);
+    color: var(--app-accent);
+  }
+  .c-option-val.disabled-opt {
+    color: var(--app-text4);
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+  .c-option-check { font-size: 14px; color: var(--app-accent); }
+  .c-option-soldout-badge {
+    font-size: 10px;
+    color: var(--app-red);
+    background: rgba(220,38,38,0.1);
+    padding: 2px 6px;
+    border-radius: 9999px;
+  }
+  .c-option-result {
+    padding: 12px 16px;
+    border-top: 1px solid var(--app-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  /* BannerCarousel */
+  .c-banner {
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 2/1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    font-family: "Inter", system-ui, sans-serif;
+    position: relative;
+    max-width: 380px;
+    width: 100%;
+  }
+  .c-banner-text h5 { font-size: 18px; font-weight: 500; color: var(--app-text); margin-bottom: 4px; }
+  .c-banner-text p { font-size: 13px; color: var(--app-text2); }
+  .c-banner-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+  }
+  .c-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--app-text4);
+  }
+  .c-dot.active { background: var(--app-accent); }
+  /* CategoryGrid */
+  .c-catgrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 380px;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .c-catcard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0;
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+  }
+  .c-catcard-icon { font-size: 24px; }
+  .c-catcard-name { font-size: 12px; font-weight: 500; color: var(--app-text2); }
+  /* BackHeader */
+  .c-header {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding: 0 16px;
+    background: rgba(247,248,248,0.8);
+    border-bottom: 1px solid var(--app-border);
+    font-family: "Inter", system-ui, sans-serif;
+    max-width: 380px;
+    width: 100%;
+    position: relative;
+  }
+  .c-header-back {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--app-text2);
+    font-size: 18px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    margin-left: -4px;
+  }
+  .c-header-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--app-text);
+  }
+  .c-header-action {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--app-accent);
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+  }
+  /* BottomTabBar */
+  .c-tabbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 56px;
+    background: rgba(247,248,248,0.9);
+    border-top: 1px solid var(--app-border);
+    max-width: 380px;
+    width: 100%;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .c-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    position: relative;
+    cursor: pointer;
+  }
+  .c-tab-icon { font-size: 20px; }
+  .c-tab-label { font-size: 10px; font-weight: 500; }
+  .c-tab.active .c-tab-icon { /* uses inline color */ }
+  .c-tab.active .c-tab-label { color: var(--app-accent); }
+  .c-tab.inactive .c-tab-label { color: var(--app-text3); }
+  .c-tab-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: var(--app-red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside>
+  <h2><a href="/" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center;gap:6px;">&#8592; 디자인 시스템</a></h2>
+
+  <div class="group-label">Part 1 — 토큰</div>
+  <a href="#colors">Colors</a>
+  <a href="#typography">Typography</a>
+  <a href="#spacing">Spacing</a>
+  <a href="#radius">Radius</a>
+  <a href="#elevation">Elevation</a>
+
+  <div class="group-label">Part 2 — 컴포넌트</div>
+  <a href="#button">Button</a>
+  <a href="#badge">Badge</a>
+  <a href="#modal">Modal</a>
+  <a href="#toast">Toast</a>
+  <a href="#bottomsheet">BottomSheet</a>
+  <a href="#emptystate">EmptyState</a>
+  <a href="#loadingspinner">LoadingSpinner</a>
+  <a href="#pricedisplay">PriceDisplay</a>
+  <a href="#quantityselector">QuantitySelector</a>
+  <a href="#productcard">ProductCard</a>
+  <a href="#optionselector">OptionSelector</a>
+  <a href="#bannercarousel">BannerCarousel</a>
+  <a href="#categorygrid">CategoryGrid</a>
+  <a href="#backheader">BackHeader</a>
+  <a href="#bottomtabbar">BottomTabBar</a>
+</aside>
+
+<!-- ==================== MAIN ==================== -->
+<main>
+
+<h1>dodl 디자인 시스템</h1>
+<p class="subtitle">헬스케어 앱 커머스 탭 — 토큰 + 컴포넌트 레퍼런스 (Figma 재구현용)</p>
+
+<!-- ========================================== -->
+<!-- PART 1: DESIGN TOKENS                      -->
+<!-- ========================================== -->
+<div class="part-divider">Part 1 — 디자인 토큰</div>
+
+<!-- 1-1 COLORS -->
+<section id="colors">
+  <h2>1-1. Colors</h2>
+  <p>앱 전체 색상 팔레트. 모든 색상은 CSS 커스텀 프로퍼티로 정의되며, WCAG AA 대비를 충족하도록 보정되었습니다.</p>
+
+  <h3>Surface</h3>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#f7f8f8"></div>
+      <div class="swatch-info"><span class="swatch-name">surface-base</span><span class="swatch-hex">#f7f8f8</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#ffffff; border-color: rgba(0,0,0,0.1)"></div>
+      <div class="swatch-info"><span class="swatch-name">surface-elevated</span><span class="swatch-hex">#ffffff</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#ffffff; border-color: rgba(0,0,0,0.1)"></div>
+      <div class="swatch-info"><span class="swatch-name">surface-white</span><span class="swatch-hex">#ffffff</span></div>
+    </div>
+  </div>
+
+  <h3>Text</h3>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#08090a"></div>
+      <div class="swatch-info"><span class="swatch-name">text-primary</span><span class="swatch-hex">#08090a</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#52575e"></div>
+      <div class="swatch-info"><span class="swatch-name">text-secondary</span><span class="swatch-hex">#52575e</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#8a8f98"></div>
+      <div class="swatch-info"><span class="swatch-name">text-tertiary</span><span class="swatch-hex">#8a8f98</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#62666d"></div>
+      <div class="swatch-info"><span class="swatch-name">text-quaternary</span><span class="swatch-hex">#62666d</span></div>
+    </div>
+  </div>
+
+  <h3>Accent</h3>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#5e6ad2"></div>
+      <div class="swatch-info"><span class="swatch-name">action-primary</span><span class="swatch-hex">#5e6ad2</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#4d59c4"></div>
+      <div class="swatch-info"><span class="swatch-name">action-primary-hover</span><span class="swatch-hex">#4d59c4</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#be185d"></div>
+      <div class="swatch-info"><span class="swatch-name">label-pink</span><span class="swatch-hex">#be185d</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#d97706"></div>
+      <div class="swatch-info"><span class="swatch-name">accent-amber</span><span class="swatch-hex">#d97706</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#5e6ad2"></div>
+      <div class="swatch-info"><span class="swatch-name">accent-indigo</span><span class="swatch-hex">#5e6ad2</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#16a34a"></div>
+      <div class="swatch-info"><span class="swatch-name">accent-green</span><span class="swatch-hex">#16a34a</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#dc2626"></div>
+      <div class="swatch-info"><span class="swatch-name">accent-red</span><span class="swatch-hex">#dc2626</span></div>
+    </div>
+  </div>
+
+  <h3>Border</h3>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#e2e4e7"></div>
+      <div class="swatch-info"><span class="swatch-name">border-subtle</span><span class="swatch-hex">#e2e4e7</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 1-2 TYPOGRAPHY -->
+<section id="typography">
+  <h2>1-2. Typography</h2>
+  <p>폰트: <code>Inter Variable</code> (sans) + <code>Berkeley Mono</code> (mono). 11단계 타입 스케일.</p>
+
+  <table>
+    <thead><tr><th>Role</th><th>Size</th><th>Weight</th><th>Line-height</th><th>Tracking</th></tr></thead>
+    <tbody>
+      <tr><td><code>t-hero</code></td><td>64px</td><td>590</td><td>1.1</td><td>-0.88px</td></tr>
+      <tr><td><code>t-display</code></td><td>40px</td><td>510</td><td>44px</td><td>-0.88px</td></tr>
+      <tr><td><code>t-title-large</code></td><td>18px</td><td>400</td><td>28.8px</td><td>—</td></tr>
+      <tr><td><code>t-body-regular</code></td><td>16px</td><td>400</td><td>24px</td><td>—</td></tr>
+      <tr><td><code>t-body-medium</code></td><td>15px</td><td>400</td><td>24px</td><td>—</td></tr>
+      <tr><td><code>t-label-default</code></td><td>13px</td><td>400</td><td>19.5px</td><td>—</td></tr>
+      <tr><td><code>t-label-medium</code></td><td>13px</td><td>510</td><td>—</td><td>—</td></tr>
+      <tr><td><code>t-caption-small</code></td><td>12px</td><td>400</td><td>16.8px</td><td>—</td></tr>
+      <tr><td><code>t-caption-bold</code></td><td>12px</td><td>510</td><td>16.8px</td><td>—</td></tr>
+      <tr><td><code>t-micro-label</code></td><td>10px</td><td>510</td><td>15px</td><td>—</td></tr>
+      <tr><td><code>t-code</code></td><td>14px</td><td>400</td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>실제 렌더링 예시</h3>
+  <div class="type-specimen" style="font-size:64px; font-weight:590; line-height:1.1; letter-spacing:-0.88px;">Hero 64</div>
+  <div class="type-specimen" style="font-size:40px; font-weight:510; line-height:44px; letter-spacing:-0.88px;">Display 40</div>
+  <div class="type-specimen" style="font-size:18px; font-weight:400; line-height:28.8px;">Title Large 18 — 건강기능식품 스토어</div>
+  <div class="type-specimen" style="font-size:16px; font-weight:400; line-height:24px;">Body Regular 16 — 매일 챙겨먹는 건강, 도들이 함께합니다.</div>
+  <div class="type-specimen" style="font-size:15px; font-weight:400; line-height:24px;">Body Medium 15 — 상품 상세 설명이 이곳에 표시됩니다.</div>
+  <div class="type-specimen" style="font-size:13px; font-weight:400; line-height:19.5px;">Label Default 13 — 카테고리 · 상태 라벨</div>
+  <div class="type-specimen" style="font-size:13px; font-weight:510;">Label Medium 13 — 강조 라벨</div>
+  <div class="type-specimen" style="font-size:12px; font-weight:400; line-height:16.8px;">Caption Small 12 — 보조 설명 텍스트</div>
+  <div class="type-specimen" style="font-size:12px; font-weight:510; line-height:16.8px;">Caption Bold 12 — 강조 캡션</div>
+  <div class="type-specimen" style="font-size:10px; font-weight:510; line-height:15px;">MICRO LABEL 10 — 뱃지 · 탭 라벨</div>
+  <div class="type-specimen" style="font-size:14px; font-weight:400; font-family:'Berkeley Mono',ui-monospace,monospace;">Code 14 — 15,000원</div>
+</section>
+
+<!-- 1-3 SPACING -->
+<section id="spacing">
+  <h2>1-3. Spacing</h2>
+  <p>8px 베이스 그리드. 11단계 간격 스케일.</p>
+
+  <div style="margin:12px 0 20px">
+    <div class="spacing-row"><span class="spacing-label">spacing-1</span><div class="spacing-bar" style="width:2px"></div><span class="spacing-px">2px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-2</span><div class="spacing-bar" style="width:4px"></div><span class="spacing-px">4px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-3</span><div class="spacing-bar" style="width:6px"></div><span class="spacing-px">6px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-4</span><div class="spacing-bar" style="width:8px"></div><span class="spacing-px">8px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-5</span><div class="spacing-bar" style="width:12px"></div><span class="spacing-px">12px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-6</span><div class="spacing-bar" style="width:16px"></div><span class="spacing-px">16px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-7</span><div class="spacing-bar" style="width:20px"></div><span class="spacing-px">20px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-8</span><div class="spacing-bar" style="width:24px"></div><span class="spacing-px">24px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-9</span><div class="spacing-bar" style="width:32px"></div><span class="spacing-px">32px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-10</span><div class="spacing-bar" style="width:48px"></div><span class="spacing-px">48px</span></div>
+    <div class="spacing-row"><span class="spacing-label">spacing-11</span><div class="spacing-bar" style="width:96px"></div><span class="spacing-px">96px</span></div>
+  </div>
+</section>
+
+<!-- 1-4 RADIUS -->
+<section id="radius">
+  <h2>1-4. Radius</h2>
+  <p>7단계 라운딩 스케일.</p>
+
+  <div class="radius-grid">
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius:2px"></div>
+      <span class="radius-name">xs</span>
+      <span class="radius-val">2px</span>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius:4px"></div>
+      <span class="radius-name">sm</span>
+      <span class="radius-val">4px</span>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius:6px"></div>
+      <span class="radius-name">md</span>
+      <span class="radius-val">6px</span>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius:8px"></div>
+      <span class="radius-name">lg</span>
+      <span class="radius-val">8px</span>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius:12px"></div>
+      <span class="radius-name">xl</span>
+      <span class="radius-val">12px</span>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius:16px"></div>
+      <span class="radius-name">2xl</span>
+      <span class="radius-val">16px</span>
+    </div>
+    <div class="radius-item">
+      <div class="radius-box" style="border-radius:9999px"></div>
+      <span class="radius-name">pill</span>
+      <span class="radius-val">9999px</span>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>Token</th><th>Value</th><th>적용 대상</th></tr></thead>
+    <tbody>
+      <tr><td><code>radius-xs</code></td><td>2px</td><td>스크롤바, 미세 디테일</td></tr>
+      <tr><td><code>radius-sm</code></td><td>4px</td><td>코드 블록, 인라인 태그</td></tr>
+      <tr><td><code>radius-md</code></td><td>6px</td><td>사이드바 링크, 작은 요소</td></tr>
+      <tr><td><code>radius-lg</code></td><td>8px</td><td>QuantitySelector, Toast</td></tr>
+      <tr><td><code>radius-xl</code></td><td>12px</td><td>Button, ProductCard, Preview 패널</td></tr>
+      <tr><td><code>radius-2xl</code></td><td>16px</td><td>Modal, BottomSheet, BannerCarousel, CategoryCard</td></tr>
+      <tr><td><code>radius-pill</code></td><td>9999px</td><td>Badge, 품절 태그, 탭 바 뱃지</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 1-5 ELEVATION -->
+<section id="elevation">
+  <h2>1-5. Elevation</h2>
+
+  <div class="callout">
+    <strong>원칙:</strong> dodl 디자인 시스템은 <strong>box-shadow를 사용하지 않습니다.</strong><br>
+    모든 깊이 표현은 <code>border-subtle (#e2e4e7)</code> 1px 보더 + 배경색 대비로 구현됩니다.
+  </div>
+
+  <table>
+    <thead><tr><th>레벨</th><th>구현 방식</th><th>적용 대상</th></tr></thead>
+    <tbody>
+      <tr><td>Base</td><td><code>bg: surface-base (#f7f8f8)</code></td><td>페이지 배경</td></tr>
+      <tr><td>Elevated</td><td><code>bg: surface-elevated (#fff)</code> + <code>border: border-subtle</code></td><td>카드, 모달, 바텀시트</td></tr>
+      <tr><td>Overlay</td><td><code>bg: black/40~60</code> (backdrop)</td><td>Modal, BottomSheet 배경</td></tr>
+    </tbody>
+  </table>
+
+  <p>추가로 <code>backdrop-blur-md</code>를 사용하는 요소: BackHeader, BottomTabBar (frosted glass 효과).</p>
+</section>
+
+<!-- ========================================== -->
+<!-- PART 2: COMPONENTS                         -->
+<!-- ========================================== -->
+<div class="part-divider" style="margin-top:24px">Part 2 — 컴포넌트 (15종)</div>
+
+<!-- 2-1 BUTTON -->
+<section id="button">
+  <h2>2-1. Button</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>inline-flex, items-center, justify-center, rounded-xl (12px), transition-colors</dd>
+    <dt>Label</dt><dd>텍스트 단일 라인, white-space nowrap</dd>
+    <dt>Padding (sm)</dt><dd>6px 12px — text 13px</dd>
+    <dt>Padding (md)</dt><dd>10px 16px — text 14px</dd>
+    <dt>Padding (lg)</dt><dd>14px 24px — text 15px, font-weight 500</dd>
+  </dl>
+
+  <h3>Props</h3>
+  <table class="props-table">
+    <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td>variant</td><td>"primary" | "secondary" | "ghost" | "danger"</td><td>"primary"</td><td>시각적 스타일</td></tr>
+      <tr><td>size</td><td>"sm" | "md" | "lg"</td><td>"md"</td><td>크기</td></tr>
+      <tr><td>fullWidth</td><td>boolean</td><td>false</td><td>width: 100%</td></tr>
+      <tr><td>disabled</td><td>boolean</td><td>false</td><td>opacity 0.4, cursor not-allowed</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Visual Matrix — Variant &times; Size &times; State</h3>
+
+  <!-- Primary -->
+  <h4>Primary</h4>
+  <div class="preview">
+    <div class="preview-grid" style="grid-template-columns: repeat(3,auto); justify-content: start;">
+      <div class="state-cell"><div class="state-label">SM / Default</div><button class="c-btn c-btn-sm c-btn-primary">버튼</button></div>
+      <div class="state-cell"><div class="state-label">SM / Hover</div><button class="c-btn c-btn-sm c-btn-primary hover">버튼</button></div>
+      <div class="state-cell"><div class="state-label">SM / Disabled</div><button class="c-btn c-btn-sm c-btn-primary disabled">버튼</button></div>
+
+      <div class="state-cell"><div class="state-label">MD / Default</div><button class="c-btn c-btn-md c-btn-primary">확인</button></div>
+      <div class="state-cell"><div class="state-label">MD / Hover</div><button class="c-btn c-btn-md c-btn-primary hover">확인</button></div>
+      <div class="state-cell"><div class="state-label">MD / Disabled</div><button class="c-btn c-btn-md c-btn-primary disabled">확인</button></div>
+
+      <div class="state-cell"><div class="state-label">LG / Default</div><button class="c-btn c-btn-lg c-btn-primary">구매하기</button></div>
+      <div class="state-cell"><div class="state-label">LG / Hover</div><button class="c-btn c-btn-lg c-btn-primary hover">구매하기</button></div>
+      <div class="state-cell"><div class="state-label">LG / Disabled</div><button class="c-btn c-btn-lg c-btn-primary disabled">구매하기</button></div>
+    </div>
+  </div>
+
+  <!-- Secondary -->
+  <h4>Secondary</h4>
+  <div class="preview">
+    <div class="preview-grid" style="grid-template-columns: repeat(3,auto); justify-content: start;">
+      <div class="state-cell"><div class="state-label">SM / Default</div><button class="c-btn c-btn-sm c-btn-secondary">버튼</button></div>
+      <div class="state-cell"><div class="state-label">SM / Hover</div><button class="c-btn c-btn-sm c-btn-secondary hover">버튼</button></div>
+      <div class="state-cell"><div class="state-label">SM / Disabled</div><button class="c-btn c-btn-sm c-btn-secondary disabled">버튼</button></div>
+
+      <div class="state-cell"><div class="state-label">MD / Default</div><button class="c-btn c-btn-md c-btn-secondary">확인</button></div>
+      <div class="state-cell"><div class="state-label">MD / Hover</div><button class="c-btn c-btn-md c-btn-secondary hover">확인</button></div>
+      <div class="state-cell"><div class="state-label">MD / Disabled</div><button class="c-btn c-btn-md c-btn-secondary disabled">확인</button></div>
+
+      <div class="state-cell"><div class="state-label">LG / Default</div><button class="c-btn c-btn-lg c-btn-secondary">장바구니</button></div>
+      <div class="state-cell"><div class="state-label">LG / Hover</div><button class="c-btn c-btn-lg c-btn-secondary hover">장바구니</button></div>
+      <div class="state-cell"><div class="state-label">LG / Disabled</div><button class="c-btn c-btn-lg c-btn-secondary disabled">장바구니</button></div>
+    </div>
+  </div>
+
+  <!-- Ghost -->
+  <h4>Ghost</h4>
+  <div class="preview">
+    <div class="preview-grid" style="grid-template-columns: repeat(3,auto); justify-content: start;">
+      <div class="state-cell"><div class="state-label">SM / Default</div><button class="c-btn c-btn-sm c-btn-ghost">버튼</button></div>
+      <div class="state-cell"><div class="state-label">SM / Hover</div><button class="c-btn c-btn-sm c-btn-ghost hover">버튼</button></div>
+      <div class="state-cell"><div class="state-label">SM / Disabled</div><button class="c-btn c-btn-sm c-btn-ghost disabled">버튼</button></div>
+
+      <div class="state-cell"><div class="state-label">MD / Default</div><button class="c-btn c-btn-md c-btn-ghost">전체보기</button></div>
+      <div class="state-cell"><div class="state-label">MD / Hover</div><button class="c-btn c-btn-md c-btn-ghost hover">전체보기</button></div>
+      <div class="state-cell"><div class="state-label">MD / Disabled</div><button class="c-btn c-btn-md c-btn-ghost disabled">전체보기</button></div>
+
+      <div class="state-cell"><div class="state-label">LG / Default</div><button class="c-btn c-btn-lg c-btn-ghost">더보기</button></div>
+      <div class="state-cell"><div class="state-label">LG / Hover</div><button class="c-btn c-btn-lg c-btn-ghost hover">더보기</button></div>
+      <div class="state-cell"><div class="state-label">LG / Disabled</div><button class="c-btn c-btn-lg c-btn-ghost disabled">더보기</button></div>
+    </div>
+  </div>
+
+  <!-- Danger -->
+  <h4>Danger</h4>
+  <div class="preview">
+    <div class="preview-grid" style="grid-template-columns: repeat(3,auto); justify-content: start;">
+      <div class="state-cell"><div class="state-label">SM / Default</div><button class="c-btn c-btn-sm c-btn-danger">삭제</button></div>
+      <div class="state-cell"><div class="state-label">SM / Hover</div><button class="c-btn c-btn-sm c-btn-danger">삭제</button></div>
+      <div class="state-cell"><div class="state-label">SM / Disabled</div><button class="c-btn c-btn-sm c-btn-danger disabled">삭제</button></div>
+
+      <div class="state-cell"><div class="state-label">MD / Default</div><button class="c-btn c-btn-md c-btn-danger">주문 취소</button></div>
+      <div class="state-cell"><div class="state-label">MD / Hover</div><button class="c-btn c-btn-md c-btn-danger">주문 취소</button></div>
+      <div class="state-cell"><div class="state-label">MD / Disabled</div><button class="c-btn c-btn-md c-btn-danger disabled">주문 취소</button></div>
+    </div>
+  </div>
+
+  <h4>fullWidth 옵션</h4>
+  <div class="preview">
+    <div style="max-width:380px">
+      <button class="c-btn c-btn-lg c-btn-primary c-btn-full" style="width:100%">구매하기</button>
+      <div style="height:8px"></div>
+      <button class="c-btn c-btn-lg c-btn-secondary c-btn-full" style="width:100%">장바구니 담기</button>
+    </div>
+  </div>
+</section>
+
+<!-- 2-2 BADGE -->
+<section id="badge">
+  <h2>2-2. Badge</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>inline-flex, items-center, rounded-pill (9999px), px-2 py-0.5</dd>
+    <dt>Label</dt><dd>text 10px, font-weight 500</dd>
+  </dl>
+
+  <h3>Props</h3>
+  <table class="props-table">
+    <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td>variant</td><td>"default" | "pink" | "amber" | "indigo" | "green" | "red" | "muted"</td><td>"default"</td></tr>
+      <tr><td>children</td><td>ReactNode</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Visual Matrix</h3>
+  <div class="preview">
+    <div class="preview-row">
+      <div class="state-cell">
+        <div class="state-label">Default</div>
+        <span class="c-badge" style="background:var(--app-bg); color:var(--app-text2);">기본</span>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">Pink</div>
+        <span class="c-badge" style="background:rgba(190,24,93,0.15); color:var(--app-pink);">비타민</span>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">Amber</div>
+        <span class="c-badge" style="background:rgba(217,119,6,0.15); color:var(--app-amber);">인기</span>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">Indigo</div>
+        <span class="c-badge" style="background:rgba(94,106,210,0.15); color:var(--app-indigo);">추천</span>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">Green</div>
+        <span class="c-badge" style="background:rgba(22,163,74,0.15); color:var(--app-green);">재입고</span>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">Red</div>
+        <span class="c-badge" style="background:rgba(220,38,38,0.15); color:var(--app-red);">품절</span>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">Muted</div>
+        <span class="c-badge" style="background:var(--app-bg); color:var(--app-text4);">보관</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-3 MODAL -->
+<section id="modal">
+  <h2>2-3. Modal</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Backdrop</dt><dd>fixed inset-0, z-50, bg-black/60</dd>
+    <dt>Panel</dt><dd>max-w 360px, bg-surface-elevated, border border-subtle, rounded-2xl (16px), p-6 (24px)</dd>
+    <dt>Title</dt><dd>text 16px, font-weight 500, text-primary</dd>
+    <dt>Body</dt><dd>text 14px, text-secondary, mt-2</dd>
+    <dt>Actions</dt><dd>flex gap-2, justify-end, mt-5</dd>
+  </dl>
+
+  <h3>Props</h3>
+  <table class="props-table">
+    <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td>open</td><td>boolean</td><td>false</td></tr>
+      <tr><td>onClose</td><td>() => void</td><td>—</td></tr>
+      <tr><td>title</td><td>string</td><td>—</td></tr>
+      <tr><td>children</td><td>ReactNode</td><td>—</td></tr>
+      <tr><td>actions</td><td>ReactNode</td><td>Secondary "확인" 버튼</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Visual Matrix</h3>
+  <h4>기본 (단일 확인 버튼)</h4>
+  <div class="preview">
+    <div class="c-modal-backdrop">
+      <div class="c-modal">
+        <div class="c-modal-title">알림</div>
+        <div class="c-modal-body">장바구니에 상품이 추가되었습니다.</div>
+        <div class="c-modal-actions">
+          <button class="c-btn c-btn-md c-btn-secondary">확인</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h4>커스텀 액션 (2버튼)</h4>
+  <div class="preview">
+    <div class="c-modal-backdrop">
+      <div class="c-modal">
+        <div class="c-modal-title">주문 취소</div>
+        <div class="c-modal-body">정말로 이 주문을 취소하시겠습니까?<br>취소된 주문은 복구할 수 없습니다.</div>
+        <div class="c-modal-actions">
+          <button class="c-btn c-btn-md c-btn-secondary">돌아가기</button>
+          <button class="c-btn c-btn-md c-btn-danger">취소하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-4 TOAST -->
+<section id="toast">
+  <h2>2-4. Toast</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>fixed top, z-60, max-w 400px, centered</dd>
+    <dt>Toast item</dt><dd>bg-surface-white, border border-subtle, border-l-4 (accent color), rounded-lg (8px), px-4 py-3</dd>
+    <dt>Text</dt><dd>text 13px, text-primary</dd>
+    <dt>Duration</dt><dd>2.5초 후 자동 닫힘</dd>
+  </dl>
+
+  <h3>Props</h3>
+  <table class="props-table">
+    <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td>text</td><td>string</td><td>—</td></tr>
+      <tr><td>type</td><td>"success" | "error" | "info"</td><td>"info"</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Visual Matrix</h3>
+  <div class="preview">
+    <div class="preview-col" style="gap:8px; max-width:360px;">
+      <div class="c-toast" style="border-left-color: var(--app-green);">장바구니에 추가되었습니다.</div>
+      <div class="c-toast" style="border-left-color: var(--app-red);">결제에 실패했습니다. 다시 시도해주세요.</div>
+      <div class="c-toast" style="border-left-color: var(--app-text3);">주문 상태가 업데이트되었습니다.</div>
+    </div>
+    <div style="margin-top:8px; display:flex; gap:24px;">
+      <span style="font-size:11px; color:var(--app-text3);">&#9650; success</span>
+      <span style="font-size:11px; color:var(--app-text3);">&#9650; error</span>
+      <span style="font-size:11px; color:var(--app-text3);">&#9650; info</span>
+    </div>
+  </div>
+</section>
+
+<!-- 2-5 BOTTOMSHEET -->
+<section id="bottomsheet">
+  <h2>2-5. BottomSheet</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Backdrop</dt><dd>fixed inset-0, z-50, bg-black/40, transition-opacity 300ms</dd>
+    <dt>Sheet</dt><dd>w-full, max-w-[430px], bg-surface-white, rounded-t-2xl (16px)</dd>
+    <dt>Handle bar</dt><dd>w-9 (36px), h-[3px], bg-border-subtle, centered, rounded-pill, mb-4</dd>
+    <dt>Content area</dt><dd>px-5 (20px), pb-6 (24px)</dd>
+    <dt>Animation</dt><dd>translate-y-full → translate-y-0, 300ms ease-out</dd>
+  </dl>
+
+  <h3>Visual Matrix</h3>
+  <div class="preview">
+    <div class="c-sheet-wrap">
+      <div class="c-sheet">
+        <div class="c-sheet-handle"></div>
+        <div class="c-sheet-content">
+          <div style="font-size:15px; font-weight:500; color:var(--app-text); margin-bottom:8px;">옵션 선택</div>
+          <div style="font-size:13px; color:var(--app-text3);">상품 옵션을 선택해주세요</div>
+          <div style="height:40px;"></div>
+          <button class="c-btn c-btn-lg c-btn-primary" style="width:100%;">선택 완료</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-6 EMPTYSTATE -->
+<section id="emptystate">
+  <h2>2-6. EmptyState</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>flex flex-col, items-center justify-center, py-16 px-8</dd>
+    <dt>Icon</dt><dd>text-4xl (32px), mb-4</dd>
+    <dt>Title</dt><dd>text 15px, font-weight 500, text-secondary, mb-1</dd>
+    <dt>Description</dt><dd>text 13px, text-tertiary, mb-4 (옵션)</dd>
+    <dt>Action</dt><dd>커스텀 노드 슬롯 (옵션)</dd>
+  </dl>
+
+  <h3>Visual Matrix</h3>
+  <div class="preview">
+    <div class="preview-row" style="align-items:flex-start; gap:24px;">
+      <!-- Icon only -->
+      <div class="state-cell" style="flex:1;">
+        <div class="state-label">아이콘 + 타이틀</div>
+        <div class="c-empty">
+          <div class="c-empty-icon">📦</div>
+          <div class="c-empty-title">상품이 없습니다</div>
+        </div>
+      </div>
+      <!-- Icon + Description -->
+      <div class="state-cell" style="flex:1;">
+        <div class="state-label">아이콘 + 설명</div>
+        <div class="c-empty">
+          <div class="c-empty-icon">🛒</div>
+          <div class="c-empty-title">장바구니가 비었습니다</div>
+          <div class="c-empty-desc">상품을 추가해보세요</div>
+        </div>
+      </div>
+      <!-- Icon + Desc + Action -->
+      <div class="state-cell" style="flex:1;">
+        <div class="state-label">아이콘 + 설명 + 액션</div>
+        <div class="c-empty">
+          <div class="c-empty-icon">📋</div>
+          <div class="c-empty-title">주문 내역이 없습니다</div>
+          <div class="c-empty-desc">첫 주문을 시작해보세요</div>
+          <button class="c-btn c-btn-md c-btn-primary">쇼핑하러 가기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-7 LOADINGSPINNER -->
+<section id="loadingspinner">
+  <h2>2-7. LoadingSpinner</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Spinner</dt><dd>w-6 (24px), h-6, border-2, rounded-full</dd>
+    <dt>Track</dt><dd>border-color: text-quaternary (#62666d)</dd>
+    <dt>Indicator</dt><dd>border-top-color: action-primary (#5e6ad2)</dd>
+    <dt>Animation</dt><dd>animate-spin (CSS rotation)</dd>
+    <dt>Container</dt><dd>py-16, flex items-center justify-center</dd>
+  </dl>
+
+  <h3>Visual Matrix</h3>
+  <div class="preview">
+    <div style="display:flex; align-items:center; justify-content:center; padding:24px;">
+      <div class="c-spinner"></div>
+      <span style="margin-left:12px; font-size:12px; color:var(--app-text3);">정적 캡처 — 실제로는 회전 애니메이션</span>
+    </div>
+  </div>
+</section>
+
+<!-- 2-8 PRICEDISPLAY -->
+<section id="pricedisplay">
+  <h2>2-8. PriceDisplay</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Text</dt><dd>font-family: Berkeley Mono (monospace), font-weight 500, text-primary</dd>
+    <dt>Format</dt><dd>toLocaleString("ko-KR") + "원" (e.g. 15,000원)</dd>
+  </dl>
+
+  <h3>Props</h3>
+  <table class="props-table">
+    <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td>price</td><td>number</td><td>—</td></tr>
+      <tr><td>size</td><td>"sm" | "md" | "lg"</td><td>"md"</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Visual Matrix</h3>
+  <div class="preview">
+    <div class="preview-row" style="gap:24px;">
+      <div class="state-cell">
+        <div class="state-label">SM (13px)</div>
+        <span class="c-price" style="font-size:13px;">15,000원</span>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">MD (15px)</div>
+        <span class="c-price" style="font-size:15px;">15,000원</span>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">LG (18px)</div>
+        <span class="c-price" style="font-size:18px;">15,000원</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-9 QUANTITYSELECTOR -->
+<section id="quantityselector">
+  <h2>2-9. QuantitySelector</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>inline-flex, items-center, border border-subtle, rounded-lg (8px)</dd>
+    <dt>Minus / Plus 버튼</dt><dd>정사각, hover:bg-surface-elevated, disabled:opacity-30</dd>
+    <dt>Value</dt><dd>가운데 정렬, font-mono, tabular-nums</dd>
+  </dl>
+
+  <h3>Props</h3>
+  <table class="props-table">
+    <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td>quantity</td><td>number</td><td>—</td></tr>
+      <tr><td>max</td><td>number</td><td>—</td></tr>
+      <tr><td>onChange</td><td>(qty: number) => void</td><td>—</td></tr>
+      <tr><td>size</td><td>"sm" | "md"</td><td>"md"</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Visual Matrix — Size &times; State</h3>
+  <div class="preview">
+    <div class="preview-grid" style="grid-template-columns: repeat(3,auto); justify-content: start; gap:20px;">
+      <!-- SM row -->
+      <div class="state-cell">
+        <div class="state-label">SM / Default</div>
+        <div class="c-qty c-qty-sm">
+          <span class="c-qty-btn">−</span>
+          <span class="c-qty-val">2</span>
+          <span class="c-qty-btn">+</span>
+        </div>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">SM / Min (−비활성)</div>
+        <div class="c-qty c-qty-sm">
+          <span class="c-qty-btn disabled">−</span>
+          <span class="c-qty-val">1</span>
+          <span class="c-qty-btn">+</span>
+        </div>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">SM / Max (+비활성)</div>
+        <div class="c-qty c-qty-sm">
+          <span class="c-qty-btn">−</span>
+          <span class="c-qty-val">10</span>
+          <span class="c-qty-btn disabled">+</span>
+        </div>
+      </div>
+      <!-- MD row -->
+      <div class="state-cell">
+        <div class="state-label">MD / Default</div>
+        <div class="c-qty c-qty-md">
+          <span class="c-qty-btn">−</span>
+          <span class="c-qty-val">2</span>
+          <span class="c-qty-btn">+</span>
+        </div>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">MD / Min (−비활성)</div>
+        <div class="c-qty c-qty-md">
+          <span class="c-qty-btn disabled">−</span>
+          <span class="c-qty-val">1</span>
+          <span class="c-qty-btn">+</span>
+        </div>
+      </div>
+      <div class="state-cell">
+        <div class="state-label">MD / Max (+비활성)</div>
+        <div class="c-qty c-qty-md">
+          <span class="c-qty-btn">−</span>
+          <span class="c-qty-val">10</span>
+          <span class="c-qty-btn disabled">+</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-10 PRODUCTCARD -->
+<section id="productcard">
+  <h2>2-10. ProductCard</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>border border-subtle, rounded-xl (12px), overflow-hidden, bg-surface-elevated</dd>
+    <dt>Image area</dt><dd>aspect-ratio 1:1, bg-surface-base, 이모지 중앙 배치</dd>
+    <dt>Info section</dt><dd>p-3 (12px)</dd>
+    <dt>Category</dt><dd>text 11px, text-tertiary</dd>
+    <dt>Name</dt><dd>text 14px, font-weight 500, text-primary, line-clamp-2</dd>
+    <dt>Price</dt><dd>text 14px, font-mono, font-weight 500, text-primary</dd>
+    <dt>Sold-out overlay</dt><dd>bg-black/50, centered 품절 badge (bg-accent-red, 13px bold white)</dd>
+  </dl>
+
+  <h3>Visual Matrix</h3>
+  <div class="preview">
+    <div class="preview-row" style="align-items:flex-start; gap:16px;">
+      <!-- Default single price -->
+      <div class="state-cell">
+        <div class="state-label">단일가</div>
+        <div class="c-product">
+          <div class="c-product-img">💊</div>
+          <div class="c-product-info">
+            <div class="c-product-cat">비타민</div>
+            <div class="c-product-name">멀티비타민 골드</div>
+            <div class="c-product-price">25,000원</div>
+          </div>
+        </div>
+      </div>
+      <!-- Range price -->
+      <div class="state-cell">
+        <div class="state-label">범위가</div>
+        <div class="c-product">
+          <div class="c-product-img">🦠</div>
+          <div class="c-product-info">
+            <div class="c-product-cat">유산균</div>
+            <div class="c-product-name">프리미엄 프로바이오틱스</div>
+            <div class="c-product-price">18,000 ~ 32,000원</div>
+          </div>
+        </div>
+      </div>
+      <!-- Sold out -->
+      <div class="state-cell">
+        <div class="state-label">품절</div>
+        <div class="c-product">
+          <div class="c-product-img">
+            💊
+            <div class="c-product-overlay">
+              <span class="c-product-soldout">품절</span>
+            </div>
+          </div>
+          <div class="c-product-info">
+            <div class="c-product-cat">오메가3</div>
+            <div class="c-product-name">초임계 오메가3</div>
+            <div class="c-product-price">29,000원</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-11 OPTIONSELECTOR -->
+<section id="optionselector">
+  <h2>2-11. OptionSelector (Accordion)</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>border border-subtle, rounded-xl (12px), overflow-hidden</dd>
+    <dt>Group header</dt><dd>flex between, p-3 (12px 16px), text 12px uppercase, letter-spacing 0.5px, text-tertiary</dd>
+    <dt>Chevron icon</dt><dd>rotate-180 when open, transition 200ms</dd>
+    <dt>Values list</dt><dd>border-top, max-h-96 (open) / max-h-0 (closed), overflow-hidden, transition-all 200ms</dd>
+    <dt>Value item</dt><dd>flex between, px-4 py-2.5, text 14px</dd>
+    <dt>Selected state</dt><dd>bg-action-primary/5, color action-primary, checkmark ✓</dd>
+    <dt>Disabled (품절)</dt><dd>text-quaternary, line-through, cursor not-allowed, 품절 badge</dd>
+    <dt>Result section</dt><dd>border-top, pt-2, price (lg) + stock badge + QuantitySelector</dd>
+  </dl>
+
+  <h3>Visual Matrix — 6 States</h3>
+
+  <h4>1. 접힌 상태 (미선택)</h4>
+  <div class="preview">
+    <div class="c-option-wrap">
+      <div class="c-option-header">
+        <span>용량</span>
+        <span class="c-option-chevron">▼</span>
+      </div>
+    </div>
+  </div>
+
+  <h4>2. 접힌 상태 (선택 완료)</h4>
+  <div class="preview">
+    <div class="c-option-wrap">
+      <div class="c-option-header c-option-header-selected">
+        <span>용량 — 60정 (2개월분)</span>
+        <span class="c-option-chevron">▼</span>
+      </div>
+    </div>
+  </div>
+
+  <h4>3. 펼쳐진 상태 (옵션 리스트)</h4>
+  <div class="preview">
+    <div class="c-option-wrap">
+      <div class="c-option-header">
+        <span>용량</span>
+        <span class="c-option-chevron open">▼</span>
+      </div>
+      <div class="c-option-list">
+        <div class="c-option-val">30정 (1개월분)</div>
+        <div class="c-option-val">60정 (2개월분)</div>
+        <div class="c-option-val">120정 (4개월분)</div>
+      </div>
+    </div>
+  </div>
+
+  <h4>4. 옵션 값 Selected</h4>
+  <div class="preview">
+    <div class="c-option-wrap">
+      <div class="c-option-header">
+        <span>용량</span>
+        <span class="c-option-chevron open">▼</span>
+      </div>
+      <div class="c-option-list">
+        <div class="c-option-val">30정 (1개월분)</div>
+        <div class="c-option-val selected">
+          <span>60정 (2개월분)</span>
+          <span class="c-option-check">✓</span>
+        </div>
+        <div class="c-option-val">120정 (4개월분)</div>
+      </div>
+    </div>
+  </div>
+
+  <h4>5. 옵션 값 Disabled (품절)</h4>
+  <div class="preview">
+    <div class="c-option-wrap">
+      <div class="c-option-header">
+        <span>용량</span>
+        <span class="c-option-chevron open">▼</span>
+      </div>
+      <div class="c-option-list">
+        <div class="c-option-val">30정 (1개월분)</div>
+        <div class="c-option-val selected">
+          <span>60정 (2개월분)</span>
+          <span class="c-option-check">✓</span>
+        </div>
+        <div class="c-option-val disabled-opt">
+          <span>120정 (4개월분)</span>
+          <span class="c-option-soldout-badge">품절</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h4>6. SKU 확정 후 (가격 + 수량)</h4>
+  <div class="preview">
+    <div class="c-option-wrap">
+      <div class="c-option-header c-option-header-selected">
+        <span>용량 — 60정 (2개월분)</span>
+        <span class="c-option-chevron">▼</span>
+      </div>
+      <div class="c-option-result">
+        <div>
+          <span class="c-price" style="font-size:18px;">25,000원</span>
+          <span class="c-badge" style="background:rgba(217,119,6,0.15); color:var(--app-amber); margin-left:8px; font-size:10px;">5개 남음</span>
+        </div>
+        <div class="c-qty c-qty-md">
+          <span class="c-qty-btn">−</span>
+          <span class="c-qty-val">1</span>
+          <span class="c-qty-btn">+</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-12 BANNERCAROUSEL -->
+<section id="bannercarousel">
+  <h2>2-12. BannerCarousel</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>rounded-2xl (16px), overflow-hidden, aspect-ratio 2:1</dd>
+    <dt>Background</dt><dd>gradient (from-color/20 to-color/5), 3색 로테이션: indigo, pink, amber</dd>
+    <dt>Title</dt><dd>text 18px, font-weight 500, text-primary</dd>
+    <dt>Subtitle</dt><dd>text 13px, text-secondary</dd>
+    <dt>Dots</dt><dd>absolute bottom-3, centered, w-1.5 h-1.5 rounded-full, gap-1.5</dd>
+    <dt>Active dot</dt><dd>bg-action-primary</dd>
+    <dt>Inactive dot</dt><dd>bg-text-quaternary</dd>
+    <dt>Animation</dt><dd>translateX, 300ms duration</dd>
+  </dl>
+
+  <h3>Visual Matrix</h3>
+  <div class="preview">
+    <div class="c-banner" style="background: linear-gradient(135deg, rgba(94,106,210,0.2), rgba(94,106,210,0.05));">
+      <div class="c-banner-text">
+        <h5>건강한 하루의 시작</h5>
+        <p>베스트 비타민 모아보기</p>
+      </div>
+      <div class="c-banner-dots">
+        <div class="c-dot active"></div>
+        <div class="c-dot"></div>
+        <div class="c-dot"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-13 CATEGORYGRID -->
+<section id="categorygrid">
+  <h2>2-13. CategoryGrid</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Grid</dt><dd>3열 grid, gap-3 (12px), px-4</dd>
+    <dt>Card</dt><dd>flex-col items-center, gap-2, py-4, border border-subtle, rounded-2xl (16px)</dd>
+    <dt>Hover</dt><dd>border-text-quaternary, transition-colors</dd>
+    <dt>Icon</dt><dd>text-2xl (24px), 카테고리별 이모지 매핑</dd>
+    <dt>Name</dt><dd>text 12px, font-weight 500, text-secondary</dd>
+  </dl>
+
+  <h3>이모지 매핑</h3>
+  <table>
+    <thead><tr><th>카테고리</th><th>이모지</th></tr></thead>
+    <tbody>
+      <tr><td>비타민</td><td>💊</td></tr>
+      <tr><td>유산균</td><td>🦠</td></tr>
+      <tr><td>오메가3</td><td>🐟</td></tr>
+      <tr><td>미네랄</td><td>⚗️</td></tr>
+      <tr><td>콜라겐</td><td>✨</td></tr>
+      <tr><td>키즈</td><td>👶</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Visual Matrix</h3>
+  <div class="preview">
+    <div class="c-catgrid">
+      <div class="c-catcard"><span class="c-catcard-icon">💊</span><span class="c-catcard-name">비타민</span></div>
+      <div class="c-catcard"><span class="c-catcard-icon">🦠</span><span class="c-catcard-name">유산균</span></div>
+      <div class="c-catcard"><span class="c-catcard-icon">🐟</span><span class="c-catcard-name">오메가3</span></div>
+      <div class="c-catcard"><span class="c-catcard-icon">⚗️</span><span class="c-catcard-name">미네랄</span></div>
+      <div class="c-catcard"><span class="c-catcard-icon">✨</span><span class="c-catcard-name">콜라겐</span></div>
+      <div class="c-catcard"><span class="c-catcard-icon">👶</span><span class="c-catcard-name">키즈</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2-14 BACKHEADER -->
+<section id="backheader">
+  <h2>2-14. BackHeader</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>sticky top-0, z-30, h-12 (48px), px-4, flex items-center</dd>
+    <dt>Backdrop</dt><dd>bg-surface-base/80, backdrop-blur-md</dd>
+    <dt>Border</dt><dd>border-b border-subtle</dd>
+    <dt>Back button</dt><dd>w-8 h-8, -ml-1, text-secondary → text-primary on hover</dd>
+    <dt>Title</dt><dd>absolute center, text 15px, font-weight 500, text-primary, -mr-8 (offset for back btn)</dd>
+    <dt>Right action</dt><dd>ml-auto, 커스텀 슬롯</dd>
+  </dl>
+
+  <h3>Props</h3>
+  <table class="props-table">
+    <thead><tr><th>Prop</th><th>Type</th><th>Default</th></tr></thead>
+    <tbody>
+      <tr><td>title</td><td>string?</td><td>undefined</td></tr>
+      <tr><td>rightAction</td><td>ReactNode?</td><td>undefined</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Visual Matrix</h3>
+  <h4>타이틀 없음</h4>
+  <div class="preview">
+    <div class="c-header">
+      <button class="c-header-back">←</button>
+    </div>
+  </div>
+
+  <h4>타이틀 있음</h4>
+  <div class="preview">
+    <div class="c-header">
+      <button class="c-header-back">←</button>
+      <span class="c-header-title">상품 상세</span>
+    </div>
+  </div>
+
+  <h4>타이틀 + 우측 액션</h4>
+  <div class="preview">
+    <div class="c-header">
+      <button class="c-header-back">←</button>
+      <span class="c-header-title">장바구니</span>
+      <button class="c-header-action">전체삭제</button>
+    </div>
+  </div>
+</section>
+
+<!-- 2-15 BOTTOMTABBAR -->
+<section id="bottomtabbar">
+  <h2>2-15. BottomTabBar</h2>
+
+  <h3>Anatomy</h3>
+  <dl class="anatomy">
+    <dt>Container</dt><dd>fixed bottom-0, centered, max-w-[430px], z-40, h-14 (56px)</dd>
+    <dt>Backdrop</dt><dd>bg-surface-base/90, backdrop-blur-md, border-t border-subtle</dd>
+    <dt>Layout</dt><dd>flex items-center, justify-around</dd>
+    <dt>Tab item</dt><dd>flex-col items-center, gap-0.5</dd>
+    <dt>Icon</dt><dd>SVG 22x22, stroke-based</dd>
+    <dt>Label</dt><dd>text 10px, font-weight 500</dd>
+    <dt>Active</dt><dd>icon + label: color action-primary (#5e6ad2)</dd>
+    <dt>Inactive</dt><dd>icon + label: color text-tertiary (#8a8f98)</dd>
+    <dt>Safe area</dt><dd>pb-[env(safe-area-inset-bottom)]</dd>
+  </dl>
+
+  <h3>탭 구성 (3탭)</h3>
+  <table>
+    <thead><tr><th>순서</th><th>아이콘</th><th>라벨</th><th>경로</th><th>Active 매칭</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>🏠</td><td>홈</td><td>/home</td><td>/home*</td></tr>
+      <tr><td>2</td><td>📦</td><td>상품</td><td>/products</td><td>/products*</td></tr>
+      <tr><td>3</td><td>👤</td><td>마이</td><td>/my</td><td>/my*, /orders*, /wallet*</td></tr>
+    </tbody>
+  </table>
+  <p>장바구니 아이콘+뱃지는 홈 헤더 우측으로 이동 (HomeCartIcon 컴포넌트).</p>
+
+  <h3>Visual Matrix</h3>
+  <h4>홈 탭 Active</h4>
+  <div class="preview">
+    <div class="c-tabbar">
+      <div class="c-tab active">
+        <span class="c-tab-icon" style="filter: none;">🏠</span>
+        <span class="c-tab-label" style="color:var(--app-accent);">홈</span>
+      </div>
+      <div class="c-tab inactive">
+        <span class="c-tab-icon" style="opacity:0.5;">📦</span>
+        <span class="c-tab-label" style="color:var(--app-text3);">상품</span>
+      </div>
+      <div class="c-tab inactive">
+        <span class="c-tab-icon" style="opacity:0.5;">👤</span>
+        <span class="c-tab-label" style="color:var(--app-text3);">마이</span>
+      </div>
+    </div>
+  </div>
+
+  <h4>마이 탭 Active</h4>
+  <div class="preview">
+    <div class="c-tabbar">
+      <div class="c-tab inactive">
+        <span class="c-tab-icon" style="opacity:0.5;">🏠</span>
+        <span class="c-tab-label" style="color:var(--app-text3);">홈</span>
+      </div>
+      <div class="c-tab inactive">
+        <span class="c-tab-icon" style="opacity:0.5;">📦</span>
+        <span class="c-tab-label" style="color:var(--app-text3);">상품</span>
+      </div>
+      <div class="c-tab active">
+        <span class="c-tab-icon">👤</span>
+        <span class="c-tab-label" style="color:var(--app-accent);">마이</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
