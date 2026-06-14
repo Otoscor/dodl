@@ -10,18 +10,6 @@ function getUsers(): Record<string, string> {
   );
 }
 
-// DEBUG: env var check (remove after fixing)
-export async function GET() {
-  const secret = process.env.AUTH_SECRET ?? '';
-  const users = process.env.AUTH_USERS ?? '';
-  return NextResponse.json({
-    hasSecret: !!secret,
-    secretLen: secret.length,
-    usersRaw: users,
-    usersLen: users.length,
-  });
-}
-
 export async function POST(request: NextRequest) {
   try {
     const raw = await request.text();
@@ -54,7 +42,6 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    const stack = err instanceof Error ? err.stack : '';
-    return NextResponse.json({ error: message, stack }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
