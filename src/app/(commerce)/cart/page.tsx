@@ -131,7 +131,7 @@ export default function CartPage() {
       {/* Cart items */}
       <div className="divide-y divide-[#e0e0e0]">
         {cart.items.map((item) => (
-          <div key={item.id} className="px-6 py-5 flex gap-4">
+          <div key={item.id} className="px-6 py-5 flex gap-4 relative">
             <input
               type="checkbox"
               checked={selectedIds.has(item.id)}
@@ -141,7 +141,13 @@ export default function CartPage() {
             <div className="w-16 h-16 bg-[#f5f5f5] rounded-[10px] flex items-center justify-center shrink-0">
               <span className="material-icons-outlined text-[24px] text-[#e0e0e0]">medication</span>
             </div>
-            <div className="flex-1 min-w-0">
+            <button
+              onClick={() => handleRemove(item.id)}
+              className="absolute top-4 right-5 text-[#aaa] hover:text-black text-[16px] cursor-pointer leading-none"
+            >
+              ✕
+            </button>
+            <div className="flex-1 min-w-0 pr-6">
               <h3 className="text-[16px] text-black truncate">{item.product_name}</h3>
               {item.option_summary && (
                 <p className="text-[14px] text-[#aaa] mt-0.5">{item.option_summary}</p>
@@ -150,20 +156,12 @@ export default function CartPage() {
                 <span className="font-mono text-[16px] text-black">
                   {formatPrice(item.price * item.quantity)}
                 </span>
-                <div className="flex items-center gap-2">
-                  <QuantitySelector
-                    quantity={item.quantity}
-                    max={item.stock}
-                    onChange={(q) => handleQuantityChange(item.id, q)}
-                    size="sm"
-                  />
-                  <button
-                    onClick={() => handleRemove(item.id)}
-                    className="text-[#e0e0e0] hover:text-black text-[12px] cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
+                <QuantitySelector
+                  quantity={item.quantity}
+                  max={item.stock}
+                  onChange={(q) => handleQuantityChange(item.id, q)}
+                  size="sm"
+                />
               </div>
             </div>
           </div>
