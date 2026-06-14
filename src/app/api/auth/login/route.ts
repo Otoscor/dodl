@@ -12,7 +12,8 @@ function getUsers(): Record<string, string> {
 
 export async function POST(request: NextRequest) {
   try {
-    const { id, password } = await request.json();
+    const body = await request.text();
+    const { id, password } = JSON.parse(body);
     const users = getUsers();
     const secret = process.env.AUTH_SECRET ?? '';
 
