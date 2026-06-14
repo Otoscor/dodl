@@ -4,7 +4,8 @@ import fs from "fs";
 import { SCHEMA_SQL } from "./schema";
 import { seedDatabase } from "./seed";
 
-const DB_DIR = path.join(process.cwd(), "data");
+const isVercel = !!process.env.VERCEL;
+const DB_DIR = isVercel ? "/tmp" : path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "dodl.db");
 
 let _db: Database.Database | null = null;
