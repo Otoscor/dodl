@@ -1,0 +1,9 @@
+{
+  "cards": [
+    {"group": "쿠폰함", "name": "V1 · 현재 카드형", "path": "v1-current.html", "viewport": {"width": 430, "height": 932}},
+    {"group": "쿠폰함", "name": "V2 · 티켓형", "path": "v2-ticket.html", "viewport": {"width": 430, "height": 932}},
+    {"group": "쿠폰함", "name": "V3 · 컴팩트 리스트형", "path": "v3-list.html", "viewport": {"width": 430, "height": 932}},
+    {"group": "쿠폰함", "name": "V4 · 강조형", "path": "v4-highlight.html", "viewport": {"width": 430, "height": 932}},
+    {"group": "쿠폰함", "name": "V5 · 좌우 분할형", "path": "v5-split.html", "viewport": {"width": 430, "height": 932}}
+  ]
+}

@@ -3,6 +3,9 @@ export const FREE_SHIPPING_THRESHOLD = 30000;
 export const INITIAL_WALLET_BALANCE = 100000;
 export const LOW_STOCK_THRESHOLD = 5;
 
+// 상세 페이지 정상가 표시용 고정 할인율 (데모용 — 실제 정상가 데이터 없음)
+export const DISPLAY_DISCOUNT_RATE = 0.2;
+
 export const ORDER_STATUS = {
   PAID: "결제완료",
   PREPARING: "배송준비",

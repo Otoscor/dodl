@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useToast } from "@/components/ui/Toast";
 import { useCart } from "@/hooks/useCart";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, originalPrice } from "@/lib/utils";
 import type { ProductDetail, Sku, Review, ReviewSummary } from "@/types/product";
 
 type SheetAction = "cart" | "buy";
@@ -209,26 +209,35 @@ export default function ProductDetailPage({
 
         {/* 상품 정보 */}
         <div className="px-6 py-8 space-y-4">
-          <p className="text-[12px] text-[#aaa] uppercase tracking-[0.12em]">{product.category_name}</p>
-          <h1 className="text-[24px] text-black leading-snug tracking-[-0.02em]">
+          <p className="text-[12px] text-[#aaa] uppercase tracking-[0.12em] mb-2">{product.category_name}</p>
+          <h1 className="text-[24px] text-black leading-snug tracking-[-0.02em] mb-2">
             {product.name}
           </h1>
 
-          {/* 가격 — 옵션 선택 전 범위 표시 */}
-          <div className="flex items-baseline gap-1">
-            {allSoldOut ? (
+          {/* 가격 — 옵션 선택 전 범위 표시 (정상가/최종가) */}
+          {allSoldOut ? (
+            <div className="flex items-baseline gap-1 !mt-0">
               <span className="text-[15px] text-[#e0e0e0]">품절</span>
-            ) : hasRange ? (
-              <span className="font-mono text-[28px] text-black">
-                {formatPrice(minPrice)}{" "}
-                <span className="text-[#aaa] text-[14px]">~</span>
-              </span>
-            ) : (
-              <span className="font-mono text-[28px] text-black">
-                {formatPrice(minPrice)}
-              </span>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="space-y-1 !mt-0">
+              {/* 정상가 — 할인 전 가격, 취소선 */}
+              <div className="flex items-center gap-2">
+                <span className="text-[14px] text-[#aaa]">정상가</span>
+                <span className="font-mono text-[15px] text-[#aaa] line-through">
+                  {formatPrice(originalPrice(minPrice))}
+                </span>
+              </div>
+              {/* 최종가 — 실제 판매가, 강조 */}
+              <div className="flex items-baseline gap-2">
+                <span className="text-[14px] text-[#888]">최종가</span>
+                <span className="font-mono text-[20px] font-semibold text-black">
+                  {formatPrice(minPrice)}
+                  {hasRange && <span className="text-[#aaa] text-[14px] font-normal"> ~</span>}
+                </span>
+              </div>
+            </div>
+          )}
 
           {product.review_summary.review_count > 0 && (
             <button
@@ -268,7 +277,7 @@ export default function ProductDetailPage({
           <div className="px-6 pb-8 space-y-0">
             {/* a) 배송 정보 */}
             {product.detail_info.shipping && (
-              <div className="py-4 border-t border-[#e0e0e0]">
+              <div className="py-6 border-t border-[#e0e0e0]">
                 <div className="flex items-start gap-2.5">
                   <span className="material-icons-outlined text-[20px] text-[#888] mt-0.5 shrink-0">local_shipping</span>
                   <div>

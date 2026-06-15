@@ -1,0 +1,67 @@
+<!-- @dsCard group="쿠폰함" -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=430, initial-scale=1">
+<title>V3 · 컴팩트 리스트형</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background: #fff; display: flex; justify-content: center; }
+  .phone { width: 430px; min-height: 932px; background: #fff; }
+  .header { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); height: 64px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid #f0f0f0; }
+  .header h1 { position: absolute; left: 50%; transform: translateX(-50%); font-size: 16px; font-weight: 500; color: #000; }
+  /* 탭 */
+  .tabs { display: flex; border-bottom: 1px solid #e0e0e0; }
+  .tab { flex: 1; text-align: center; padding: 12px; font-size: 13px; color: #aaa; position: relative; }
+  .tab.active { color: #000; font-weight: 600; }
+  .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: #000; }
+  /* 리스트 */
+  .row { display: flex; align-items: center; padding: 16px 24px; border-bottom: 1px solid #f0f0f0; gap: 16px; }
+  .row.expired { opacity: 0.4; }
+  .row-discount { font-family: 'SF Mono', monospace; font-size: 20px; font-weight: 700; color: #000; min-width: 72px; }
+  .row-info { flex: 1; }
+  .row-name { font-size: 14px; color: #000; margin-bottom: 2px; }
+  .row-sub { font-size: 12px; color: #aaa; }
+  .row-right { text-align: right; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
+  .badge-active { background: #000; color: #fff; }
+  .badge-expired { background: #f0f0f0; color: #aaa; }
+  .expiry { font-size: 11px; color: #ccc; margin-top: 4px; }
+  .label { font-size: 11px; color: #bbb; letter-spacing: .08em; text-transform: uppercase; padding: 12px 24px 0; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="header">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 15L7.5 10L12.5 5" stroke="#888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1>쿠폰함</h1>
+  </div>
+  <div class="tabs">
+    <div class="tab active">사용 가능 (3)</div>
+    <div class="tab">만료 (1)</div>
+  </div>
+  <p class="label">V3 · 컴팩트 리스트형</p>
+  <div class="row">
+    <div class="row-discount">3,000원</div>
+    <div class="row-info"><div class="row-name">신규 가입 축하 쿠폰</div><div class="row-sub">20,000원 이상</div></div>
+    <div class="row-right"><span class="badge badge-active">사용가능</span><div class="expiry">06-30</div></div>
+  </div>
+  <div class="row">
+    <div class="row-discount">10%</div>
+    <div class="row-info"><div class="row-name">비타민 카테고리 할인</div><div class="row-sub">30,000원 이상</div></div>
+    <div class="row-right"><span class="badge badge-active">사용가능</span><div class="expiry">07-15</div></div>
+  </div>
+  <div class="row">
+    <div class="row-discount">2,000원</div>
+    <div class="row-info"><div class="row-name">재구매 감사 쿠폰</div><div class="row-sub">10,000원 이상</div></div>
+    <div class="row-right"><span class="badge badge-active">사용가능</span><div class="expiry">07-31</div></div>
+  </div>
+  <div class="row expired">
+    <div class="row-discount">5,000원</div>
+    <div class="row-info"><div class="row-name">5월 봄맞이 쿠폰</div><div class="row-sub">50,000원 이상</div></div>
+    <div class="row-right"><span class="badge badge-expired">만료</span><div class="expiry">05-31</div></div>
+  </div>
+</div>
+</body>
+</html>

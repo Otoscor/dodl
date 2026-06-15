@@ -1,0 +1,99 @@
+<!-- @dsCard group="쿠폰함" -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=430, initial-scale=1">
+<title>V5 · 좌우 분할형</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background: #fff; display: flex; justify-content: center; }
+  .phone { width: 430px; min-height: 932px; background: #fff; }
+  .header { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); height: 64px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid #f0f0f0; }
+  .header h1 { position: absolute; left: 50%; transform: translateX(-50%); font-size: 16px; font-weight: 500; }
+  .count { font-size: 14px; color: #aaa; padding: 16px 24px 12px; }
+  .list { padding: 0 24px 40px; display: flex; flex-direction: column; gap: 10px; }
+  /* 좌우 분할 카드 */
+  .coupon { display: flex; border-radius: 10px; overflow: hidden; border: 1px solid #e0e0e0; }
+  .coupon.expired { opacity: 0.38; }
+  .coupon-left { background: #000; width: 116px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 12px; position: relative; }
+  .coupon.expired .coupon-left { background: #999; }
+  /* 점선 분리 */
+  .coupon-left::after {
+    content: '';
+    position: absolute; right: -1px; top: 0; bottom: 0;
+    border-right: 2px dashed #e0e0e0;
+  }
+  .c-amount { font-family: 'SF Mono', monospace; font-size: 26px; font-weight: 800; color: #fff; line-height: 1.1; text-align: center; }
+  .c-unit { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 2px; text-align: center; }
+  /* 반원 노치 */
+  .notch-top { position: absolute; top: -8px; right: -9px; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 1px solid #e0e0e0; }
+  .notch-bot { position: absolute; bottom: -8px; right: -9px; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 1px solid #e0e0e0; }
+  .coupon-right { flex: 1; padding: 16px 16px 16px 20px; display: flex; flex-direction: column; justify-content: space-between; background: #fff; }
+  .c-name { font-size: 14px; font-weight: 600; color: #000; margin-bottom: 3px; }
+  .c-min { font-size: 12px; color: #aaa; }
+  .c-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid #f0f0f0; }
+  .c-expiry { font-size: 11px; color: #bbb; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; }
+  .badge-active { background: #000; color: #fff; }
+  .badge-exp { background: #f0f0f0; color: #aaa; }
+  .label { font-size: 11px; color: #bbb; letter-spacing: .08em; text-transform: uppercase; padding: 4px 24px 8px; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="header">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 15L7.5 10L12.5 5" stroke="#888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1>쿠폰함</h1>
+  </div>
+  <p class="count">사용 가능 3장</p>
+  <p class="label">V5 · 좌우 분할형 (노치)</p>
+  <div class="list">
+    <div class="coupon">
+      <div class="coupon-left">
+        <div class="notch-top"></div>
+        <div class="notch-bot"></div>
+        <div class="c-amount">3,000</div><div class="c-unit">원 할인</div>
+      </div>
+      <div class="coupon-right">
+        <div><div class="c-name">신규 가입 축하 쿠폰</div><div class="c-min">20,000원 이상 구매 시</div></div>
+        <div class="c-bottom"><span class="c-expiry">~ 2026-06-30</span><span class="badge badge-active">사용가능</span></div>
+      </div>
+    </div>
+    <div class="coupon">
+      <div class="coupon-left">
+        <div class="notch-top"></div>
+        <div class="notch-bot"></div>
+        <div class="c-amount">10%</div><div class="c-unit">즉시 할인</div>
+      </div>
+      <div class="coupon-right">
+        <div><div class="c-name">비타민 카테고리 할인</div><div class="c-min">30,000원 이상 구매 시</div></div>
+        <div class="c-bottom"><span class="c-expiry">~ 2026-07-15</span><span class="badge badge-active">사용가능</span></div>
+      </div>
+    </div>
+    <div class="coupon">
+      <div class="coupon-left">
+        <div class="notch-top"></div>
+        <div class="notch-bot"></div>
+        <div class="c-amount">2,000</div><div class="c-unit">원 할인</div>
+      </div>
+      <div class="coupon-right">
+        <div><div class="c-name">재구매 감사 쿠폰</div><div class="c-min">10,000원 이상 구매 시</div></div>
+        <div class="c-bottom"><span class="c-expiry">~ 2026-07-31</span><span class="badge badge-active">사용가능</span></div>
+      </div>
+    </div>
+    <div class="coupon expired">
+      <div class="coupon-left">
+        <div class="notch-top"></div>
+        <div class="notch-bot"></div>
+        <div class="c-amount">5,000</div><div class="c-unit">원 할인</div>
+      </div>
+      <div class="coupon-right">
+        <div><div class="c-name">5월 봄맞이 쿠폰</div><div class="c-min">50,000원 이상 구매 시</div></div>
+        <div class="c-bottom"><span class="c-expiry">~ 2026-05-31</span><span class="badge badge-exp">만료</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

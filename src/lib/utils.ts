@@ -1,7 +1,12 @@
-import { SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, CANCELLABLE_STATUSES, RETURNABLE_STATUSES } from "./constants";
+import { SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, CANCELLABLE_STATUSES, RETURNABLE_STATUSES, DISPLAY_DISCOUNT_RATE } from "./constants";
 
 export function formatPrice(price: number): string {
   return price.toLocaleString("ko-KR") + "원";
+}
+
+// 최종가(판매가)에서 고정 할인율을 역산해 정상가를 구한다. 100원 단위로 반올림.
+export function originalPrice(finalPrice: number): number {
+  return Math.round(finalPrice / (1 - DISPLAY_DISCOUNT_RATE) / 100) * 100;
 }
 
 export function generateOrderNumber(): string {

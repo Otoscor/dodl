@@ -2,48 +2,43 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { TitleBar } from "@/components/layout/TitleBar";
-import type { Order } from "@/types/order";
-
-interface WalletData {
-  balance: number;
-}
-
-const ORDER_STATUSES = ["결제완료", "배송준비", "배송중", "배송완료"] as const;
-const AFTER_STATUSES = ["취소완료", "반품완료", "교환완료"] as const;
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { useToast } from "@/components/ui/Toast";
+import { MOCK_ASSETS, MY_MENU, MyMenuItem } from "./mock";
 
 export default function MyPage() {
+  const router = useRouter();
+  const { showToast } = useToast();
   const [balance, setBalance] = useState(0);
-  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/wallet").then((r) => r.json()),
-      fetch("/api/orders").then((r) => r.json()),
-    ]).then(([walletData, ordersData]) => {
-      setBalance(walletData.wallet?.balance || 0);
-      setOrders(ordersData.orders || []);
-      setLoading(false);
-    });
+    fetch("/api/wallet")
+      .then((r) => r.json())
+      .then((walletData) => {
+        setBalance(walletData.wallet?.balance || 0);
+        setLoading(false);
+      });
   }, []);
 
   if (loading) return <LoadingSpinner />;
 
-  const statusCounts = ORDER_STATUSES.reduce((acc, status) => {
-    acc[status] = orders.filter((o) => o.status === status).length;
-    return acc;
-  }, {} as Record<string, number>);
+  const handleMockTap = () => showToast("준비 중입니다.", "info");
 
-  const inactiveStatuses = ["취소완료", "반품완료", "교환완료"];
-  const activeOrderCount = orders.filter((o) => !inactiveStatuses.includes(o.status)).length;
-
-  const afterCounts = AFTER_STATUSES.reduce((acc, status) => {
-    acc[status] = orders.filter((o) => o.status === status).length;
-    return acc;
-  }, {} as Record<string, number>);
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  };
 
   return (
     <div className="min-h-screen bg-white pb-6">
@@ -61,95 +56,113 @@ export default function MyPage() {
             </svg>
           </div>
           <div>
-            <p className="text-[16px] font-bold text-text-primary">dodl 회원</p>
+            <div className="flex items-center gap-2">
+              <p className="text-[16px] font-bold text-text-primary">dodl 회원</p>
+              <Badge variant="muted">{MOCK_ASSETS.grade}</Badge>
+            </div>
             <p className="text-[14px] text-text-tertiary mt-0.5">건강한 쇼핑을 즐기세요</p>
           </div>
         </div>
       </div>
 
-      {/* Asset summary */}
+      {/* Shopping assets 3-up */}
       <div className="px-6 pb-5">
-        <div className="grid grid-cols-2 gap-4">
-          <Link href="/wallet" className="bg-[#f5f5f5] rounded-[10px] p-6 text-center">
-            <p className="text-[12px] text-text-tertiary mb-1">잔액</p>
-            <p className="font-mono text-[20px] text-text-primary font-bold">{formatPrice(balance)}</p>
-          </Link>
-          <Link href="/orders" className="bg-[#f5f5f5] rounded-[10px] p-6 text-center">
-            <p className="text-[12px] text-text-tertiary mb-1">주문</p>
-            <p className="font-mono text-[20px] text-text-primary font-bold">{activeOrderCount}건</p>
+        <div className="grid grid-cols-3 bg-[#f5f5f5] rounded-[10px] py-5">
+          <button onClick={handleMockTap} className="text-center border-r border-[#e0e0e0]">
+            <p className="font-mono text-[18px] text-text-primary font-bold">{MOCK_ASSETS.couponCount}장</p>
+            <p className="text-[12px] text-text-tertiary mt-1">쿠폰</p>
+          </button>
+          <button onClick={handleMockTap} className="text-center border-r border-[#e0e0e0]">
+            <p className="font-mono text-[18px] text-text-primary font-bold">{MOCK_ASSETS.points.toLocaleString("ko-KR")}P</p>
+            <p className="text-[12px] text-text-tertiary mt-1">포인트</p>
+          </button>
+          <Link href="/wallet" className="text-center">
+            <p className="font-mono text-[18px] text-text-primary font-bold">{formatPrice(balance)}</p>
+            <p className="text-[12px] text-text-tertiary mt-1">지갑 잔액</p>
           </Link>
         </div>
       </div>
 
-      {/* Order status flow */}
-      <div className="px-6 pb-5">
-        <div className="bg-[#f5f5f5] rounded-[10px] p-6">
-          <p className="text-[14px] font-bold text-text-primary mb-3">주문 현황</p>
-          <div className="flex items-center justify-between">
-            {ORDER_STATUSES.map((status, i) => (
-              <div key={status} className="flex items-center">
-                <div className="text-center">
-                  <p className="text-[16px] font-bold text-text-primary">{statusCounts[status]}</p>
-                  <p className="text-[12px] text-text-tertiary mt-0.5">{status}</p>
-                </div>
-                {i < ORDER_STATUSES.length - 1 && (
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="mx-2 text-text-quaternary">
-                    <path d="M4.5 2.5L7.5 6L4.5 9.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-              </div>
-            ))}
+      {/* 그룹별 메뉴 리스트 */}
+      <div className="pt-1">
+        {MY_MENU.map((group) => (
+          <div key={group.title} className="px-6 pb-2 pt-4">
+            <p className="text-[14px] font-bold text-text-primary mb-1">{group.title}</p>
+            <div className="divide-y divide-border-subtle">
+              {group.items.map((item) => (
+                <MenuRow
+                  key={item.label}
+                  item={item}
+                  onMockTap={handleMockTap}
+                  onLogout={() => setLogoutOpen(true)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* 취소/반품/교환 */}
-      <div className="px-6 pb-5">
-        <div className="bg-[#f5f5f5] rounded-[10px] p-6">
-          <p className="text-[14px] font-bold text-text-primary mb-3">취소/반품/교환</p>
-          <div className="flex items-center justify-around">
-            {AFTER_STATUSES.map((status) => (
-              <div key={status} className="text-center">
-                <p className="text-[16px] font-bold text-text-primary">{afterCounts[status]}</p>
-                <p className="text-[12px] text-text-tertiary mt-0.5">{status}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation links */}
-      <div className="px-6">
-        <div className="overflow-hidden divide-y divide-border-subtle">
-          <Link href="/orders" className="flex items-center justify-between px-4 py-4">
-            <div className="flex items-center gap-3">
-              <span className="material-icons-outlined text-[20px] text-[#888]">receipt_long</span>
-              <span className="text-[16px] text-text-primary">주문 내역</span>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-text-quaternary">
-              <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
-          <Link href="/wallet" className="flex items-center justify-between px-4 py-4">
-            <div className="flex items-center gap-3">
-              <span className="material-icons-outlined text-[20px] text-[#888]">account_balance_wallet</span>
-              <span className="text-[16px] text-text-primary">가상 지갑</span>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-text-quaternary">
-              <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
-          <Link href="/cart" className="flex items-center justify-between px-4 py-4">
-            <div className="flex items-center gap-3">
-              <span className="material-icons-outlined text-[20px] text-[#888]">shopping_cart</span>
-              <span className="text-[16px] text-text-primary">장바구니</span>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-text-quaternary">
-              <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
-        </div>
-      </div>
+      {/* 로그아웃 확인 모달 */}
+      <Modal
+        open={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+        title="로그아웃"
+        actions={
+          <>
+            <Button variant="secondary" fullWidth onClick={() => setLogoutOpen(false)}>
+              취소
+            </Button>
+            <Button variant="primary" fullWidth disabled={loggingOut} onClick={handleLogout}>
+              {loggingOut ? "처리 중..." : "로그아웃"}
+            </Button>
+          </>
+        }
+      >
+        로그아웃 하시겠어요?
+      </Modal>
     </div>
+  );
+}
+
+function MenuRow({
+  item,
+  onMockTap,
+  onLogout,
+}: {
+  item: MyMenuItem;
+  onMockTap: () => void;
+  onLogout: () => void;
+}) {
+  const inner = (
+    <>
+      <span className="text-[16px] text-text-primary">{item.label}</span>
+      <span className="flex items-center gap-2">
+        {item.value && <span className="text-[14px] text-text-tertiary">{item.value}</span>}
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-text-quaternary">
+          <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </span>
+    </>
+  );
+  const className = "w-full flex items-center justify-between py-4 text-left";
+
+  if (item.href?.startsWith("/docs")) {
+    return (
+      <a href={item.href} className={className} target="_blank" rel="noreferrer">
+        {inner}
+      </a>
+    );
+  }
+  if (item.href) {
+    return (
+      <Link href={item.href} className={className}>
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <button onClick={item.action === "logout" ? onLogout : onMockTap} className={className}>
+      {inner}
+    </button>
   );
 }

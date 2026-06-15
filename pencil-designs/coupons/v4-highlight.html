@@ -1,0 +1,82 @@
+<!-- @dsCard group="쿠폰함" -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=430, initial-scale=1">
+<title>V4 · 강조형 (할인율 대형)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif; background: #fff; display: flex; justify-content: center; }
+  .phone { width: 430px; min-height: 932px; background: #fff; }
+  .header { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); height: 64px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid #f0f0f0; }
+  .header h1 { position: absolute; left: 50%; transform: translateX(-50%); font-size: 16px; font-weight: 500; }
+  .summary { padding: 20px 24px 12px; display: flex; gap: 8px; }
+  .summary-chip { background: #f5f5f5; border-radius: 10px; padding: 8px 16px; font-size: 13px; color: #888; }
+  .summary-chip span { color: #000; font-weight: 700; }
+  .list { padding: 0 24px 40px; display: flex; flex-direction: column; gap: 10px; }
+  .card { border-radius: 10px; padding: 20px; border: 1.5px solid #e0e0e0; background: #fff; display: flex; flex-direction: column; gap: 0; }
+  .card.featured { border-color: #000; }
+  .card.expired { opacity: 0.35; border-color: #e0e0e0; }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  /* 대형 할인 표시 */
+  .big-discount { font-family: 'SF Mono', monospace; font-size: 40px; font-weight: 900; color: #000; line-height: 1; }
+  .big-discount sub { font-size: 16px; font-weight: 500; vertical-align: bottom; margin-left: 2px; }
+  .badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; }
+  .badge-active { background: #000; color: #fff; }
+  .badge-expired { background: #f0f0f0; color: #aaa; }
+  .card-name { font-size: 14px; color: #555; margin-bottom: 12px; }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #f0f0f0; }
+  .min-order { font-size: 12px; color: #aaa; }
+  .expiry { font-size: 11px; color: #bbb; }
+  .label { font-size: 11px; color: #bbb; letter-spacing: .08em; text-transform: uppercase; padding: 4px 24px 8px; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="header">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 15L7.5 10L12.5 5" stroke="#888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1>쿠폰함</h1>
+  </div>
+  <div class="summary">
+    <div class="summary-chip">사용 가능 <span>3</span>장</div>
+    <div class="summary-chip">만료 <span>1</span>장</div>
+  </div>
+  <p class="label">V4 · 강조형 (할인율 대형)</p>
+  <div class="list">
+    <div class="card featured">
+      <div class="card-head">
+        <div class="big-discount">3,000<sub>원</sub></div>
+        <span class="badge badge-active">사용가능</span>
+      </div>
+      <div class="card-name">신규 가입 축하 쿠폰</div>
+      <div class="card-footer"><span class="min-order">20,000원 이상</span><span class="expiry">~ 2026-06-30</span></div>
+    </div>
+    <div class="card featured">
+      <div class="card-head">
+        <div class="big-discount">10<sub>%</sub></div>
+        <span class="badge badge-active">사용가능</span>
+      </div>
+      <div class="card-name">비타민 카테고리 할인</div>
+      <div class="card-footer"><span class="min-order">30,000원 이상</span><span class="expiry">~ 2026-07-15</span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="big-discount">2,000<sub>원</sub></div>
+        <span class="badge badge-active">사용가능</span>
+      </div>
+      <div class="card-name">재구매 감사 쿠폰</div>
+      <div class="card-footer"><span class="min-order">10,000원 이상</span><span class="expiry">~ 2026-07-31</span></div>
+    </div>
+    <div class="card expired">
+      <div class="card-head">
+        <div class="big-discount">5,000<sub>원</sub></div>
+        <span class="badge badge-expired">만료</span>
+      </div>
+      <div class="card-name">5월 봄맞이 쿠폰</div>
+      <div class="card-footer"><span class="min-order">50,000원 이상</span><span class="expiry">~ 2026-05-31</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
