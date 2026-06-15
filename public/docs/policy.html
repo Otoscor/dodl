@@ -148,8 +148,11 @@
   <a href="#cart">장바구니 정책</a>
   <a href="#payment">결제 정책</a>
   <a href="#order">주문 정책</a>
+  <a href="#return">반품/교환 정책</a>
+  <a href="#review">리뷰 정책</a>
   <a href="#wallet">지갑 정책</a>
   <a href="#inventory">재고 정책</a>
+  <a href="#scanner">단백질 스캐너 정책</a>
 </aside>
 
 <main>
@@ -304,6 +307,17 @@
     <span class="flow-arrow">→</span>
     <span class="flow-step" style="border-color:var(--red)">취소완료</span>
   </div>
+  <div class="flow" style="margin-top:4px">
+    <span class="flow-step" style="border-color:var(--green)">배송완료</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="border-color:var(--red)">반품완료</span>
+  </div>
+  <div class="flow" style="margin-top:4px">
+    <span class="flow-step" style="border-color:var(--green)">배송완료</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="border-color:var(--amber)">교환완료</span>
+  </div>
+  <p style="font-size:12px;color:var(--text3)">※ <code>반품요청</code>/<code>교환요청</code> 상태값은 정의되어 있으나, 현재 프로토타입은 요청 즉시 완료 상태로 전이한다.</p>
 
   <h3>주문 취소 조건</h3>
   <table>
@@ -329,6 +343,55 @@
   <p>주문 생성 시 <code>product_name</code>, <code>option_summary</code>, <code>unit_price</code>를 order_items에 복사 저장. 이후 상품 변경과 무관하게 원래 주문 정보를 보존.</p>
 </section>
 
+<!-- 6.5 Return / Exchange -->
+<section id="return">
+  <h2>6.5 반품/교환 정책</h2>
+
+  <h3>가능 조건</h3>
+  <p>반품·교환은 <strong>배송완료</strong>(<code>RETURNABLE_STATUSES</code>) 상태에서만 가능하다. 취소는 별도(결제완료/배송준비, 6번 참조).</p>
+
+  <h3>처리 비교</h3>
+  <table>
+    <tr><th>구분</th><th>재고</th><th>환불</th><th>최종 상태</th></tr>
+    <tr><td>반품</td><td>주문 수량만큼 원복</td><td>결제 금액 전액 가상 지갑 환급</td><td>반품완료</td></tr>
+    <tr><td>교환</td><td>변동 없음</td><td>변동 없음</td><td>교환완료</td></tr>
+  </table>
+  <div class="callout">
+    반품은 취소와 동일하게 <strong>재고 원복 + 전액 환불</strong>을 수행하고, 교환은 상태만 전이한다(재고·지갑 변동 없음).
+    모든 처리는 <code>.transaction()</code> 원자적 실행.
+  </div>
+
+  <h3>사유 코드</h3>
+  <table>
+    <tr><th>구분</th><th>선택 가능 사유</th></tr>
+    <tr><td>반품</td><td>단순 변심 · 상품 불량 · 상품이 설명과 다름 · 배송 중 파손 · 기타</td></tr>
+    <tr><td>교환</td><td>상품 불량 · 오배송 (다른 상품 수령) · 상품이 설명과 다름 · 배송 중 파손 · 기타</td></tr>
+  </table>
+  <p>사유는 필수(미선택 시 400), 메모(<code>note</code>)는 선택. <code>return_reason</code>·<code>return_note</code>에 저장된다.</p>
+</section>
+
+<!-- 6.6 Review -->
+<section id="review">
+  <h2>6.6 리뷰 정책</h2>
+
+  <h3>작성 제약</h3>
+  <ul>
+    <li><strong>세션당 상품별 1건</strong> — UNIQUE <code>idx_reviews_session_product</code>로 중복 방지</li>
+    <li>별점 필수: 1~5 (스키마 <code>CHECK(rating BETWEEN 1 AND 5)</code>)</li>
+    <li>본문(<code>body</code>) · 사진은 선택</li>
+  </ul>
+
+  <h3>사진 업로드</h3>
+  <ul>
+    <li>최대 <strong>5장</strong>, 이미지 파일 전용, 파일당 <strong>5MB</strong> 이하</li>
+    <li><code>POST /api/upload</code> → <code>public/uploads/reviews/</code>에 저장, URL 반환</li>
+    <li>URL 배열을 <code>reviews.photo_urls</code>(JSON)에 저장</li>
+  </ul>
+
+  <h3>저장</h3>
+  <p><code>reviews</code> 테이블 — <code>product_id</code>, <code>author_name</code>, <code>rating</code>, <code>body</code>, <code>session_id</code>, <code>photo_urls</code>, <code>created_at</code>.</p>
+</section>
+
 <!-- 7. Wallet -->
 <section id="wallet">
   <h2>7. 지갑 정책</h2>
@@ -345,7 +408,7 @@
     <tr><th>유형</th><th>발생 시점</th><th>설명</th></tr>
     <tr><td>적립</td><td>지갑 생성</td><td>초기 부여금</td></tr>
     <tr><td>사용</td><td>주문 결제</td><td>총 결제금액 차감</td></tr>
-    <tr><td>환불</td><td>주문 취소</td><td>결제 금액 전액 환급</td></tr>
+    <tr><td>환불</td><td>주문 취소 / 반품</td><td>결제 금액 전액 환급 (<code>주문 취소 환불</code> / <code>반품 환불</code>)</td></tr>
   </table>
 
   <h3>잔액 일관성</h3>
@@ -384,7 +447,23 @@
   <p>결제 완료 시점(체크아웃 트랜잭션)에만 차감. 장바구니 담기 시에는 차감하지 않음.</p>
 
   <h3>재고 원복</h3>
-  <p>주문 취소 시 해당 주문 항목의 수량만큼 원복.</p>
+  <p>주문 <strong>취소 또는 반품</strong> 시 해당 주문 항목의 수량만큼 원복. (교환은 재고 변동 없음.)</p>
+</section>
+
+<!-- 9. Protein Scanner -->
+<section id="scanner">
+  <h2>9. 단백질 스캐너 정책</h2>
+
+  <h3>성격</h3>
+  <p>3문항 설문 기반 단백질 쉐이크 추천 기능. 추천 데이터(<code>scanner/data.ts</code>의 문항·상품)는
+     <strong>화면 전용 정적 데이터</strong>로 DB(<code>products</code>/<code>skus</code>)와 무관하며, 추천 결과는 장바구니·주문과 연동되지 않는다.</p>
+
+  <h3>추천 로직</h3>
+  <ul>
+    <li>각 답변에 부여된 태그를 질문 가중치로 합산: <strong>목적(goal) ×3 · 부담(reduce) ×2 · 식감(texture) ×1</strong></li>
+    <li>상품 태그와 매칭 점수가 높은 상위 <strong>3개</strong>를 노출 (<code>scanner/recommend.ts</code>)</li>
+    <li>추천 이유 칩은 매칭된 태그 라벨(<code>TAG_LABEL</code>)로 표기</li>
+  </ul>
 </section>
 
 </main>

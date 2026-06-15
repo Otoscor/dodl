@@ -25,7 +25,7 @@ async function main() {
   await page.setViewport({ width: 430, height: 932 });
 
   let captured = 0;
-  const total = 12;
+  const total = 13;
 
   async function capture(section, name, url) {
     const filePath = path.join(OUT, section, `${name}.png`);
@@ -59,6 +59,7 @@ async function main() {
 
   // ===== 4) 홈·탐색 =====
   await capture("browse", "home", "/home");
+  await capture("browse", "scanner", "/scanner");
   await capture("browse", "products", "/products");
 
   // 상품 상세: 실제 상품 ID 조회

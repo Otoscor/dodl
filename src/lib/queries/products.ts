@@ -44,11 +44,24 @@ export function getProducts(categorySlug?: string): ProductListItem[] {
 
   return rows.map(row => {
     let keySpecs: string[] = [];
+    let nutrition: ProductListItem["nutrition"] = null;
+    let brand = "";
     try {
-      keySpecs = JSON.parse(row.detail_info || '{}').keySpecs || [];
+      const parsed = JSON.parse(row.detail_info || '{}');
+      keySpecs = parsed.keySpecs || [];
+      nutrition = parsed.nutrition ?? null;
+      brand = parsed.brand || parseBrand(parsed.manufacturer);
     } catch {}
-    return { ...row, key_specs: keySpecs };
+    return { ...row, key_specs: keySpecs, nutrition, brand };
   });
+}
+
+// detail_info.manufacturer 문자열("제조사: (주)헬스케어랩 | 원산지: ... | ...")에서
+// 브랜드/제조사명만 추출. brand 필드가 없을 때의 폴백.
+function parseBrand(manufacturer?: string): string {
+  if (!manufacturer) return "";
+  const firstSegment = manufacturer.split("|")[0].trim();
+  return firstSegment.replace(/^제조사\s*:\s*/, "").trim();
 }
 
 export function getProductDetail(productId: string): ProductDetail | null {

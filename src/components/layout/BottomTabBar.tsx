@@ -11,6 +11,12 @@ const tabs = [
     icon: "home",
   },
   {
+    name: "단백질 스캐너",
+    href: "/scanner",
+    match: (path: string) => path.startsWith("/scanner"),
+    icon: "qr_code_scanner",
+  },
+  {
     name: "상품",
     href: "/products",
     match: (path: string) => path.startsWith("/products"),

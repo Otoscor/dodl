@@ -17,6 +17,13 @@ export interface Product {
   created_at: string;
 }
 
+export interface Nutrition {
+  calories: number; // kcal
+  protein: number; // g
+  sugar: number; // g
+  fat: number; // g
+}
+
 export interface ProductListItem extends Product {
   min_price: number;
   max_price: number;
@@ -25,6 +32,8 @@ export interface ProductListItem extends Product {
   review_count: number;
   average_rating: number;
   key_specs: string[];
+  brand: string;
+  nutrition: Nutrition | null;
 }
 
 export interface OptionGroup {
@@ -75,6 +84,8 @@ export interface ProductDetailInfo {
   dosage: string;
   caution: string;
   manufacturer: string;
+  brand?: string;
+  nutrition?: Nutrition;
 }
 
 export interface ProductDetail extends Product {

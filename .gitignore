@@ -39,6 +39,9 @@ yarn-error.log*
 # sqlite data
 /data/
 
+# runtime review uploads
+/public/uploads/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
