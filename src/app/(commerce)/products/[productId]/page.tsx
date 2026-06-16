@@ -30,6 +30,8 @@ export default function ProductDetailPage({
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [detailExpanded, setDetailExpanded] = useState(false);
+
   // Review sheet state
   const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -281,7 +283,7 @@ export default function ProductDetailPage({
 
         {/* 첨가물 알아보기 */}
         {product.detail_info?.additives && product.detail_info.additives.length > 0 && (
-          <AdditiveCards additives={product.detail_info.additives} />
+          <AdditiveCards additives={product.detail_info.additives} productId={product.id} />
         )}
 
         {/* 상세 정보 섹션 */}
@@ -355,6 +357,51 @@ export default function ProductDetailPage({
                 </div>
               </div>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* 상품정보 — 전체보기/접기 */}
+      <div className="border-t border-[#e0e0e0]">
+        <p className="px-6 pt-8 pb-5 text-[17px] text-black">상품정보</p>
+
+        {/* 콘텐츠 영역 — 이미지 자리 (현재 공백) */}
+        <div
+          className="overflow-hidden"
+          style={{ maxHeight: detailExpanded ? 1200 : 320 }}
+        >
+          <div className="w-full bg-[#f5f5f5]" style={{ height: 500 }} />
+        </div>
+
+        {/* 그라디언트 페이드 + 더보기 버튼 — overflow 바깥 */}
+        {!detailExpanded && (
+          <div
+            className="flex flex-col items-center"
+            style={{
+              marginTop: -96,
+              paddingBottom: 160,
+              background: "linear-gradient(to bottom, transparent, white 50%)",
+            }}
+          >
+            <div style={{ height: 60 }} />
+            <button
+              onClick={() => setDetailExpanded(true)}
+              className="rounded-full bg-[#f0f0f0] px-8 py-3 text-[15px] text-black active:bg-[#e0e0e0]"
+            >
+              상품 정보 더보기
+            </button>
+          </div>
+        )}
+
+        {/* 접기 버튼 */}
+        {detailExpanded && (
+          <div className="flex justify-center pt-4 pb-40">
+            <button
+              onClick={() => setDetailExpanded(false)}
+              className="rounded-full bg-[#f0f0f0] px-8 py-3 text-[15px] text-black active:bg-[#e0e0e0]"
+            >
+              접기
+            </button>
           </div>
         )}
       </div>

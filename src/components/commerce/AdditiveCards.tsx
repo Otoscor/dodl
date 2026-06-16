@@ -1,22 +1,26 @@
 // 상품 상세 — 첨가물 알아보기.
-// 대표 첨가물을 소개. UI 전용(화살표·전체보기 비동작) · 가로 스크롤.
+// 대표 첨가물 가로 스크롤(카드는 UI 전용). "원재료 전체보기"는 원재료 페이지로 이동.
 
+import Link from "next/link";
 import type { Additive } from "@/types/product";
 
 interface AdditiveCardsProps {
   additives: Additive[];
+  productId: string;
 }
 
-export function AdditiveCards({ additives }: AdditiveCardsProps) {
+export function AdditiveCards({ additives, productId }: AdditiveCardsProps) {
   return (
     <section className="pt-10 pb-6">
       <div className="flex items-center justify-between px-6 mb-5">
         <h2 className="text-[17px] text-black">첨가물 알아보기</h2>
-        {/* 비동작 — UI 전용 */}
-        <span className="flex items-center gap-0.5 text-[13px] text-[#888]">
+        <Link
+          href={`/products/${productId}/ingredients`}
+          className="flex items-center gap-0.5 text-[13px] text-[#888] active:opacity-60"
+        >
           원재료 전체보기
           <span className="material-icons-outlined text-[16px]">chevron_right</span>
-        </span>
+        </Link>
       </div>
       <div className="flex gap-3 overflow-x-auto px-6 pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {additives.map((a) => {
