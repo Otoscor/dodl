@@ -9,6 +9,7 @@ import { QuantitySelector } from "@/components/ui/QuantitySelector";
 import { SelectedItemCard } from "@/components/commerce/SelectedItemCard";
 import { SelectionCard } from "@/components/ui/SelectionCard";
 import { PointInput } from "@/components/commerce/PointInput";
+import { AddressItem } from "@/components/commerce/AddressItem";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
 import type { OptionGroup, Sku } from "@/types/product";
 
@@ -599,6 +600,37 @@ export const STORIES: Story[] = [
       { name: "balance", type: "number", desc: "보유 포인트 총액. 하단 '보유 NP' 표시에 사용." },
       { name: "applied", type: "number", desc: "현재 적용된 포인트. 0이면 Default, >0이면 Applied 상태." },
       { name: "onChange", type: "(amount: number) => void", desc: "직접 입력·모두사용·취소 모든 경우에 최종 금액을 전달. 부모에서 applied를 업데이트." },
+    ],
+  },
+  {
+    id: "address-item",
+    name: "AddressItem",
+    states: ["Selected", "Default (Unselected)"],
+    knobs: [
+      { key: "selected", label: "Selected 상태", type: "toggle" },
+      { key: "isDefault", label: "기본 배송지 뱃지", type: "toggle" },
+    ],
+    defaults: { selected: true, isDefault: true },
+    signature: (v) => String(v.selected),
+    render: (values, onSelect) => (
+      <AddressItem
+        name="홍길동"
+        phone="010-0000-0000"
+        address="A다시 B다시 주소를 입력하는 플레이스 홀더 입니다. ABC다시 6다시 삼사"
+        isDefault={values.isDefault as boolean}
+        selected={values.selected as boolean}
+        onSelect={() => onSelect("배송지 선택됨")}
+        onEdit={() => onSelect("변경 버튼 탭됨")}
+      />
+    ),
+    propsDoc: [
+      { name: "name", type: "string", desc: "수령인 이름." },
+      { name: "phone", type: "string", desc: "연락처. Selected 시 밑줄 표시." },
+      { name: "address", type: "string", desc: "배송지 주소." },
+      { name: "isDefault", type: "boolean", desc: "기본 배송지 여부. true이면 '기본 배송지' 뱃지 표시." },
+      { name: "selected", type: "boolean", desc: "선택 상태. 라디오 채워짐 + 전화번호 강조." },
+      { name: "onSelect", type: "() => void", desc: "행 탭 시 이 배송지 선택." },
+      { name: "onEdit", type: "() => void", desc: "'변경' 버튼 탭 핸들러." },
     ],
   },
 ];
