@@ -11,6 +11,7 @@ import { SelectionCard } from "@/components/ui/SelectionCard";
 import { PointInput } from "@/components/commerce/PointInput";
 import { AddressItem } from "@/components/commerce/AddressItem";
 import { ProductRow } from "@/components/commerce/ProductRow";
+import { Accordion } from "@/components/ui/Accordion";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
 import type { OptionGroup, Sku } from "@/types/product";
 
@@ -735,6 +736,40 @@ export const STORIES: Story[] = [
       { name: "onCheck", type: "(v: boolean) => void", desc: "체크박스 토글 콜백 (cart 전용)." },
       { name: "onRemove", type: "() => void", desc: "× 버튼 콜백 (cart 전용)." },
       { name: "onClick", type: "() => void", desc: "행 클릭 콜백 (order 전용)." },
+    ],
+  },
+  {
+    id: "accordion",
+    name: "Accordion",
+    states: ["Collapsed", "Expanded"],
+    knobs: [
+      { key: "defaultOpen", label: "기본 펼침", type: "toggle" },
+      {
+        key: "title",
+        label: "제목",
+        type: "radio",
+        options: [
+          { value: "상품 번호", label: "상품 번호" },
+          { value: "유통기한 안내", label: "유통기한 안내" },
+          { value: "배송 정책", label: "배송 정책" },
+        ],
+      },
+    ],
+    defaults: { defaultOpen: false, title: "상품 번호" },
+    signature: (v) => String(v.defaultOpen),
+    render: (values, onSelect) => (
+      <Accordion
+        key={String(values.defaultOpen)}
+        title={values.title as string}
+        defaultOpen={values.defaultOpen as boolean}
+      >
+        데일리 멀티비타민 상품의 유통기한이 어떻게 되나요? 선물용으로 구매하려고 합니다.
+      </Accordion>
+    ),
+    propsDoc: [
+      { name: "title", type: "string", desc: "헤더에 표시되는 제목 텍스트." },
+      { name: "children", type: "ReactNode", desc: "펼쳐졌을 때 보여줄 내용. 회색 박스 안에 렌더됨." },
+      { name: "defaultOpen", type: "boolean", desc: "초기 열림 상태. 기본값 false." },
     ],
   },
 ];
