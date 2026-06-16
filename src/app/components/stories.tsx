@@ -10,8 +10,33 @@ import { SelectedItemCard } from "@/components/commerce/SelectedItemCard";
 import { SelectionCard } from "@/components/ui/SelectionCard";
 import { PointInput } from "@/components/commerce/PointInput";
 import { AddressItem } from "@/components/commerce/AddressItem";
+import { ProductRow } from "@/components/commerce/ProductRow";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
 import type { OptionGroup, Sku } from "@/types/product";
+
+/* ── ProductRow cart wrapper (checked state) ── */
+function ProductRowCartStory({
+  initialChecked,
+  onSelect,
+}: {
+  initialChecked: boolean;
+  onSelect: (text: string | null) => void;
+}) {
+  const [checked, setChecked] = useLocalState(initialChecked);
+  return (
+    <ProductRow
+      variant="cart"
+      brand="덱스콤"
+      name="[25%할인] 루티니 14개입 1BOX"
+      optionSummary="옵션명 01"
+      quantity={1}
+      price={31000}
+      checked={checked}
+      onCheck={(v) => { setChecked(v); onSelect(v ? "선택됨" : "선택 해제"); }}
+      onRemove={() => onSelect("삭제됨")}
+    />
+  );
+}
 
 /* ── PointInput 내부 state wrapper ── */
 function PointInputStory({
@@ -631,6 +656,85 @@ export const STORIES: Story[] = [
       { name: "selected", type: "boolean", desc: "선택 상태. 라디오 채워짐 + 전화번호 강조." },
       { name: "onSelect", type: "() => void", desc: "행 탭 시 이 배송지 선택." },
       { name: "onEdit", type: "() => void", desc: "'변경' 버튼 탭 핸들러." },
+    ],
+  },
+  {
+    id: "product-row",
+    name: "ProductRow",
+    states: ["cart (checked)", "cart (unchecked)", "order", "compact"],
+    knobs: [
+      {
+        key: "variant",
+        label: "Variant",
+        type: "radio",
+        options: [
+          { value: "cart", label: "cart" },
+          { value: "order", label: "order" },
+          { value: "compact", label: "compact" },
+        ],
+      },
+      {
+        key: "checked",
+        label: "Checked",
+        type: "toggle",
+        visible: (v) => v.variant === "cart",
+      },
+      {
+        key: "showImage",
+        label: "이미지 표시",
+        type: "toggle",
+      },
+    ],
+    defaults: { variant: "cart", checked: true, showImage: false },
+    signature: (v) => v.variant as string,
+    render: (values, onSelect) => {
+      const imageUrl = values.showImage
+        ? "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=160"
+        : undefined;
+      if (values.variant === "cart") {
+        return (
+          <ProductRowCartStory
+            initialChecked={values.checked as boolean}
+            onSelect={onSelect}
+          />
+        );
+      }
+      if (values.variant === "order") {
+        return (
+          <ProductRow
+            variant="order"
+            brand="덱스콤"
+            name="[25%할인] 루티니 14개입 1BOX"
+            optionSummary="옵션명 01"
+            quantity={1}
+            price={31000}
+            imageUrl={imageUrl}
+            onClick={() => onSelect("주문 상세 이동")}
+          />
+        );
+      }
+      return (
+        <ProductRow
+          variant="compact"
+          brand="덱스콤"
+          name="[25%할인] 루티니 14개입 1BOX"
+          optionSummary="옵션명 01"
+          quantity={1}
+          imageUrl={imageUrl}
+        />
+      );
+    },
+    propsDoc: [
+      { name: "variant", type: '"cart" | "order" | "compact"', desc: "렌더 모드. 체크박스·× 버튼·가격 표시 여부와 이미지 크기를 제어." },
+      { name: "brand", type: "string", desc: "브랜드명." },
+      { name: "name", type: "string", desc: "상품명." },
+      { name: "optionSummary", type: "string?", desc: "선택된 옵션 요약 텍스트." },
+      { name: "quantity", type: "number?", desc: "수량." },
+      { name: "price", type: "number", desc: "가격 (cart·order 전용). formatPrice로 표시." },
+      { name: "checked", type: "boolean", desc: "체크 상태 (cart 전용)." },
+      { name: "onCheck", type: "(v: boolean) => void", desc: "체크박스 토글 콜백 (cart 전용)." },
+      { name: "onRemove", type: "() => void", desc: "× 버튼 콜백 (cart 전용)." },
+      { name: "onClick", type: "() => void", desc: "행 클릭 콜백 (order 전용)." },
     ],
   },
 ];
