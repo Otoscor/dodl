@@ -1,42 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { BackHeader } from "@/components/layout/BackHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { BottomSheet } from "@/components/ui/BottomSheet";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useToast } from "@/components/ui/Toast";
-import { INQUIRY_CATEGORIES, MOCK_INQUIRIES } from "../mock";
-
-const inputClass =
-  "w-full bg-[#f5f5f5] border border-[#e0e0e0] rounded-[10px] px-4 py-3 text-[15px] text-black placeholder:text-[#cccccc] outline-none focus:border-black transition-colors";
+import { MOCK_INQUIRIES } from "../mock";
 
 export default function MyInquiryPage() {
-  const { showToast } = useToast();
   const [openId, setOpenId] = useState<string | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [category, setCategory] = useState<string>(INQUIRY_CATEGORIES[0]);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-
-  const canSubmit = title.trim() !== "" && body.trim() !== "";
-
-  const handleSubmit = () => {
-    if (!canSubmit) return;
-    showToast("문의가 접수되었습니다.");
-    setTitle("");
-    setBody("");
-    setCategory(INQUIRY_CATEGORIES[0]);
-    setSheetOpen(false);
-  };
-
-  const handleClose = () => {
-    setSheetOpen(false);
-    setTitle("");
-    setBody("");
-    setCategory(INQUIRY_CATEGORIES[0]);
-  };
 
   return (
     <div className="min-h-screen bg-white pb-32">
@@ -128,69 +101,12 @@ export default function MyInquiryPage() {
 
       {/* 하단 고정 문의하기 버튼 */}
       <div className="fixed bottom-14 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white/90 backdrop-blur-md px-6 py-4 z-30 border-t border-[#e0e0e0]">
-        <Button fullWidth size="lg" onClick={() => setSheetOpen(true)}>
-          문의하기
-        </Button>
-      </div>
-
-      {/* 문의 작성 바텀시트 */}
-      <BottomSheet open={sheetOpen} onClose={handleClose}>
-        <div className="px-4 pt-2 pb-4 border-b border-[#e0e0e0]">
-          <p className="text-[18px] text-black">1:1 문의</p>
-          <p className="text-[14px] text-[#aaa] mt-0.5">궁금한 점을 남겨주세요.</p>
-        </div>
-
-        <div className="px-4 py-5 space-y-4 overflow-y-auto max-h-[65vh]">
-          <div>
-            <p className="text-[13px] uppercase tracking-[0.08em] text-black mb-2">문의 유형</p>
-            <div className="flex flex-wrap gap-2">
-              {INQUIRY_CATEGORIES.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCategory(c)}
-                  className={`px-3 py-1.5 text-[13px] rounded-[10px] border transition-colors ${
-                    category === c
-                      ? "border-black bg-black text-white"
-                      : "border-[#e0e0e0] bg-[#f5f5f5] text-[#888]"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-[13px] uppercase tracking-[0.08em] text-black mb-2">제목</p>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="제목을 입력해주세요"
-              className={inputClass}
-              maxLength={50}
-            />
-          </div>
-
-          <div>
-            <p className="text-[13px] uppercase tracking-[0.08em] text-black mb-2">내용</p>
-            <textarea
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="문의 내용을 자세히 작성해주세요."
-              rows={5}
-              className={`${inputClass} resize-none`}
-              maxLength={1000}
-            />
-          </div>
-        </div>
-
-        <div className="px-4 pt-3 pb-6 border-t border-[#e0e0e0]">
-          <Button fullWidth size="lg" disabled={!canSubmit} onClick={handleSubmit}>
-            문의 접수
+        <Link href="/my/inquiry/write">
+          <Button fullWidth size="lg">
+            문의하기
           </Button>
-        </div>
-      </BottomSheet>
+        </Link>
+      </div>
     </div>
   );
 }

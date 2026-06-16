@@ -4,12 +4,18 @@ interface QuantitySelectorProps {
   quantity: number;
   max: number;
   onChange: (qty: number) => void;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
 }
 
 export function QuantitySelector({ quantity, max, onChange, size = "md" }: QuantitySelectorProps) {
-  const btnSize = size === "sm" ? "w-7 h-7 text-[13px]" : "w-8 h-8 text-[14px]";
-  const numSize = size === "sm" ? "w-8 text-[13px]" : "w-10 text-[14px]";
+  const btnSize =
+    size === "sm" ? "w-7 h-7 text-[13px]" :
+    size === "lg" ? "w-11 h-11 text-[18px]" :
+    "w-8 h-8 text-[14px]";
+  const numSize =
+    size === "sm" ? "w-8 text-[13px]" :
+    size === "lg" ? "w-12 text-[18px]" :
+    "w-10 text-[14px]";
 
   return (
     <div className="flex items-center border border-[#e0e0e0] rounded-[10px] overflow-hidden">

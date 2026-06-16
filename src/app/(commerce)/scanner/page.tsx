@@ -11,15 +11,17 @@ import { InteractionSheet } from "./InteractionSheet";
 import { getPreset, InteractionType, STORAGE_KEY, STAGGER_KEY } from "./interactions";
 
 function readStoredInteraction(): InteractionType {
-  if (typeof window === "undefined") return "instant";
+  if (typeof window === "undefined") return "slide";
   const v = window.localStorage.getItem(STORAGE_KEY);
   if (v === "slide" || v === "fade" || v === "pop" || v === "instant") return v;
-  return "instant";
+  return "slide";
 }
 
 function readStoredStagger(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(STAGGER_KEY) === "1";
+  if (typeof window === "undefined") return true;
+  const v = window.localStorage.getItem(STAGGER_KEY);
+  if (v === null) return true; // 저장값 없으면 기본값 true
+  return v === "1";
 }
 
 export default function ScannerPage() {
@@ -28,8 +30,8 @@ export default function ScannerPage() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [direction, setDirection] = useState(1); // 1: 다음, -1: 이전/리셋
 
-  const [interaction, setInteraction] = useState<InteractionType>("instant");
-  const [stagger, setStagger] = useState(false); // false: 한 번에, true: 시간차
+  const [interaction, setInteraction] = useState<InteractionType>("slide");
+  const [stagger, setStagger] = useState(true); // false: 한 번에, true: 시간차
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // localStorage에서 초기값 복원 (마운트 후 1회)

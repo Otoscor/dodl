@@ -46,6 +46,15 @@ const cards = [
     cta: "보기",
     primary: false,
   },
+  {
+    href: "/components",
+    external: false,
+    icon: "widgets",
+    title: "컴포넌트",
+    description: "실제 컴포넌트 state 조절 · 인터랙티브 프리뷰",
+    cta: "열기",
+    primary: false,
+  },
 ];
 
 export default function LandingPage() {

@@ -78,6 +78,18 @@ export interface ReviewSummary {
   rating_distribution: { 1: number; 2: number; 3: number; 4: number; 5: number };
 }
 
+export interface IndicatorGrade {
+  metric: string; // 다이어트 · 혈당 · 근육 · 면역 · 장건강
+  grade: "A" | "B" | "C" | "D" | "E";
+  status: string; // 적극 권장 · 권장 · 주의 · 권장 안 함 · 비권장
+}
+
+export interface Additive {
+  name: string; // 카라기난, 카복시메틸셀룰로스나트륨 …
+  tag: string; // 살펴보기 · 알아두기
+  desc: string; // 2줄 설명 (\n 줄바꿈)
+}
+
 export interface ProductDetailInfo {
   shipping: string;
   keySpecs: string[];
@@ -86,6 +98,8 @@ export interface ProductDetailInfo {
   manufacturer: string;
   brand?: string;
   nutrition?: Nutrition;
+  indicatorGrades?: IndicatorGrade[];
+  additives?: Additive[];
 }
 
 export interface ProductDetail extends Product {

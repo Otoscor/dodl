@@ -323,6 +323,15 @@ export const MOCK_INQUIRIES: MockInquiry[] = [
 
 export const INQUIRY_CATEGORIES = ["상품", "배송", "취소/반품/교환", "결제", "기타"] as const;
 
+// 문의 유형별 세부 유형 (작성 폼 드롭다운)
+export const INQUIRY_DETAIL_TYPES: Record<string, string[]> = {
+  "상품": ["성분·원료 문의", "섭취 방법", "재입고 문의", "상품 정보 오류"],
+  "배송": ["배송 지연", "배송지 변경", "송장번호 문의", "오배송·파손"],
+  "취소/반품/교환": ["취소 요청", "반품 요청", "교환 요청", "환불 지연"],
+  "결제": ["결제 오류", "결제수단 변경", "영수증·현금영수증", "포인트·쿠폰 적용"],
+  "기타": ["회원 정보", "이벤트·쿠폰", "앱 오류", "기타 문의"],
+};
+
 // 배송지 관리
 export interface MockAddress {
   id: string;

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { BackHeader } from "@/components/layout/BackHeader";
 import { OptionSelector } from "@/components/commerce/OptionSelector";
+import { IndicatorGradeTable } from "@/components/commerce/IndicatorGradeTable";
+import { AdditiveCards } from "@/components/commerce/AdditiveCards";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -272,12 +274,22 @@ export default function ProductDetailPage({
           )}
         </div>
 
+        {/* 지표등급표 */}
+        {product.detail_info?.indicatorGrades && product.detail_info.indicatorGrades.length > 0 && (
+          <IndicatorGradeTable grades={product.detail_info.indicatorGrades} />
+        )}
+
+        {/* 첨가물 알아보기 */}
+        {product.detail_info?.additives && product.detail_info.additives.length > 0 && (
+          <AdditiveCards additives={product.detail_info.additives} />
+        )}
+
         {/* 상세 정보 섹션 */}
         {product.detail_info && (
           <div className="px-6 pb-8 space-y-0">
             {/* a) 배송 정보 */}
             {product.detail_info.shipping && (
-              <div className="py-6 border-t border-[#e0e0e0]">
+              <div className="py-8 border-t border-[#e0e0e0]">
                 <div className="flex items-start gap-2.5">
                   <span className="material-icons-outlined text-[20px] text-[#888] mt-0.5 shrink-0">local_shipping</span>
                   <div>
@@ -290,7 +302,7 @@ export default function ProductDetailPage({
 
             {/* b) 주요 정보 */}
             {product.detail_info.keySpecs && product.detail_info.keySpecs.length > 0 && (
-              <div className="py-4 border-t border-[#e0e0e0]">
+              <div className="py-8 border-t border-[#e0e0e0]">
                 <p className="text-[14px] text-[#888] mb-2">주요 정보</p>
                 <ul className="space-y-1.5">
                   {product.detail_info.keySpecs.map((spec, i) => (
@@ -305,7 +317,7 @@ export default function ProductDetailPage({
 
             {/* c) 섭취 방법 */}
             {product.detail_info.dosage && (
-              <div className="py-4 border-t border-[#e0e0e0]">
+              <div className="py-8 border-t border-[#e0e0e0]">
                 <div className="flex items-start gap-2.5">
                   <span className="material-icons-outlined text-[20px] text-[#888] mt-0.5 shrink-0">schedule</span>
                   <div>
@@ -318,7 +330,7 @@ export default function ProductDetailPage({
 
             {/* d) 주의사항 */}
             {product.detail_info.caution && (
-              <div className="py-4 border-t border-[#e0e0e0]">
+              <div className="py-8 border-t border-[#e0e0e0]">
                 <div className="bg-[#f5f5f5] rounded-[10px] px-4 py-3">
                   <div className="flex items-start gap-2.5">
                     <span className="material-icons-outlined text-[20px] text-[#888] mt-0.5 shrink-0">warning_amber</span>
@@ -333,7 +345,7 @@ export default function ProductDetailPage({
 
             {/* e) 제조사·원산지 */}
             {product.detail_info.manufacturer && (
-              <div className="py-4 border-t border-[#e0e0e0]">
+              <div className="py-8 border-t border-[#e0e0e0]">
                 <div className="flex items-start gap-2.5">
                   <span className="material-icons-outlined text-[20px] text-[#888] mt-0.5 shrink-0">business</span>
                   <div>

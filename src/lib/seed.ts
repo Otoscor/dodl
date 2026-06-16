@@ -93,6 +93,30 @@ export function seedDatabase(db: Database.Database) {
     return pid;
   }
 
+  // === 지표등급표 / 첨가물 알아보기 (임의 데이터) ===
+  // 5종 고정 지표: 다이어트·혈당·근육·면역·장건강. ig("B","B","C","A","B") 형태로 등급 5개 전달.
+  const GRADE_STATUS: Record<string, string> = { A: "적극 권장", B: "권장", C: "주의", D: "권장 안 함", E: "비권장" };
+  const IG_METRICS = ["다이어트", "혈당", "근육", "면역", "장건강"];
+  function ig(...grades: ("A" | "B" | "C" | "D" | "E")[]) {
+    return IG_METRICS.map((metric, i) => ({ metric, grade: grades[i], status: GRADE_STATUS[grades[i]] }));
+  }
+  // 첨가물 풀 — name/tag(살펴보기·알아두기)/desc(2줄, \n)
+  const ADD = {
+    carrageenan: { name: "카라기난", tag: "살펴보기", desc: "점도·식감을 잡는\n해조류 유래 증점제" },
+    cmc: { name: "카복시메틸셀룰로스나트륨", tag: "알아두기", desc: "점도를 높여 안정시키는\n합성 증점·안정제" },
+    silica: { name: "이산화규소", tag: "알아두기", desc: "분말이 뭉치지 않게 돕는\n고결방지 성분" },
+    mgst: { name: "스테아린산마그네슘", tag: "알아두기", desc: "정제를 매끄럽게 빚는\n식물성 윤활 성분" },
+    malto: { name: "말토덱스트린", tag: "살펴보기", desc: "성분을 고르게 섞는\n옥수수 유래 부형제" },
+    cellulose: { name: "결정셀룰로스", tag: "살펴보기", desc: "알약 형태를 잡아주는\n식물성 식이섬유" },
+    citric: { name: "구연산", tag: "살펴보기", desc: "상큼한 신맛을 더하는\n천연 유래 산미료" },
+    stevia: { name: "효소처리스테비아", tag: "알아두기", desc: "설탕 대신 단맛을 내는\n식물 유래 감미료" },
+    gelatin: { name: "젤라틴", tag: "살펴보기", desc: "캡슐·젤리를 형성하는\n동물성 단백질" },
+    pectin: { name: "펙틴", tag: "살펴보기", desc: "젤리를 굳히는\n과일 유래 겔화제" },
+    xylitol: { name: "자일리톨", tag: "알아두기", desc: "충치 걱정 적은\n자작나무 유래 감미료" },
+    glycerin: { name: "글리세린", tag: "알아두기", desc: "수분을 잡아주는\n보습 보조 성분" },
+    tocopherol: { name: "혼합토코페롤", tag: "살펴보기", desc: "산패를 막아주는\n천연 비타민E 산화방지제" },
+  };
+
   // 1. 멀티비타민 (조합형: 맛×용량) → 4 SKU
   const pidMultivitamin = createProduct("vitamin", "데일리 멀티비타민", "하루 한 알로 필수 비타민 13종을 채우세요. 무향료, 무색소로 온 가족이 안심하고 섭취할 수 있습니다.", 18000, "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=533&fit=crop",
     [
@@ -105,7 +129,7 @@ export function seedDatabase(db: Database.Database) {
       { optionKeys: ["포도", "30정"], price: 18000, stock: 3, code: "VIT-MV-GR30" },
       { optionKeys: ["포도", "60정"], price: 32000, stock: 0, code: "VIT-MV-GR60" },
     ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민 13종 복합", "무향료·무색소", "건강기능식품 인증", "1일 1정"], brand: "뉴트리원", nutrition: { calories: 4, protein: 0, sugar: 0, fat: 0.1 }, dosage: "1일 1회, 1회 1정을 물과 함께 식후에 섭취하세요.", caution: "특정 성분에 알레르기가 있는 분은 성분을 확인 후 섭취하세요. 임산부 및 수유부는 전문가와 상담 후 섭취하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민 13종 복합", "무향료·무색소", "건강기능식품 인증", "1일 1정"], brand: "뉴트리원", nutrition: { calories: 4, protein: 0, sugar: 0, fat: 0.1 }, indicatorGrades: ig("B", "B", "C", "A", "B"), additives: [ADD.silica, ADD.mgst, ADD.cellulose], dosage: "1일 1회, 1회 1정을 물과 함께 식후에 섭취하세요.", caution: "특정 성분에 알레르기가 있는 분은 성분을 확인 후 섭취하세요. 임산부 및 수유부는 전문가와 상담 후 섭취하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
   );
 
   // 2. 비타민C 1000 (단일 옵션: 용량)
@@ -116,14 +140,14 @@ export function seedDatabase(db: Database.Database) {
       { optionKeys: ["120정"], price: 27000, stock: 45, code: "VIT-C-120" },
       { optionKeys: ["180정"], price: 38000, stock: 2, code: "VIT-C-180" },
     ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민C 1000mg 고함량", "영국산 원료", "항산화 기능성 인증", "정제 타입"], brand: "비타하우스", nutrition: { calories: 5, protein: 0, sugar: 0, fat: 0 }, dosage: "1일 1회, 1회 1정을 물과 함께 섭취하세요. 공복 시 속쓰림이 있을 수 있으니 식후 섭취를 권장합니다.", caution: "위장이 민감한 분은 식후에 섭취하세요. 과다 섭취 시 복통이나 설사가 발생할 수 있습니다.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 영국(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민C 1000mg 고함량", "영국산 원료", "항산화 기능성 인증", "정제 타입"], brand: "비타하우스", nutrition: { calories: 5, protein: 0, sugar: 0, fat: 0 }, indicatorGrades: ig("B", "B", "C", "A", "C"), additives: [ADD.cellulose, ADD.mgst, ADD.citric], dosage: "1일 1회, 1회 1정을 물과 함께 섭취하세요. 공복 시 속쓰림이 있을 수 있으니 식후 섭취를 권장합니다.", caution: "위장이 민감한 분은 식후에 섭취하세요. 과다 섭취 시 복통이나 설사가 발생할 수 있습니다.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 영국(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
   );
 
   // 3. 비타민D3 (옵션 없음)
   const pidVitaminD = createProduct("vitamin", "햇빛 비타민D3 2000IU", "실내 생활이 많은 현대인을 위한 비타민D3. 뼈 건강과 면역 기능에 필수적입니다.", 12000, "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&h=533&fit=crop",
     [],
     [{ optionKeys: [], price: 12000, stock: 100, code: "VIT-D3-2000" }],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민D3 2000IU", "소프트캡슐", "뼈 건강 기능성 인증", "3개월분"], brand: "솔라뉴트리", nutrition: { calories: 9, protein: 0, sugar: 0, fat: 1.0 }, dosage: "1일 1회, 1회 1캡슐을 식사 중 또는 식후에 섭취하세요.", caution: "비타민D를 과다 섭취하면 고칼슘혈증이 발생할 수 있습니다. 1일 섭취량을 지켜주세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민D3 2000IU", "소프트캡슐", "뼈 건강 기능성 인증", "3개월분"], brand: "솔라뉴트리", nutrition: { calories: 9, protein: 0, sugar: 0, fat: 1.0 }, indicatorGrades: ig("C", "B", "A", "A", "C"), additives: [ADD.gelatin, ADD.glycerin, ADD.silica], dosage: "1일 1회, 1회 1캡슐을 식사 중 또는 식후에 섭취하세요.", caution: "비타민D를 과다 섭취하면 고칼슘혈증이 발생할 수 있습니다. 1일 섭취량을 지켜주세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
   );
 
   // 4. 프로바이오틱스 (조합형: 균주×용량) → 4 SKU
@@ -138,7 +162,7 @@ export function seedDatabase(db: Database.Database) {
       { optionKeys: ["김치유산균", "1개월분"], price: 28000, stock: 40, code: "PRO-KM-1M" },
       { optionKeys: ["김치유산균", "3개월분"], price: 72000, stock: 0, code: "PRO-KM-3M" },
     ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["19종 복합 유산균", "100억 CFU 보장", "특허 코팅 기술", "냉장 보관 불필요"], brand: "락토핏랩", nutrition: { calories: 6, protein: 0.2, sugar: 0.3, fat: 0.1 }, dosage: "1일 1회, 1회 1캡슐을 식전 또는 취침 전에 섭취하세요.", caution: "유제품 알레르기가 있는 분은 주의하세요. 항생제와 함께 섭취 시 효과가 감소할 수 있습니다.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 18개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["19종 복합 유산균", "100억 CFU 보장", "특허 코팅 기술", "냉장 보관 불필요"], brand: "락토핏랩", nutrition: { calories: 6, protein: 0.2, sugar: 0.3, fat: 0.1 }, indicatorGrades: ig("A", "B", "C", "B", "A"), additives: [ADD.malto, ADD.cellulose, ADD.silica], dosage: "1일 1회, 1회 1캡슐을 식전 또는 취침 전에 섭취하세요.", caution: "유제품 알레르기가 있는 분은 주의하세요. 항생제와 함께 섭취 시 효과가 감소할 수 있습니다.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 18개월" }
   );
 
   // 5. 어린이 프로바이오틱스 (단일: 맛)
@@ -148,7 +172,7 @@ export function seedDatabase(db: Database.Database) {
       { optionKeys: ["딸기"], price: 19000, stock: 35, code: "PRO-KD-ST" },
       { optionKeys: ["바나나"], price: 19000, stock: 4, code: "PRO-KD-BN" },
     ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["츄어블 타입", "방부제 무첨가", "유산균 50억 CFU", "어린이 맞춤 설계"], brand: "키즈웰", nutrition: { calories: 12, protein: 0.1, sugar: 2.5, fat: 0.2 }, dosage: "1일 1회, 1회 1정을 씹어서 섭취하세요. 만 3세 이상부터 섭취 가능합니다.", caution: "알레르기 체질인 경우 성분을 확인하세요. 만 3세 미만의 영유아는 섭취하지 마세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 18개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["츄어블 타입", "방부제 무첨가", "유산균 50억 CFU", "어린이 맞춤 설계"], brand: "키즈웰", nutrition: { calories: 12, protein: 0.1, sugar: 2.5, fat: 0.2 }, indicatorGrades: ig("B", "C", "C", "B", "A"), additives: [ADD.xylitol, ADD.citric, ADD.malto, ADD.stevia], dosage: "1일 1회, 1회 1정을 씹어서 섭취하세요. 만 3세 이상부터 섭취 가능합니다.", caution: "알레르기 체질인 경우 성분을 확인하세요. 만 3세 미만의 영유아는 섭취하지 마세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 18개월" }
   );
 
   // 6. 알티지 오메가3 (단일: 용량)
@@ -158,14 +182,14 @@ export function seedDatabase(db: Database.Database) {
       { optionKeys: ["60캡슐"], price: 35000, stock: 55, code: "OMG-RTG-60" },
       { optionKeys: ["120캡슐"], price: 62000, stock: 25, code: "OMG-RTG-120" },
     ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["rTG 오메가3", "EPA 600mg + DHA 400mg", "초임계 추출 공법", "소프트캡슐"], brand: "노르딕씨", nutrition: { calories: 18, protein: 0, sugar: 0, fat: 2.0 }, dosage: "1일 1회, 1회 1캡슐을 식후에 물과 함께 섭취하세요.", caution: "수술 예정인 분은 2주 전부터 섭취를 중단하세요. 혈액응고 관련 약물 복용 시 전문가와 상담하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 노르웨이(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["rTG 오메가3", "EPA 600mg + DHA 400mg", "초임계 추출 공법", "소프트캡슐"], brand: "노르딕씨", nutrition: { calories: 18, protein: 0, sugar: 0, fat: 2.0 }, indicatorGrades: ig("B", "A", "B", "B", "C"), additives: [ADD.gelatin, ADD.glycerin, ADD.tocopherol], dosage: "1일 1회, 1회 1캡슐을 식후에 물과 함께 섭취하세요.", caution: "수술 예정인 분은 2주 전부터 섭취를 중단하세요. 혈액응고 관련 약물 복용 시 전문가와 상담하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 노르웨이(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
   );
 
   // 7. 식물성 오메가3 (옵션 없음)
   createProduct("omega3", "식물성 오메가3 DHA", "미세조류 유래 식물성 DHA. 비건 인증, 중금속 걱정 없는 깨끗한 오메가3.", 29000, "https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=400&h=533&fit=crop",
     [],
     [{ optionKeys: [], price: 29000, stock: 70, code: "OMG-VG-DHA" }],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["미세조류 유래 DHA", "비건 인증", "중금속 無검출", "식물성 캡슐"], brand: "그린알게", nutrition: { calories: 14, protein: 0, sugar: 0, fat: 1.5 }, dosage: "1일 1회, 1회 2캡슐을 식후에 물과 함께 섭취하세요.", caution: "해조류 알레르기가 있는 분은 섭취하지 마세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 미국(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["미세조류 유래 DHA", "비건 인증", "중금속 無검출", "식물성 캡슐"], brand: "그린알게", nutrition: { calories: 14, protein: 0, sugar: 0, fat: 1.5 }, indicatorGrades: ig("B", "A", "B", "B", "B"), additives: [ADD.carrageenan, ADD.glycerin, ADD.tocopherol], dosage: "1일 1회, 1회 2캡슐을 식후에 물과 함께 섭취하세요.", caution: "해조류 알레르기가 있는 분은 섭취하지 마세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 미국(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
   );
 
   // 8. 마그네슘 (단일: 타입)
@@ -175,14 +199,14 @@ export function seedDatabase(db: Database.Database) {
       { optionKeys: ["킬레이트"], price: 16000, stock: 90, code: "MIN-MG-CH" },
       { optionKeys: ["구연산"], price: 14000, stock: 85, code: "MIN-MG-CT" },
     ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["킬레이트/구연산 마그네슘", "높은 흡수율", "근육·신경 기능 지원", "90정 (3개월분)"], brand: "미네랄플러스", nutrition: { calories: 3, protein: 0, sugar: 0, fat: 0 }, dosage: "1일 1회, 1회 1정을 취침 전에 물과 함께 섭취하세요.", caution: "신장 질환이 있는 분은 전문가와 상담 후 섭취하세요. 설사가 발생할 경우 섭취량을 줄여주세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["킬레이트/구연산 마그네슘", "높은 흡수율", "근육·신경 기능 지원", "90정 (3개월분)"], brand: "미네랄플러스", nutrition: { calories: 3, protein: 0, sugar: 0, fat: 0 }, indicatorGrades: ig("C", "B", "A", "C", "C"), additives: [ADD.mgst, ADD.cellulose, ADD.silica], dosage: "1일 1회, 1회 1정을 취침 전에 물과 함께 섭취하세요.", caution: "신장 질환이 있는 분은 전문가와 상담 후 섭취하세요. 설사가 발생할 경우 섭취량을 줄여주세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
   );
 
   // 9. 아연+셀레늄 (옵션 없음)
   createProduct("mineral", "아연 + 셀레늄", "남성 건강에 필수적인 아연과 셀레늄을 한 알에. 면역력과 항산화에 도움.", 13000, "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=533&fit=crop",
     [],
     [{ optionKeys: [], price: 13000, stock: 65, code: "MIN-ZN-SE" }],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["아연 12mg + 셀레늄 50μg", "면역 기능 강화", "항산화 기능", "60정 (2개월분)"], brand: "데일리핏", nutrition: { calories: 2, protein: 0, sugar: 0, fat: 0 }, dosage: "1일 1회, 1회 1정을 식후에 물과 함께 섭취하세요.", caution: "구리 흡수를 방해할 수 있으므로 장기 복용 시 전문가와 상담하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["아연 12mg + 셀레늄 50μg", "면역 기능 강화", "항산화 기능", "60정 (2개월분)"], brand: "데일리핏", nutrition: { calories: 2, protein: 0, sugar: 0, fat: 0 }, indicatorGrades: ig("C", "B", "B", "A", "C"), additives: [ADD.cellulose, ADD.mgst, ADD.silica], dosage: "1일 1회, 1회 1정을 식후에 물과 함께 섭취하세요.", caution: "구리 흡수를 방해할 수 있으므로 장기 복용 시 전문가와 상담하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
   );
 
   // 10. 저분자 콜라겐 (조합형: 타입×용량) → 4 SKU — 전 SKU 품절
@@ -197,7 +221,7 @@ export function seedDatabase(db: Database.Database) {
       { optionKeys: ["정제", "30일분"], price: 32000, stock: 0, code: "COL-TB-30" },
       { optionKeys: ["정제", "60일분"], price: 56000, stock: 0, code: "COL-TB-60" },
     ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["초저분자 500Da 이하", "피쉬 콜라겐 펩타이드", "피부 보습·탄력 기능성 인증", "분말/정제 선택 가능"], brand: "스킨콜라겐", nutrition: { calories: 16, protein: 3.5, sugar: 0, fat: 0 }, dosage: "1일 1회, 분말은 1포를 물이나 음료에 타서, 정제는 2정을 물과 함께 섭취하세요.", caution: "어류 알레르기가 있는 분은 섭취하지 마세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 프랑스(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["초저분자 500Da 이하", "피쉬 콜라겐 펩타이드", "피부 보습·탄력 기능성 인증", "분말/정제 선택 가능"], brand: "스킨콜라겐", nutrition: { calories: 16, protein: 3.5, sugar: 0, fat: 0 }, indicatorGrades: ig("B", "B", "B", "C", "C"), additives: [ADD.malto, ADD.citric, ADD.stevia], dosage: "1일 1회, 분말은 1포를 물이나 음료에 타서, 정제는 2정을 물과 함께 섭취하세요.", caution: "어류 알레르기가 있는 분은 섭취하지 마세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 프랑스(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
   );
 
   // 11. 콜라겐 젤리스틱 (단일: 맛)
@@ -208,7 +232,7 @@ export function seedDatabase(db: Database.Database) {
       { optionKeys: ["블루베리"], price: 22000, stock: 1, code: "COL-JL-BB" },
       { optionKeys: ["레몬"], price: 22000, stock: 30, code: "COL-JL-LM" },
     ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["콜라겐 1000mg/포", "젤리 스틱 타입", "석류/블루베리/레몬 3종", "휴대 간편 개별포장"], brand: "카카오헬스케어", nutrition: { calories: 25, protein: 2.0, sugar: 4.5, fat: 0.1 }, dosage: "1일 1회, 1포를 그대로 섭취하세요. 냉장 보관 시 더 맛있게 드실 수 있습니다.", caution: "젤라틴 알레르기가 있는 분은 섭취하지 마세요. 어린이가 섭취 시 목에 걸리지 않도록 주의하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 12개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["콜라겐 1000mg/포", "젤리 스틱 타입", "석류/블루베리/레몬 3종", "휴대 간편 개별포장"], brand: "카카오헬스케어", nutrition: { calories: 25, protein: 2.0, sugar: 4.5, fat: 0.1 }, indicatorGrades: ig("D", "D", "C", "C", "C"), additives: [ADD.carrageenan, ADD.cmc, ADD.pectin, ADD.stevia], dosage: "1일 1회, 1포를 그대로 섭취하세요. 냉장 보관 시 더 맛있게 드실 수 있습니다.", caution: "젤라틴 알레르기가 있는 분은 섭취하지 마세요. 어린이가 섭취 시 목에 걸리지 않도록 주의하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 12개월" }
   );
 
   // 12. 어린이 멀티비타민 (단일: 맛)
@@ -218,14 +242,14 @@ export function seedDatabase(db: Database.Database) {
       { optionKeys: ["오렌지"], price: 20000, stock: 45, code: "KID-MV-OR" },
       { optionKeys: ["딸기"], price: 20000, stock: 50, code: "KID-MV-ST" },
     ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민 13종 + 미네랄", "곰돌이 모양 젤리", "인공색소 무첨가", "만 3세 이상"], brand: "꼬마비타", nutrition: { calories: 22, protein: 0.5, sugar: 3.8, fat: 0.2 }, dosage: "만 3~5세: 1일 1회 1정, 만 6세 이상: 1일 1회 2정을 씹어서 섭취하세요.", caution: "만 3세 미만은 섭취하지 마세요. 한 번에 여러 개를 입에 넣지 않도록 보호자 지도 하에 섭취하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 18개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민 13종 + 미네랄", "곰돌이 모양 젤리", "인공색소 무첨가", "만 3세 이상"], brand: "꼬마비타", nutrition: { calories: 22, protein: 0.5, sugar: 3.8, fat: 0.2 }, indicatorGrades: ig("C", "C", "C", "B", "C"), additives: [ADD.pectin, ADD.xylitol, ADD.citric, ADD.carrageenan], dosage: "만 3~5세: 1일 1회 1정, 만 6세 이상: 1일 1회 2정을 씹어서 섭취하세요.", caution: "만 3세 미만은 섭취하지 마세요. 한 번에 여러 개를 입에 넣지 않도록 보호자 지도 하에 섭취하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 18개월" }
   );
 
   // 13. 어린이 칼슘 (옵션 없음)
   createProduct("kids", "성장기 칼슘 + 비타민D", "뼈 건강에 필수인 칼슘과 비타민D를 한번에. 성장기 어린이에게 추천.", 17000, "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&h=533&fit=crop&q=80",
     [],
     [{ optionKeys: [], price: 17000, stock: 55, code: "KID-CA-VD" }],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["칼슘 500mg + 비타민D 400IU", "성장기 맞춤 배합", "츄어블 타입", "60정 (2개월분)"], brand: "그로우업", nutrition: { calories: 8, protein: 0.3, sugar: 1.2, fat: 0.3 }, dosage: "1일 1회, 1회 1정을 씹어서 섭취하세요. 만 4세 이상부터 섭취 가능합니다.", caution: "만 4세 미만은 섭취하지 마세요. 신장 질환이 있는 어린이는 전문가와 상담 후 섭취하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
+    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["칼슘 500mg + 비타민D 400IU", "성장기 맞춤 배합", "츄어블 타입", "60정 (2개월분)"], brand: "그로우업", nutrition: { calories: 8, protein: 0.3, sugar: 1.2, fat: 0.3 }, indicatorGrades: ig("C", "B", "A", "B", "C"), additives: [ADD.cellulose, ADD.xylitol, ADD.mgst], dosage: "1일 1회, 1회 1정을 씹어서 섭취하세요. 만 4세 이상부터 섭취 가능합니다.", caution: "만 4세 미만은 섭취하지 마세요. 신장 질환이 있는 어린이는 전문가와 상담 후 섭취하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
   );
 
   // --- Reviews ---
