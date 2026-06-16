@@ -25,8 +25,10 @@ function PointInputStory({
     <PointInput
       balance={balance}
       applied={applied}
-      onApplyAll={() => { setApplied(balance); onSelect(`${balance}P 전액 적용`); }}
-      onReset={() => { setApplied(0); onSelect("포인트 취소"); }}
+      onChange={(amount) => {
+        setApplied(amount);
+        onSelect(amount > 0 ? `${amount.toLocaleString()}P 적용` : "포인트 미적용");
+      }}
     />
   );
 }
@@ -572,7 +574,7 @@ export const STORIES: Story[] = [
   {
     id: "point-input",
     name: "PointInput",
-    states: ["Default", "Applied", "Empty Balance"],
+    states: ["Default", "Typing (직접 입력)", "Applied", "Empty Balance"],
     knobs: [
       {
         key: "balance",
@@ -596,8 +598,7 @@ export const STORIES: Story[] = [
     propsDoc: [
       { name: "balance", type: "number", desc: "보유 포인트 총액. 하단 '보유 NP' 표시에 사용." },
       { name: "applied", type: "number", desc: "현재 적용된 포인트. 0이면 Default, >0이면 Applied 상태." },
-      { name: "onApplyAll", type: "() => void", desc: "'모두 사용' 클릭 시 balance 전액을 적용하도록 부모에 알림." },
-      { name: "onReset", type: "() => void", desc: "'취소' 클릭 시 applied를 0으로 초기화하도록 부모에 알림." },
+      { name: "onChange", type: "(amount: number) => void", desc: "직접 입력·모두사용·취소 모든 경우에 최종 금액을 전달. 부모에서 applied를 업데이트." },
     ],
   },
 ];
