@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { formatPrice } from "@/lib/utils";
 
 interface PointInputProps {
@@ -12,6 +12,7 @@ interface PointInputProps {
 export function PointInput({ balance, applied, onChange }: PointInputProps) {
   const isEmpty = balance === 0;
   const [draft, setDraft] = useState(applied > 0 ? String(applied) : "");
+  const [focused, setFocused] = useState(false);
 
   useEffect(() => {
     setDraft(applied > 0 ? String(applied) : "");
@@ -42,7 +43,7 @@ export function PointInput({ balance, applied, onChange }: PointInputProps) {
 
   return (
     <div className="space-y-2">
-      <div className="bg-[#f5f5f5] rounded-[12px] px-4 py-3.5">
+      <div className={`bg-[#f5f5f5] rounded-[12px] px-4 py-3.5 border-2 transition-colors ${focused ? "border-black" : "border-transparent"}`}>
         <p className="text-[12px] text-[#888] mb-1">포인트</p>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-1 flex-1 min-w-0">
@@ -51,6 +52,8 @@ export function PointInput({ balance, applied, onChange }: PointInputProps) {
               inputMode="numeric"
               value={draft}
               onChange={(e) => handleInput(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
               placeholder="0"
               disabled={isEmpty}
               className="bg-transparent text-[22px] font-medium text-black w-full outline-none placeholder:text-[#ccc] tabular-nums disabled:cursor-not-allowed"
