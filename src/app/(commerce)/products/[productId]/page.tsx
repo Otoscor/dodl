@@ -173,7 +173,7 @@ export default function ProductDetailPage({
 
         {/* 상품 이미지 — 캐러셀 쉘 (이미지 1장 + 장식용 점) + 영양 배지 */}
         <div className="aspect-[3/4] bg-[#f5f5f5] relative flex items-center justify-center overflow-hidden">
-          {product.image_url?.startsWith("http") ? (
+          {product.image_url ? (
             <img src={product.image_url} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <span className="material-icons-outlined text-[72px] text-[#e0e0e0]">medication</span>
@@ -276,7 +276,7 @@ export default function ProductDetailPage({
             className="overflow-hidden"
             style={{ maxHeight: detailExpanded ? 1200 : 320 }}
           >
-            {product.image_url?.startsWith("http") ? (
+            {product.image_url ? (
               <img
                 src={product.image_url}
                 alt={`${product.name} 상세`}

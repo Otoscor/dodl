@@ -8,7 +8,7 @@ interface MyProductRowProps {
 }
 
 export function MyProductRow({ product }: MyProductRowProps) {
-  const hasImage = product.image_url?.startsWith("http");
+  const hasImage = !!product.image_url;
   const hasRange = product.min_price !== product.max_price;
 
   return (

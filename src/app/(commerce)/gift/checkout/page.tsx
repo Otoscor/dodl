@@ -309,7 +309,7 @@ function GiftCheckoutContent() {
         <div className="px-6 pb-6">
           <div className="flex gap-3">
             <div className="w-14 h-14 bg-[#f5f5f5] rounded-[10px] overflow-hidden flex items-center justify-center shrink-0">
-              {item.image_url?.startsWith("http") ? (
+              {item.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={item.image_url} alt={item.product_name} className="w-full h-full object-cover" />
               ) : (

@@ -10,7 +10,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const hasRange = product.min_price !== product.max_price;
-  const hasImage = product.image_url && product.image_url.startsWith("http");
+  const hasImage = !!product.image_url;
 
   return (
     <Link href={`/products/${product.id}`} className="block group">

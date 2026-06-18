@@ -10,7 +10,7 @@ interface MagazineCardProps {
 }
 
 export function MagazineCard({ product, augment }: MagazineCardProps) {
-  const hasImage = product.image_url && product.image_url.startsWith("http");
+  const hasImage = !!product.image_url;
   const n = product.nutrition;
 
   // 영양 5열 테이블 — 상품 영양정보 4값 + 보강된 식이섬유
