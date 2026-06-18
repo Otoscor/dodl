@@ -72,7 +72,12 @@ export function getProductDetail(productId: string): ProductDetail | null {
       p.*,
       c.name AS category_name,
       COALESCE(r.review_count, 0)             AS review_count,
-      COALESCE(ROUND(r.average_rating, 1), 0) AS average_rating
+      COALESCE(ROUND(r.average_rating, 1), 0) AS average_rating,
+      COALESCE(r.count_5, 0) AS count_5,
+      COALESCE(r.count_4, 0) AS count_4,
+      COALESCE(r.count_3, 0) AS count_3,
+      COALESCE(r.count_2, 0) AS count_2,
+      COALESCE(r.count_1, 0) AS count_1
     FROM products p
     JOIN categories c ON c.id = p.category_id
     LEFT JOIN (

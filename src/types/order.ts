@@ -17,6 +17,11 @@ export interface Order {
   return_reason: string | null;
   return_note: string;
   returned_at: string | null;
+  is_gift: number;
+  sender_name: string;
+  sender_phone: string;
+  gift_message: string;
+  gift_address_mode: string;
 }
 
 export interface OrderItem {

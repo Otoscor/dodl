@@ -6,6 +6,7 @@ import { BackHeader } from "@/components/layout/BackHeader";
 import { OptionSelector } from "@/components/commerce/OptionSelector";
 import { IndicatorGradeTable } from "@/components/commerce/IndicatorGradeTable";
 import { AdditiveCards } from "@/components/commerce/AdditiveCards";
+import { Accordion } from "@/components/ui/Accordion";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -15,7 +16,7 @@ import { useCart } from "@/hooks/useCart";
 import { formatPrice, originalPrice } from "@/lib/utils";
 import type { ProductDetail, Sku, Review, ReviewSummary } from "@/types/product";
 
-type SheetAction = "cart" | "buy";
+type SheetAction = "cart" | "buy" | "gift";
 
 export default function ProductDetailPage({
   params,
@@ -32,19 +33,10 @@ export default function ProductDetailPage({
 
   const [detailExpanded, setDetailExpanded] = useState(false);
 
-  // Review sheet state
-  const [reviewSheetOpen, setReviewSheetOpen] = useState(false);
+  // Review section (상세 하단 인라인 섹션)
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
-
-  // Write review sheet state
-  const [writeSheetOpen, setWriteSheetOpen] = useState(false);
-  const [writeRating, setWriteRating] = useState(0);
-  const [writeName, setWriteName] = useState("");
-  const [writeBody, setWriteBody] = useState("");
-  const [writeSubmitting, setWriteSubmitting] = useState(false);
-  const [writePhotos, setWritePhotos] = useState<{ file: File; preview: string }[]>([]);
-  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const reviewSectionRef = useRef<HTMLElement>(null);
 
   // Sheet state
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -62,73 +54,31 @@ export default function ProductDetailPage({
       });
   }, [productId]);
 
-  const openReviewSheet = useCallback(() => {
-    setReviewSheetOpen(true);
-    if (reviews.length === 0) {
-      setReviewsLoading(true);
-      fetch(`/api/products/${productId}/reviews`)
-        .then((r) => r.json())
-        .then((data) => {
-          setReviews(data.reviews);
-          setReviewsLoading(false);
-        });
-    }
-  }, [productId, reviews.length]);
+  // 리뷰는 상세 하단 섹션에서 항상 노출 → 마운트 시 로드 (초기 reviewsLoading=true)
+  useEffect(() => {
+    fetch(`/api/products/${productId}/reviews`)
+      .then((r) => r.json())
+      .then((data) => {
+        setReviews(data.reviews);
+        setReviewsLoading(false);
+      })
+      .catch(() => setReviewsLoading(false));
+  }, [productId]);
 
-  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    const remaining = 5 - writePhotos.length;
-    const toAdd = files.slice(0, remaining).map(f => ({ file: f, preview: URL.createObjectURL(f) }));
-    setWritePhotos(prev => [...prev, ...toAdd]);
-    e.target.value = "";
+  const scrollToReviews = () => {
+    reviewSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handlePhotoRemove = (index: number) => {
-    setWritePhotos(prev => {
-      URL.revokeObjectURL(prev[index].preview);
-      return prev.filter((_, i) => i !== index);
-    });
-  };
-
-  const handleWriteReview = async () => {
-    if (writeRating === 0 || writeName.trim() === "") return;
-    setWriteSubmitting(true);
-
-    let photoUrls: string[] = [];
-    if (writePhotos.length > 0) {
-      const results = await Promise.all(
-        writePhotos.map(async ({ file }) => {
-          const fd = new FormData();
-          fd.append("file", file);
-          const r = await fetch("/api/upload", { method: "POST", body: fd });
-          const d = await r.json();
-          return d.success ? (d.url as string) : null;
-        })
-      );
-      photoUrls = results.filter((u): u is string => u !== null);
-    }
-
-    const res = await fetch(`/api/products/${productId}/reviews`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ author_name: writeName, rating: writeRating, body: writeBody, photo_urls: photoUrls }),
-    });
-    const data = await res.json();
-    setWriteSubmitting(false);
-    if (data.success) {
-      showToast("리뷰가 등록되었습니다.");
-      setWriteSheetOpen(false);
-      setWriteRating(0);
-      setWriteName("");
-      setWriteBody("");
-      writePhotos.forEach(p => URL.revokeObjectURL(p.preview));
-      setWritePhotos([]);
-      setReviewsLoading(true);
-      fetch(`/api/products/${productId}/reviews`)
-        .then((r) => r.json())
-        .then((d) => { setReviews(d.reviews); setReviewsLoading(false); });
+  const handleShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: product?.name ?? "dodl", url });
+      } catch {
+        /* 사용자 취소 — 무시 */
+      }
     } else {
-      showToast(data.message ?? "오류가 발생했습니다.", "error");
+      showToast("공유 링크가 복사되었습니다.");
     }
   };
 
@@ -144,6 +94,13 @@ export default function ProductDetailPage({
 
   const handleConfirm = async () => {
     if (!selectedSku || selectedSku.stock === 0) return;
+
+    // 선물하기 — 장바구니 비경유, 선택 SKU를 쿼리로 선물 플로우에 전달
+    if (sheetAction === "gift") {
+      router.push(`/gift?skuId=${selectedSku.id}&qty=${quantity}`);
+      return;
+    }
+
     setConfirming(true);
 
     const res = await fetch("/api/cart", {
@@ -180,28 +137,55 @@ export default function ProductDetailPage({
   const maxPrice = Math.max(...product.skus.map((s) => s.price));
   const hasRange = minPrice !== maxPrice;
 
+  const info = product.detail_info;
+  const brand = info?.brand;
+  const specRows = buildSpecRows(product);
+
   // 바텀시트 CTA 레이블
   const confirmLabel = () => {
     if (!selectedSku || selectedSku.stock === 0) return "옵션을 선택해주세요";
     const total = formatPrice(selectedSku.price * quantity);
-    return sheetAction === "cart"
-      ? `${total} 장바구니 담기`
-      : `${total} 구매하기`;
+    if (sheetAction === "cart") return `${total} 장바구니 담기`;
+    if (sheetAction === "gift") return `${total} 선물하기`;
+    return `${total} 구매하기`;
   };
 
   return (
     <>
       {/* 본문 — CTA 바(56px) + 탭바(56px) 높이만큼 하단 여백 */}
       <div className="min-h-screen bg-white pb-36">
-        <BackHeader title={product.category_name} />
+        <BackHeader
+          rightAction={
+            <button
+              onClick={handleShare}
+              aria-label="공유"
+              className="w-8 h-8 flex items-center justify-center text-[#888] hover:text-black cursor-pointer"
+            >
+              <span className="material-icons-outlined text-[20px]">ios_share</span>
+            </button>
+          }
+        />
 
-        {/* 상품 이미지 */}
-        <div className="aspect-[3/4] bg-[#f5f5f5] relative flex items-center justify-center">
+        {/* 상품 이미지 — 캐러셀 쉘 (이미지 1장 + 장식용 점) + 영양 배지 */}
+        <div className="aspect-[3/4] bg-[#f5f5f5] relative flex items-center justify-center overflow-hidden">
           {product.image_url?.startsWith("http") ? (
             <img src={product.image_url} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <span className="material-icons-outlined text-[72px] text-[#e0e0e0]">medication</span>
           )}
+
+          {/* 캐러셀 점 (장식) */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+            {[0, 1, 2, 3].map((i) => (
+              <span
+                key={i}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === 0 ? "w-4 bg-black" : "w-1.5 bg-white/70"
+                }`}
+              />
+            ))}
+          </div>
+
           {allSoldOut && (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
               <Badge variant="red" className="text-[15px] px-4 py-1.5">
@@ -212,67 +196,45 @@ export default function ProductDetailPage({
         </div>
 
         {/* 상품 정보 */}
-        <div className="px-6 py-8 space-y-4">
-          <p className="text-[12px] text-[#aaa] uppercase tracking-[0.12em] mb-2">{product.category_name}</p>
-          <h1 className="text-[24px] text-black leading-snug tracking-[-0.02em] mb-2">
+        <div className="px-6 pt-7 pb-8">
+          {brand && (
+            <p className="text-[13px] text-[#888] mb-1.5">{brand}</p>
+          )}
+          <h1 className="text-[22px] text-black leading-snug tracking-[-0.02em]">
             {product.name}
           </h1>
 
-          {/* 가격 — 옵션 선택 전 범위 표시 (정상가/최종가) */}
+          {/* 가격 — 취소선 정상가 + 큰 최종가 */}
           {allSoldOut ? (
-            <div className="flex items-baseline gap-1 !mt-0">
-              <span className="text-[15px] text-[#e0e0e0]">품절</span>
-            </div>
+            <p className="mt-3 text-[15px] text-[#e0e0e0]">품절</p>
           ) : (
-            <div className="space-y-1 !mt-0">
-              {/* 정상가 — 할인 전 가격, 취소선 */}
-              <div className="flex items-center gap-2">
-                <span className="text-[14px] text-[#aaa]">정상가</span>
-                <span className="font-mono text-[15px] text-[#aaa] line-through">
-                  {formatPrice(originalPrice(minPrice))}
-                </span>
-              </div>
-              {/* 최종가 — 실제 판매가, 강조 */}
-              <div className="flex items-baseline gap-2">
-                <span className="text-[14px] text-[#888]">최종가</span>
-                <span className="font-mono text-[20px] font-semibold text-black">
-                  {formatPrice(minPrice)}
-                  {hasRange && <span className="text-[#aaa] text-[14px] font-normal"> ~</span>}
-                </span>
-              </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="font-mono text-[14px] text-[#bbb] line-through">
+                {formatPrice(originalPrice(minPrice))}
+              </span>
+              <span className="font-mono text-[24px] font-semibold text-black">
+                {formatPrice(minPrice)}
+                {hasRange && <span className="text-[#aaa] text-[15px] font-normal"> ~</span>}
+              </span>
             </div>
           )}
 
+          {/* 별점 + 리뷰 보기 */}
           {product.review_summary.review_count > 0 && (
             <button
               type="button"
-              onClick={openReviewSheet}
-              className="flex items-center gap-1.5 text-[15px] text-[#888] active:opacity-70"
+              onClick={scrollToReviews}
+              className="mt-3 flex items-center gap-1.5 text-[14px] active:opacity-70"
             >
               <span className="text-black">★</span>
               <span className="text-black">
                 {product.review_summary.average_rating.toFixed(1)}
               </span>
               <span className="text-[#aaa]">
-                ({product.review_summary.review_count}개)
+                {product.review_summary.review_count}개 리뷰 보기
               </span>
-              <span className="text-[#e0e0e0] text-[11px] ml-0.5">›</span>
+              <span className="text-[#e0e0e0] text-[11px]">›</span>
             </button>
-          )}
-
-          <div className="border-t border-[#e0e0e0] pt-3">
-            <p className="text-[15px] text-[#888] leading-relaxed">
-              {product.description}
-            </p>
-          </div>
-
-          {/* 옵션 안내 */}
-          {!allSoldOut && product.option_groups.length > 0 && (
-            <div className="flex items-center gap-2 text-[14px] text-[#aaa] pt-1">
-              <span>옵션</span>
-              <span className="text-[#e0e0e0]">|</span>
-              {product.option_groups.map((g) => g.name).join(", ")}
-            </div>
           )}
         </div>
 
@@ -286,146 +248,181 @@ export default function ProductDetailPage({
           <AdditiveCards additives={product.detail_info.additives} productId={product.id} />
         )}
 
-        {/* 상세 정보 섹션 */}
-        {product.detail_info && (
-          <div className="px-6 pb-8 space-y-0">
-            {/* a) 배송 정보 */}
-            {product.detail_info.shipping && (
-              <div className="py-8 border-t border-[#e0e0e0]">
-                <div className="flex items-start gap-2.5">
-                  <span className="material-icons-outlined text-[20px] text-[#888] mt-0.5 shrink-0">local_shipping</span>
-                  <div>
-                    <p className="text-[14px] text-[#888] mb-1">배송 정보</p>
-                    <p className="text-[15px] text-black leading-relaxed">{product.detail_info.shipping}</p>
-                  </div>
+        {/* 상품정보 — 스펙 표 */}
+        {specRows.length > 0 && (
+          <div className="px-6 pt-8 pb-2 border-t border-[#e0e0e0]">
+            <p className="text-[17px] text-black mb-4">상품정보</p>
+            <dl className="divide-y divide-[#f0f0f0]">
+              {specRows.map((row) => (
+                <div key={row.label} className="flex gap-4 py-3">
+                  <dt className="w-24 shrink-0 text-[14px] text-[#888]">{row.label}</dt>
+                  <dd className="flex-1 text-[14px] text-[#111] break-all leading-relaxed">{row.value}</dd>
                 </div>
-              </div>
-            )}
-
-            {/* b) 주요 정보 */}
-            {product.detail_info.keySpecs && product.detail_info.keySpecs.length > 0 && (
-              <div className="py-8 border-t border-[#e0e0e0]">
-                <p className="text-[14px] text-[#888] mb-2">주요 정보</p>
-                <ul className="space-y-1.5">
-                  {product.detail_info.keySpecs.map((spec, i) => (
-                    <li key={i} className="flex items-start gap-2 text-[15px] text-black">
-                      <span className="text-[#e0e0e0] mt-[2px] shrink-0">·</span>
-                      <span>{spec}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* c) 섭취 방법 */}
-            {product.detail_info.dosage && (
-              <div className="py-8 border-t border-[#e0e0e0]">
-                <div className="flex items-start gap-2.5">
-                  <span className="material-icons-outlined text-[20px] text-[#888] mt-0.5 shrink-0">schedule</span>
-                  <div>
-                    <p className="text-[14px] text-[#888] mb-1">섭취 방법</p>
-                    <p className="text-[15px] text-black leading-relaxed">{product.detail_info.dosage}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* d) 주의사항 */}
-            {product.detail_info.caution && (
-              <div className="py-8 border-t border-[#e0e0e0]">
-                <div className="bg-[#f5f5f5] rounded-[10px] px-4 py-3">
-                  <div className="flex items-start gap-2.5">
-                    <span className="material-icons-outlined text-[20px] text-[#888] mt-0.5 shrink-0">warning_amber</span>
-                    <div>
-                      <p className="text-[14px] text-[#888] mb-1">주의사항</p>
-                      <p className="text-[15px] text-black leading-relaxed">{product.detail_info.caution}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* e) 제조사·원산지 */}
-            {product.detail_info.manufacturer && (
-              <div className="py-8 border-t border-[#e0e0e0]">
-                <div className="flex items-start gap-2.5">
-                  <span className="material-icons-outlined text-[20px] text-[#888] mt-0.5 shrink-0">business</span>
-                  <div>
-                    <p className="text-[14px] text-[#888] mb-1">제조사·원산지</p>
-                    <p className="text-[15px] text-black leading-relaxed">{product.detail_info.manufacturer}</p>
-                  </div>
-                </div>
-              </div>
-            )}
+              ))}
+            </dl>
           </div>
         )}
-      </div>
 
-      {/* 상품정보 — 전체보기/접기 */}
-      <div className="border-t border-[#e0e0e0]">
-        <p className="px-6 pt-8 pb-5 text-[17px] text-black">상품정보</p>
+        {/* 제품 정보 — 이미지 + 더보기/접기 */}
+        <div className="border-t border-[#e0e0e0]">
+          <p className="px-6 pt-8 pb-5 text-[17px] text-black">제품 정보</p>
 
-        {/* 콘텐츠 영역 — 이미지 자리 (현재 공백) */}
-        <div
-          className="overflow-hidden"
-          style={{ maxHeight: detailExpanded ? 1200 : 320 }}
-        >
-          <div className="w-full bg-[#f5f5f5]" style={{ height: 500 }} />
+          <div
+            className="overflow-hidden"
+            style={{ maxHeight: detailExpanded ? 1200 : 320 }}
+          >
+            {product.image_url?.startsWith("http") ? (
+              <img
+                src={product.image_url}
+                alt={`${product.name} 상세`}
+                className="w-full object-cover"
+                style={{ minHeight: 500 }}
+              />
+            ) : (
+              <div className="w-full bg-[#f5f5f5]" style={{ height: 500 }} />
+            )}
+          </div>
+
+          {/* 그라디언트 페이드 + 더보기 버튼 — overflow 바깥 */}
+          {!detailExpanded && (
+            <div
+              className="flex flex-col items-center"
+              style={{
+                marginTop: -96,
+                paddingBottom: 32,
+                background: "linear-gradient(to bottom, transparent, white 50%)",
+              }}
+            >
+              <div style={{ height: 60 }} />
+              <button
+                onClick={() => setDetailExpanded(true)}
+                className="rounded-full bg-[#f0f0f0] px-8 py-3 text-[15px] text-black active:bg-[#e0e0e0]"
+              >
+                제품 정보 더보기
+              </button>
+            </div>
+          )}
+
+          {detailExpanded && (
+            <div className="flex justify-center pt-4 pb-8">
+              <button
+                onClick={() => setDetailExpanded(false)}
+                className="rounded-full bg-[#f0f0f0] px-8 py-3 text-[15px] text-black active:bg-[#e0e0e0]"
+              >
+                접기
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* 그라디언트 페이드 + 더보기 버튼 — overflow 바깥 */}
-        {!detailExpanded && (
-          <div
-            className="flex flex-col items-center"
-            style={{
-              marginTop: -96,
-              paddingBottom: 160,
-              background: "linear-gradient(to bottom, transparent, white 50%)",
-            }}
-          >
-            <div style={{ height: 60 }} />
-            <button
-              onClick={() => setDetailExpanded(true)}
-              className="rounded-full bg-[#f0f0f0] px-8 py-3 text-[15px] text-black active:bg-[#e0e0e0]"
-            >
-              상품 정보 더보기
-            </button>
+        {/* 리뷰 — 인라인 섹션 */}
+        <section ref={reviewSectionRef} className="border-t border-[#e0e0e0] scroll-mt-16">
+          <div className="px-6 pt-8 pb-2 flex items-baseline gap-2">
+            <span className="text-black text-[18px]">★</span>
+            <span className="text-[18px] text-black">
+              {product.review_summary.average_rating.toFixed(1)}
+            </span>
+            <span className="text-[14px] text-[#aaa]">
+              리뷰 {product.review_summary.review_count}개
+            </span>
           </div>
-        )}
 
-        {/* 접기 버튼 */}
-        {detailExpanded && (
-          <div className="flex justify-center pt-4 pb-40">
-            <button
-              onClick={() => setDetailExpanded(false)}
-              className="rounded-full bg-[#f0f0f0] px-8 py-3 text-[15px] text-black active:bg-[#e0e0e0]"
-            >
-              접기
-            </button>
+          {/* 별점 분포 */}
+          {product.review_summary.review_count > 0 && (
+            <RatingDistributionChart
+              distribution={product.review_summary.rating_distribution}
+              total={product.review_summary.review_count}
+            />
+          )}
+
+          {/* 포토 영상 리뷰 */}
+          {!reviewsLoading && (
+            <PhotoStrip photos={reviews.flatMap((r) => r.photo_urls)} />
+          )}
+
+          {/* 리뷰 목록 */}
+          <div className="px-6 pt-4">
+            <p className="text-[15px] text-black mb-1">
+              리뷰 ({product.review_summary.review_count})
+            </p>
           </div>
-        )}
+          <div className="px-6">
+            {reviewsLoading ? (
+              <div className="py-8 flex justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : reviews.length === 0 ? (
+              <p className="py-8 text-center text-[14px] text-[#aaa]">
+                아직 작성된 후기가 없습니다.
+              </p>
+            ) : (
+              reviews.map((review) => <ReviewCard key={review.id} review={review} />)
+            )}
+          </div>
+
+          {/* 전체보기 */}
+          {reviews.length > 0 && (
+            <div className="px-6 pt-5 pb-2">
+              <button
+                type="button"
+                className="w-full rounded-[10px] border border-[#e0e0e0] py-3.5 text-[15px] text-black active:bg-[#f5f5f5]"
+              >
+                상품 리뷰 전체보기 ({product.review_summary.review_count})
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* 하단 아코디언 */}
+        <div className="mt-6 border-t border-[#e8e8e8]">
+          <Accordion title="상품 번호">
+            <span className="break-all">{product.id}</span>
+          </Accordion>
+          <Accordion title="상품 결제 정보">
+            가상 지갑(데모)으로 결제됩니다. 주문 즉시 잔액에서 차감되며, 취소·반품 시 전액
+            환불됩니다. 실제 결제 수단(카드·계좌)은 연동되어 있지 않습니다.
+          </Accordion>
+          <Accordion title="배송 안내">
+            {info?.shipping ?? "배송 정보가 준비 중입니다."}
+          </Accordion>
+          <Accordion title="교환 / 반품 안내">
+            배송 완료 후 7일 이내 교환·반품 신청이 가능합니다. 단순 변심의 경우 왕복 배송비가
+            부과되며, 개봉·섭취한 식품은 교환·반품이 제한될 수 있습니다.
+          </Accordion>
+          <Accordion title="고객센터 문의">
+            평일 10:00–18:00 (점심 12:00–13:00, 주말·공휴일 휴무). 1:1 문의는 마이페이지 &gt;
+            1:1 문의에서 접수해 주세요.
+          </Accordion>
+        </div>
       </div>
 
       {/* 고정 하단 CTA — 탭바 위 */}
-      <div className="fixed bottom-14 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white/90 backdrop-blur-md px-6 py-4 z-30">
+      <div className="fixed bottom-14 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white/90 backdrop-blur-md px-5 py-3 z-30">
         {allSoldOut ? (
           <Button fullWidth disabled size="lg">
             품절
           </Button>
         ) : (
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="lg"
-              className="flex-1"
-              onClick={() => openSheet("cart")}
+          <div className="flex items-center gap-2">
+            {/* 선물하기 — 아이콘 버튼 */}
+            <button
+              onClick={() => openSheet("gift")}
+              className="flex items-center justify-center w-[52px] h-[52px] rounded-[10px] bg-[#f5f5f5] shrink-0 active:bg-[#ebebeb] transition-colors"
             >
-              장바구니
-            </Button>
+              <span className="material-icons text-[22px] text-[#555]">redeem</span>
+            </button>
+            {/* 장바구니 — 아이콘 버튼 */}
+            <button
+              onClick={() => openSheet("cart")}
+              className="flex items-center justify-center w-[52px] h-[52px] rounded-[10px] bg-[#f5f5f5] shrink-0 active:bg-[#ebebeb] transition-colors"
+            >
+              <span className="material-icons text-[22px] text-[#555]">shopping_cart</span>
+            </button>
+            {/* 구매하기 — 메인 CTA */}
             <Button
               variant="primary"
               size="lg"
-              className="flex-1"
+              className="flex-1 !h-[52px]"
               onClick={() => openSheet("buy")}
             >
               구매하기
@@ -474,151 +471,35 @@ export default function ProductDetailPage({
           </Button>
         </div>
       </BottomSheet>
-
-      {/* 리뷰 바텀시트 */}
-      <BottomSheet open={reviewSheetOpen} onClose={() => setReviewSheetOpen(false)}>
-        <div className="px-4 pt-2 pb-4 border-b border-[#e0e0e0] flex items-start justify-between">
-          <div>
-            <p className="text-[18px] text-black">구매 후기</p>
-            {product.review_summary.review_count > 0 && (
-              <p className="text-[14px] text-[#aaa] mt-0.5">
-                <span className="text-black">★</span>{" "}
-                <span className="text-black">
-                  {product.review_summary.average_rating.toFixed(1)}
-                </span>
-                {" "}· 총 {product.review_summary.review_count}개
-              </p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setWriteSheetOpen(true)}
-            className="text-[14px] text-[#888] active:opacity-70 mt-0.5"
-          >
-            리뷰 쓰기
-          </button>
-        </div>
-        <div className="overflow-y-auto max-h-[60vh]">
-          {/* 별점 분포 */}
-          {product.review_summary.review_count > 0 && (
-            <RatingDistributionChart
-              distribution={product.review_summary.rating_distribution}
-              total={product.review_summary.review_count}
-            />
-          )}
-
-          {/* 포토 스트립 — 로딩 완료 후 */}
-          {!reviewsLoading && (
-            <PhotoStrip photos={reviews.flatMap((r) => r.photo_urls)} />
-          )}
-
-          {/* 리뷰 목록 */}
-          <div className="px-4 py-3">
-            {reviewsLoading ? (
-              <div className="py-8 flex justify-center"><LoadingSpinner /></div>
-            ) : reviews.length === 0 ? (
-              <p className="py-8 text-center text-[14px] text-[#aaa]">
-                아직 작성된 후기가 없습니다.
-              </p>
-            ) : (
-              reviews.map((review) => <ReviewCard key={review.id} review={review} />)
-            )}
-          </div>
-          <div className="h-6" />
-        </div>
-      </BottomSheet>
-
-      {/* 리뷰 작성 바텀시트 */}
-      <BottomSheet open={writeSheetOpen} onClose={() => setWriteSheetOpen(false)}>
-        <div className="px-4 pt-2 pb-4 border-b border-[#e0e0e0]">
-          <p className="text-[18px] text-black">리뷰 작성</p>
-          <p className="text-[14px] text-[#aaa] mt-0.5">{product.name}</p>
-        </div>
-        <div className="px-4 py-5 space-y-5 overflow-y-auto max-h-[65vh]">
-          {/* 별점 선택 */}
-          <div>
-            <p className="text-[15px] text-[#888] mb-2">별점</p>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setWriteRating(star)}
-                  className={`text-[32px] transition-opacity ${star <= writeRating ? "text-black" : "text-[#e0e0e0]"}`}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* 이름 */}
-          <div>
-            <p className="text-[15px] text-[#888] mb-1.5">이름</p>
-            <input
-              type="text"
-              value={writeName}
-              onChange={(e) => setWriteName(e.target.value)}
-              placeholder="닉네임을 입력해주세요"
-              className="w-full px-3 py-2.5 bg-white text-[15px] text-black placeholder:text-[#cccccc] outline-none rounded-[10px] border border-[#e0e0e0]"
-              maxLength={20}
-            />
-          </div>
-          {/* 본문 */}
-          <div>
-            <p className="text-[15px] text-[#888] mb-1.5">내용 <span className="text-[#e0e0e0]">(선택)</span></p>
-            <textarea
-              value={writeBody}
-              onChange={(e) => setWriteBody(e.target.value)}
-              placeholder="상품 사용 후기를 자유롭게 작성해주세요."
-              rows={4}
-              className="w-full px-3 py-2.5 bg-white text-[15px] text-black placeholder:text-[#cccccc] outline-none resize-none rounded-[10px] border border-[#e0e0e0]"
-              maxLength={500}
-            />
-          </div>
-          {/* 사진 첨부 */}
-          <div>
-            <p className="text-[15px] text-[#888] mb-1.5">
-              사진 <span className="text-[#e0e0e0]">(선택 · 최대 5장)</span>
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              {writePhotos.map((p, i) => (
-                <div key={i} className="relative w-[72px] h-[72px] rounded-[10px] overflow-hidden bg-[#f5f5f5] shrink-0">
-                  <img src={p.preview} alt="" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => handlePhotoRemove(i)}
-                    className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white text-[11px] flex items-center justify-center"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              {writePhotos.length < 5 && (
-                <button
-                  type="button"
-                  onClick={() => photoInputRef.current?.click()}
-                  className="w-[72px] h-[72px] rounded-[10px] bg-white border border-dashed border-[#e0e0e0] flex items-center justify-center text-[#cccccc] text-[22px] shrink-0"
-                >
-                  +
-                </button>
-              )}
-            </div>
-            <input ref={photoInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoSelect} />
-          </div>
-        </div>
-        <div className="px-4 pt-3 pb-6 border-t border-[#e0e0e0]">
-          <Button
-            fullWidth
-            size="lg"
-            disabled={writeRating === 0 || writeName.trim() === "" || writeSubmitting}
-            onClick={handleWriteReview}
-          >
-            {writeSubmitting ? "등록 중..." : "리뷰 등록"}
-          </Button>
-        </div>
-      </BottomSheet>
     </>
   );
+}
+
+// detail_info를 레퍼런스 스펙표 형태로 매핑 (있는 데이터만)
+function buildSpecRows(product: ProductDetail): { label: string; value: string }[] {
+  const info = product.detail_info ?? ({} as ProductDetail["detail_info"]);
+  const rows: { label: string; value: string }[] = [];
+
+  // manufacturer는 "제조사: … | 원산지: … | 유통기한: …" 파이프 문자열
+  if (info.manufacturer) {
+    for (const part of info.manufacturer.split("|")) {
+      const idx = part.indexOf(":");
+      if (idx === -1) continue;
+      const label = part.slice(0, idx).trim();
+      const value = part.slice(idx + 1).trim();
+      if (label && value) rows.push({ label, value });
+    }
+  }
+
+  // 주요 정보 — keySpecs 묶음
+  if (info.keySpecs && info.keySpecs.length > 0) {
+    rows.push({ label: "주요 정보", value: info.keySpecs.join(" · ") });
+  }
+
+  // 상품번호
+  rows.push({ label: "상품번호", value: product.id });
+
+  return rows;
 }
 
 function RatingDistributionChart({
@@ -628,7 +509,7 @@ function RatingDistributionChart({
   total: number;
 }) {
   return (
-    <div className="py-4 px-4 border-b border-[#e0e0e0] space-y-2">
+    <div className="py-4 px-6 border-b border-[#e0e0e0] space-y-2">
       {([5, 4, 3, 2, 1] as const).map((star) => {
         const count = distribution[star];
         const pct = total > 0 ? (count / total) * 100 : 0;
@@ -650,11 +531,16 @@ function RatingDistributionChart({
 function PhotoStrip({ photos }: { photos: string[] }) {
   if (photos.length === 0) return null;
   return (
-    <div className="py-3 px-4 border-b border-[#e0e0e0]">
-      <p className="text-[14px] text-[#aaa] mb-2">포토 리뷰 {photos.length}장</p>
+    <div className="py-4 px-6 border-b border-[#e0e0e0]">
+      <div className="flex items-center justify-between mb-2.5">
+        <p className="text-[15px] text-black">포토 영상 리뷰</p>
+        <button type="button" className="text-[13px] text-[#aaa] active:opacity-70">
+          전체보기 ›
+        </button>
+      </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {photos.map((url, i) => (
-          <div key={i} className="w-[72px] h-[72px] rounded-[10px] bg-[#f5f5f5] shrink-0 overflow-hidden">
+          <div key={i} className="w-[88px] h-[88px] rounded-[10px] bg-[#f5f5f5] shrink-0 overflow-hidden">
             <img src={url} alt={`포토 리뷰 ${i + 1}`} className="w-full h-full object-cover" />
           </div>
         ))}
@@ -665,7 +551,7 @@ function PhotoStrip({ photos }: { photos: string[] }) {
 
 function ReviewCard({ review }: { review: Review }) {
   return (
-    <div className="py-3 border-b border-[#e0e0e0] last:border-b-0">
+    <div className="py-4 border-b border-[#e0e0e0] last:border-b-0">
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[15px] text-black">
           {review.author_name}
@@ -699,6 +585,13 @@ function ReviewCard({ review }: { review: Review }) {
           ))}
         </div>
       )}
+      {/* 도움돼요 — 장식 (비동작) */}
+      <div className="mt-3">
+        <span className="inline-flex items-center gap-1 rounded-full border border-[#e0e0e0] px-3 py-1.5 text-[13px] text-[#888]">
+          <span className="material-icons-outlined text-[15px]">thumb_up</span>
+          도움돼요
+        </span>
+      </div>
     </div>
   );
 }

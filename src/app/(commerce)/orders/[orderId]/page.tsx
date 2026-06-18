@@ -174,9 +174,33 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
         </div>
       </section>
 
+      {/* Gift info */}
+      {order.is_gift === 1 && (
+        <section className="px-6 py-5 border-b border-[#e0e0e0]">
+          <div className="flex items-center gap-1.5 mb-3">
+            <span className="material-icons-outlined text-[18px] text-black">redeem</span>
+            <h2 className="text-[13px] uppercase tracking-[0.08em] text-black">선물 정보</h2>
+          </div>
+          <dl className="space-y-2 text-[15px]">
+            <div className="flex">
+              <dt className="text-[#aaa] w-20 shrink-0">보내는 분</dt>
+              <dd className="text-black">{order.sender_name || "-"}</dd>
+            </div>
+            {order.gift_message && (
+              <div className="flex">
+                <dt className="text-[#aaa] w-20 shrink-0">메시지</dt>
+                <dd className="text-black leading-relaxed">{order.gift_message}</dd>
+              </div>
+            )}
+          </dl>
+        </section>
+      )}
+
       {/* Delivery info */}
       <section className="px-6 py-5 border-b border-[#e0e0e0]">
-        <h2 className="text-[13px] uppercase tracking-[0.08em] text-black mb-3">배송 정보</h2>
+        <h2 className="text-[13px] uppercase tracking-[0.08em] text-black mb-3">
+          {order.is_gift === 1 ? "선물 받는 분" : "배송 정보"}
+        </h2>
         <dl className="space-y-2 text-[15px]">
           <div className="flex">
             <dt className="text-[#aaa] w-16 shrink-0">수령인</dt>
@@ -189,8 +213,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
           <div className="flex">
             <dt className="text-[#aaa] w-16 shrink-0">주소</dt>
             <dd className="text-black">
-              {order.address_line1}
-              {order.address_line2 && ` ${order.address_line2}`}
+              {order.address_line1 ? (
+                <>
+                  {order.address_line1}
+                  {order.address_line2 && ` ${order.address_line2}`}
+                </>
+              ) : (
+                <span className="text-[#aaa]">받는 분 주소 입력 대기</span>
+              )}
             </dd>
           </div>
         </dl>

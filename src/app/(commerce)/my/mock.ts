@@ -373,3 +373,18 @@ export const MOCK_NOTIFICATION_SETTINGS: MockNotificationSetting[] = [
   { id: "review", label: "리뷰 요청 알림", description: "배송 완료 후 리뷰 작성 요청", defaultOn: false },
   { id: "night", label: "야간 알림 (21시~08시)", description: "야간 시간대 푸시 수신", defaultOn: false },
 ];
+
+// 선물하기 — 받는 분(친구) 목록 (목 데이터)
+export interface MockFriend {
+  id: string;
+  name: string;
+  phone: string;
+  relation?: string;
+}
+
+export const MOCK_FRIENDS: MockFriend[] = [
+  { id: "fr1", name: "김민수", phone: "010-2222-3924", relation: "친구" },
+  { id: "fr2", name: "이서연", phone: "010-3456-7812", relation: "직장 동료" },
+  { id: "fr3", name: "박지훈", phone: "010-8765-4321", relation: "가족" },
+  { id: "fr4", name: "최유진", phone: "010-5555-1020", relation: "친구" },
+];

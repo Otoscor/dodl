@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className="min-h-full">
       <head>
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined|Material+Icons" rel="stylesheet" />
       </head>
       <body className="min-h-full bg-[#f5f5f5]">
         <ToastProvider>

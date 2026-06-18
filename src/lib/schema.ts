@@ -76,7 +76,12 @@ CREATE TABLE IF NOT EXISTS orders (
   cancelled_at TEXT,
   return_reason TEXT,
   return_note TEXT NOT NULL DEFAULT '',
-  returned_at TEXT
+  returned_at TEXT,
+  is_gift INTEGER NOT NULL DEFAULT 0,
+  sender_name TEXT NOT NULL DEFAULT '',
+  sender_phone TEXT NOT NULL DEFAULT '',
+  gift_message TEXT NOT NULL DEFAULT '',
+  gift_address_mode TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
