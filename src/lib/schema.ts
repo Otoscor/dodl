@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   order_id TEXT NOT NULL REFERENCES orders(id),
   sku_id TEXT NOT NULL,
   product_name TEXT NOT NULL,
+  product_id TEXT NOT NULL DEFAULT '',
   option_summary TEXT NOT NULL DEFAULT '',
   image_url TEXT NOT NULL DEFAULT '',
   unit_price INTEGER NOT NULL,

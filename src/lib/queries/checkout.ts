@@ -99,10 +99,10 @@ export function processCheckout(input: CheckoutInput): CheckoutResult {
 
     // 5d. Create order items (snapshot)
     const insertOrderItem = db.prepare(
-      "INSERT INTO order_items (id, order_id, sku_id, product_name, option_summary, image_url, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO order_items (id, order_id, sku_id, product_id, product_name, option_summary, image_url, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
     for (const item of cartItems) {
-      insertOrderItem.run(uuidv4(), orderId, item.sku_id, item.product_name, item.option_summary, item.image_url ?? "", item.price, item.quantity, item.price * item.quantity);
+      insertOrderItem.run(uuidv4(), orderId, item.sku_id, item.product_id, item.product_name, item.option_summary, item.image_url ?? "", item.price, item.quantity, item.price * item.quantity);
     }
 
     // 5e. Record wallet transaction

@@ -27,6 +27,14 @@ export const RETURN_REASONS = [
   "단순 변심", "상품 불량", "상품이 설명과 다름", "배송 중 파손", "기타",
 ] as const;
 
+// 반품 배송비 — 고객 귀책 사유는 차감, 판매자/배송 귀책은 무료
+export const RETURN_SHIPPING_FEE = 3000;
+export const RETURN_FEE_REASONS: string[] = ["단순 변심", "기타"];
+
+// 교환 배송비 — 왕복(수거+재배송). 고객 귀책(기타)만 차감, 그 외 무료
+export const EXCHANGE_SHIPPING_FEE = 5000;
+export const EXCHANGE_FEE_REASONS: string[] = ["기타"];
+
 export const EXCHANGE_REASONS = [
   "상품 불량", "오배송 (다른 상품 수령)", "상품이 설명과 다름", "배송 중 파손", "기타",
 ] as const;

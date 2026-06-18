@@ -70,13 +70,20 @@ export function OrderCard({ order }: { order: OrderListItem }) {
         </div>
       </button>
 
-      {/* 상태별 액션 버튼 (UI만 — 동작 추후 연결) */}
+      {/* 상태별 액션 버튼 (반품접수만 연결, 그 외 동작 추후) */}
       {actions.length > 0 && (
         <div className="flex gap-2 mt-4">
           {actions.map((label) => (
             <button
               key={label}
               type="button"
+              onClick={
+                label === "반품접수"
+                  ? () => router.push(`/orders/${order.id}/return`)
+                  : label === "교환접수"
+                  ? () => router.push(`/orders/${order.id}/exchange`)
+                  : undefined
+              }
               className="flex-1 rounded-[10px] border border-[#e0e0e0] bg-white py-2.5 text-[13px] text-[#555] active:bg-[#f5f5f5]"
             >
               {label}

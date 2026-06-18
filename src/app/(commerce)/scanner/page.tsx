@@ -253,8 +253,15 @@ export default function ScannerPage() {
             <motion.div key="result" {...containerMotion} className="flex flex-col gap-10">
               {results.map(({ product }) => (
                 <motion.article key={product.id} {...itemMotion} className="flex flex-col">
-                  {/* 공백 이미지 박스 (디자인용) */}
-                  <div className="w-full aspect-square rounded-[12px] bg-[#f5f5f5]" />
+                  {/* 제품 이미지 */}
+                  <div className="w-full aspect-square rounded-[12px] bg-[#f5f5f5] overflow-hidden flex items-center justify-center">
+                    {product.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="material-icons-outlined text-[40px] text-[#d0d0d0]">local_drink</span>
+                    )}
+                  </div>
                   <p className="mt-4 text-center text-[13px] text-[#888]">
                     {RESULT_CATEGORY}
                   </p>

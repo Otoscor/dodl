@@ -18,12 +18,11 @@ export function seedDatabase(db: Database.Database) {
 
   // --- Categories ---
   const categories = [
-    { id: deterministicId(), name: "비타민", slug: "vitamin", image_url: "/categories/vitamin.svg", sort_order: 1 },
-    { id: deterministicId(), name: "프로바이오틱스", slug: "probiotics", image_url: "/categories/probiotics.svg", sort_order: 2 },
-    { id: deterministicId(), name: "오메가3", slug: "omega3", image_url: "/categories/omega3.svg", sort_order: 3 },
-    { id: deterministicId(), name: "미네랄", slug: "mineral", image_url: "/categories/mineral.svg", sort_order: 4 },
-    { id: deterministicId(), name: "콜라겐", slug: "collagen", image_url: "/categories/collagen.svg", sort_order: 5 },
-    { id: deterministicId(), name: "어린이", slug: "kids", image_url: "/categories/kids.svg", sort_order: 6 },
+    { id: deterministicId(), name: "드링크", slug: "drink", image_url: "/categories/drink.svg", sort_order: 1 },
+    { id: deterministicId(), name: "쉐이크", slug: "shake", image_url: "/categories/shake.svg", sort_order: 2 },
+    { id: deterministicId(), name: "저당", slug: "lowsugar", image_url: "/categories/lowsugar.svg", sort_order: 3 },
+    { id: deterministicId(), name: "비건", slug: "vegan", image_url: "/categories/vegan.svg", sort_order: 4 },
+    { id: deterministicId(), name: "어린이", slug: "kids", image_url: "/categories/kids.svg", sort_order: 5 },
   ];
 
   const insertCategory = db.prepare(
@@ -100,157 +99,82 @@ export function seedDatabase(db: Database.Database) {
   function ig(...grades: ("A" | "B" | "C" | "D" | "E")[]) {
     return IG_METRICS.map((metric, i) => ({ metric, grade: grades[i], status: GRADE_STATUS[grades[i]] }));
   }
-  // 첨가물 풀 — name/tag(살펴보기·알아두기)/desc(2줄, \n)
-  const ADD = {
-    carrageenan: { name: "카라기난", tag: "살펴보기", desc: "점도·식감을 잡는\n해조류 유래 증점제" },
-    cmc: { name: "카복시메틸셀룰로스나트륨", tag: "알아두기", desc: "점도를 높여 안정시키는\n합성 증점·안정제" },
-    silica: { name: "이산화규소", tag: "알아두기", desc: "분말이 뭉치지 않게 돕는\n고결방지 성분" },
-    mgst: { name: "스테아린산마그네슘", tag: "알아두기", desc: "정제를 매끄럽게 빚는\n식물성 윤활 성분" },
-    malto: { name: "말토덱스트린", tag: "살펴보기", desc: "성분을 고르게 섞는\n옥수수 유래 부형제" },
-    cellulose: { name: "결정셀룰로스", tag: "살펴보기", desc: "알약 형태를 잡아주는\n식물성 식이섬유" },
-    citric: { name: "구연산", tag: "살펴보기", desc: "상큼한 신맛을 더하는\n천연 유래 산미료" },
-    stevia: { name: "효소처리스테비아", tag: "알아두기", desc: "설탕 대신 단맛을 내는\n식물 유래 감미료" },
-    gelatin: { name: "젤라틴", tag: "살펴보기", desc: "캡슐·젤리를 형성하는\n동물성 단백질" },
-    pectin: { name: "펙틴", tag: "살펴보기", desc: "젤리를 굳히는\n과일 유래 겔화제" },
-    xylitol: { name: "자일리톨", tag: "알아두기", desc: "충치 걱정 적은\n자작나무 유래 감미료" },
-    glycerin: { name: "글리세린", tag: "알아두기", desc: "수분을 잡아주는\n보습 보조 성분" },
-    tocopherol: { name: "혼합토코페롤", tag: "살펴보기", desc: "산패를 막아주는\n천연 비타민E 산화방지제" },
-  };
 
-  // 1. 멀티비타민 (조합형: 맛×용량) → 4 SKU
-  const pidMultivitamin = createProduct("vitamin", "데일리 멀티비타민", "하루 한 알로 필수 비타민 13종을 채우세요. 무향료, 무색소로 온 가족이 안심하고 섭취할 수 있습니다.", 18000, "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=533&fit=crop",
-    [
-      { groupName: "맛", values: ["오렌지", "포도"] },
-      { groupName: "용량", values: ["30정", "60정"] },
-    ],
-    [
-      { optionKeys: ["오렌지", "30정"], price: 18000, stock: 50, code: "VIT-MV-OR30" },
-      { optionKeys: ["오렌지", "60정"], price: 32000, stock: 30, code: "VIT-MV-OR60" },
-      { optionKeys: ["포도", "30정"], price: 18000, stock: 3, code: "VIT-MV-GR30" },
-      { optionKeys: ["포도", "60정"], price: 32000, stock: 0, code: "VIT-MV-GR60" },
-    ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민 13종 복합", "무향료·무색소", "건강기능식품 인증", "1일 1정"], brand: "뉴트리원", nutrition: { calories: 4, protein: 0, sugar: 0, fat: 0.1 }, indicatorGrades: ig("B", "B", "C", "A", "B"), additives: [ADD.silica, ADD.mgst, ADD.cellulose], dosage: "1일 1회, 1회 1정을 물과 함께 식후에 섭취하세요.", caution: "특정 성분에 알레르기가 있는 분은 성분을 확인 후 섭취하세요. 임산부 및 수유부는 전문가와 상담 후 섭취하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
-  );
+  // === 단백질 음료 카탈로그 (제품 누끼 이미지 연동, public/products/{slug}.png) ===
+  // 모두 단일 SKU(옵션 없음) 즉석 음용/파우치 제품.
+  type Grade = "A" | "B" | "C" | "D" | "E";
+  const PROTEIN: {
+    slug: string; cat: string; name: string; brand: string; desc: string;
+    price: number; stock: number; kcal: number; protein: number; sugar: number; fat: number;
+    specs: string[]; grades: [Grade, Grade, Grade, Grade, Grade];
+  }[] = [
+    { slug: "hymune-drink-balance", cat: "drink", name: "하이뮨 마시는 프로틴 밸런스", brand: "일동후디스 하이뮨", desc: "식물성 6:4 균형 단백질을 간편하게 마시는 데일리 프로틴 음료입니다.", price: 2500, stock: 80, kcal: 125, protein: 8, sugar: 5, fat: 2, specs: ["단백질 8g", "식물성 6:4 균형", "125ml"], grades: ["B", "B", "B", "B", "B"] },
+    { slug: "hymune-active-choco", cat: "drink", name: "하이뮨 액티브 딥초코", brand: "일동후디스 하이뮨", desc: "진한 딥초코 맛에 단백질 20g, 제로 슈가로 즐기는 액티브 프로틴 드링크.", price: 3200, stock: 90, kcal: 104, protein: 20, sugar: 1, fat: 0, specs: ["단백질 20g", "제로 슈가", "250ml"], grades: ["B", "A", "A", "B", "C"] },
+    { slug: "hymune-active-milkshake", cat: "drink", name: "하이뮨 액티브 밀크쉐이크", brand: "일동후디스 하이뮨", desc: "부드러운 밀크쉐이크 맛의 고단백 제로 슈가 음료.", price: 3200, stock: 85, kcal: 110, protein: 20, sugar: 2, fat: 0.5, specs: ["단백질 20g", "제로 슈가", "250ml"], grades: ["B", "A", "A", "B", "C"] },
+    { slug: "hymune-active-coffee", cat: "drink", name: "하이뮨 액티브 더블샷 커피", brand: "일동후디스 하이뮨", desc: "더블샷 커피와 단백질 20g을 한 번에. 아침 대용으로 좋은 프로틴 커피.", price: 3200, stock: 75, kcal: 104, protein: 20, sugar: 1, fat: 0, specs: ["단백질 20g", "더블샷 커피", "250ml"], grades: ["B", "A", "A", "B", "C"] },
+    { slug: "flymeal-brown", cat: "shake", name: "플라이밀 브라운", brand: "플라이밀", desc: "17곡 미숫가루 베이스의 고단백 쉐이크. 든든한 한 끼 대용으로.", price: 3300, stock: 60, kcal: 166, protein: 20, sugar: 1, fat: 3, specs: ["단백질 20g", "17곡 미숫가루", "고단백 쉐이크"], grades: ["B", "C", "A", "B", "B"] },
+    { slug: "flymeal-black", cat: "shake", name: "플라이밀 블랙", brand: "플라이밀", desc: "고소한 흑임자 고단백 쉐이크. 토핑이 씹히는 든든한 식사 대용.", price: 3300, stock: 55, kcal: 160, protein: 22, sugar: 2, fat: 4, specs: ["단백질 22g", "흑임자", "식이섬유 4.5g"], grades: ["B", "C", "A", "B", "B"] },
+    { slug: "flymeal-choco", cat: "shake", name: "플라이밀 초코", brand: "플라이밀", desc: "달콤한 초코맛 고단백 쉐이크. 토핑이 씹히는 식사 대용 쉐이크.", price: 3300, stock: 70, kcal: 150, protein: 22, sugar: 3.6, fat: 4, specs: ["단백질 22g", "초코맛", "식이섬유 5.6g"], grades: ["B", "C", "A", "B", "B"] },
+    { slug: "flymeal-green", cat: "shake", name: "플라이밀 그린", brand: "플라이밀", desc: "말차·녹차 베이스의 고단백 쉐이크. 식이섬유까지 챙긴 한 끼.", price: 3300, stock: 50, kcal: 156, protein: 21, sugar: 2.8, fat: 4, specs: ["단백질 21g", "말차·녹차", "식이섬유 5.7g"], grades: ["B", "B", "A", "B", "B"] },
+    { slug: "flymeal-sweetpotato", cat: "shake", name: "플라이밀 고구마", brand: "플라이밀", desc: "달콤한 고구마맛 고단백 쉐이크. 포만감 좋은 식사 대용.", price: 3300, stock: 45, kcal: 148, protein: 19, sugar: 3.7, fat: 3, specs: ["단백질 19g", "고구마맛", "식이섬유 4.3g"], grades: ["B", "C", "A", "B", "B"] },
+    { slug: "flymeal-dolcelatte", cat: "shake", name: "플라이밀 돌체라떼", brand: "플라이밀", desc: "달콤 쌉싸름한 돌체라떼 고단백 쉐이크.", price: 3300, stock: 40, kcal: 150, protein: 20, sugar: 3.6, fat: 3, specs: ["단백질 20g", "돌체라떼", "식이섬유 4.3g"], grades: ["B", "C", "A", "B", "B"] },
+    { slug: "takefit-max-choco", cat: "drink", name: "테이크핏 맥스 초코맛", brand: "매일유업 테이크핏", desc: "단백질 24g 고함량, 당류 1g 미만의 100% 완전단백 프로틴 드링크.", price: 3000, stock: 95, kcal: 106, protein: 24, sugar: 1, fat: 0, specs: ["단백질 24g", "SUGAR < 1g", "250ml"], grades: ["A", "A", "A", "B", "C"] },
+    { slug: "hymune-active-vegan", cat: "vegan", name: "하이뮨 액티브 비건 단백질", brand: "일동후디스 하이뮨", desc: "아몬드·완두콩·피칸틴 식물성 단백질 20g. 비건 인증 제로 슈가 음료.", price: 3400, stock: 60, kcal: 99, protein: 20, sugar: 1, fat: 1.5, specs: ["식물성 단백질 20g", "비건", "제로 슈가"], grades: ["A", "B", "A", "B", "A"] },
+    { slug: "hamsoa-proteinact-choco", cat: "kids", name: "함소아 액션가면 프로틴액트 초코", brand: "함소아", desc: "성장기 어린이를 위한 단백질 30g 초코 음료. L-카르니틴·BCAA 함유.", price: 2800, stock: 50, kcal: 240, protein: 30, sugar: 5, fat: 3, specs: ["단백질 30g", "어린이 단백질", "L-카르니틴 200mg"], grades: ["C", "B", "A", "A", "B"] },
+    { slug: "danbaek-14grain", cat: "shake", name: "단백한끼 14곡물", brand: "대상웰라이프 단백한끼", desc: "14가지 곡물과 단백질 17g을 담은 파우치 쉐이크. 93kcal 가벼운 한 끼.", price: 2500, stock: 70, kcal: 93, protein: 17, sugar: 2, fat: 1.5, specs: ["단백질 17g", "14곡물", "93kcal"], grades: ["B", "B", "A", "B", "B"] },
+    { slug: "danbaek-blackbean", cat: "shake", name: "단백한끼 검은콩", brand: "대상웰라이프 단백한끼", desc: "검은콩 분말 16%와 단백질 15g의 고소한 파우치 쉐이크.", price: 2500, stock: 65, kcal: 85, protein: 15, sugar: 1.5, fat: 1.5, specs: ["단백질 15g", "검은콩 16%", "85kcal"], grades: ["B", "B", "A", "B", "B"] },
+    { slug: "danbaek-chococookie", cat: "shake", name: "단백한끼 초코쿠키", brand: "대상웰라이프 단백한끼", desc: "초코쿠키 맛 단백질 12g 파우치 쉐이크. 72kcal 가벼운 간식.", price: 2500, stock: 60, kcal: 72, protein: 12, sugar: 3, fat: 1.5, specs: ["단백질 12g", "초코쿠키", "72kcal"], grades: ["B", "C", "B", "B", "B"] },
+    { slug: "seoulmilk-protein-choco", cat: "drink", name: "서울우유 프로틴 에너지 초코", brand: "서울우유", desc: "단백질 21g과 BCAA·아르기닌을 담은 초코 프로틴 드링크.", price: 2800, stock: 90, kcal: 145, protein: 21, sugar: 5, fat: 2, specs: ["단백질 21g", "BCAA 3500mg", "240ml"], grades: ["B", "C", "A", "B", "C"] },
+    { slug: "seoulmilk-protein-coffee", cat: "drink", name: "서울우유 프로틴 에너지 커피", brand: "서울우유", desc: "단백질 21g과 BCAA·아르기닌을 담은 커피 프로틴 드링크.", price: 2800, stock: 85, kcal: 135, protein: 21, sugar: 4, fat: 2, specs: ["단백질 21g", "BCAA 3500mg", "240ml"], grades: ["B", "C", "A", "B", "C"] },
+    { slug: "thedanbaek-melon", cat: "lowsugar", name: "더:단백 멜론", brand: "빙그레 더:단백", desc: "달콤한 멜론맛에 단백질 20g, 당류 1g 미만·BCAA 4000mg.", price: 3000, stock: 70, kcal: 110, protein: 20, sugar: 1, fat: 0, specs: ["단백질 20g", "SUGAR < 1g", "BCAA 4000mg"], grades: ["A", "A", "A", "B", "C"] },
+    { slug: "nucare-allprotein-choco", cat: "drink", name: "뉴케어 올프로틴 초코맛", brand: "대상 뉴케어", desc: "단백질 25g 고함량, 락토프리·아르기닌 함유 초코 프로틴 음료.", price: 3300, stock: 80, kcal: 150, protein: 25, sugar: 3, fat: 2, specs: ["단백질 25g", "락토프리", "아르기닌"], grades: ["B", "B", "A", "B", "C"] },
+    { slug: "nucare-allprotein-banana", cat: "drink", name: "뉴케어 올프로틴 바나나맛", brand: "대상 뉴케어", desc: "단백질 25g 고함량, 락토프리·아르기닌 함유 바나나 프로틴 음료.", price: 3300, stock: 75, kcal: 150, protein: 25, sugar: 3, fat: 2, specs: ["단백질 25g", "락토프리", "아르기닌"], grades: ["B", "B", "A", "B", "C"] },
+    { slug: "nucare-allprotein-savory", cat: "drink", name: "뉴케어 올프로틴 고소한맛", brand: "대상 뉴케어", desc: "단백질 25g 고함량, 락토프리·아르기닌 함유 고소한맛 프로틴 음료.", price: 3300, stock: 70, kcal: 150, protein: 25, sugar: 2, fat: 2, specs: ["단백질 25g", "락토프리", "아르기닌"], grades: ["B", "B", "A", "B", "C"] },
+    { slug: "motbam-protein-zero", cat: "lowsugar", name: "못밤 프로틴 당류ZERO", brand: "정식품 못밤", desc: "당류 ZERO에 단백질 21g을 담은 가벼운 프로틴 음료.", price: 2900, stock: 65, kcal: 110, protein: 21, sugar: 0, fat: 1, specs: ["단백질 21g", "당류 ZERO", "250ml"], grades: ["A", "A", "A", "B", "C"] },
+    { slug: "selex-profit-banana", cat: "lowsugar", name: "셀렉스 프로핏 바나나", brand: "매일헬스뉴트리션 셀렉스", desc: "완전단백질 20g, 제로 슈가·BCAA 4200mg의 바나나 프로틴 음료.", price: 3100, stock: 80, kcal: 100, protein: 20, sugar: 0, fat: 1, specs: ["완전단백질 20g", "ZERO SUGAR", "BCAA 4200mg"], grades: ["A", "A", "A", "B", "C"] },
+    { slug: "renewphy-pistachio-choco", cat: "shake", name: "한손한끼 르네오피 피스타치오 초코", brand: "르네오피", desc: "피스타치오 초코 맛의 고단백 파우치 쉐이크.", price: 3500, stock: 40, kcal: 158, protein: 15, sugar: 4, fat: 5, specs: ["고단백 쉐이크", "피스타치오 초코", "파우치"], grades: ["B", "C", "A", "B", "B"] },
+    { slug: "hymune-balance-original", cat: "drink", name: "하이뮨 프로틴 밸런스 오리지널", brand: "일동후디스 하이뮨", desc: "간편하게 마시는 단백질 음료 오리지널. BCAA 1500mg 함유.", price: 2400, stock: 90, kcal: 165, protein: 10, sugar: 9, fat: 3, specs: ["단백질 10g", "BCAA 1500mg", "190ml"], grades: ["B", "C", "B", "B", "C"] },
+    { slug: "labnosh-protein-cookie", cat: "drink", name: "랩노쉬 프로틴 드링크 쿠키앤크림", brand: "랩노쉬", desc: "단백질 27g 고함량 쿠키앤크림 프로틴 드링크.", price: 3800, stock: 70, kcal: 180, protein: 27, sugar: 3, fat: 3, specs: ["단백질 27g", "쿠키앤크림", "350ml"], grades: ["B", "B", "A", "B", "C"] },
+    { slug: "labnosh-protein-melon", cat: "drink", name: "랩노쉬 프로틴 드링크 메론", brand: "랩노쉬", desc: "상큼한 메론맛 단백질 27g 고함량 프로틴 드링크.", price: 3800, stock: 65, kcal: 130, protein: 27, sugar: 2, fat: 1, specs: ["단백질 27g", "메론맛", "350ml"], grades: ["B", "B", "A", "B", "C"] },
+    { slug: "labnosh-slim-injeolmi", cat: "lowsugar", name: "랩노쉬 슬림쉐이크 인절미", brand: "랩노쉬", desc: "고소한 인절미 맛 다이어트 쉐이크. 단백질 20g·식이섬유 5.3g.", price: 3300, stock: 60, kcal: 165, protein: 20, sugar: 5, fat: 3, specs: ["단백질 20g", "식이섬유 5.3g", "다이어트 쉐이크"], grades: ["A", "B", "A", "B", "B"] },
+    { slug: "labnosh-slim-matcha", cat: "lowsugar", name: "랩노쉬 슬림쉐이크 제주말차", brand: "랩노쉬", desc: "제주말차 맛 다이어트 쉐이크. 단백질 20g·식이섬유 7.5g.", price: 3300, stock: 55, kcal: 165, protein: 20, sugar: 4, fat: 3, specs: ["단백질 20g", "식이섬유 7.5g", "다이어트 쉐이크"], grades: ["A", "B", "A", "B", "B"] },
+    { slug: "labnosh-slim-blacksesame", cat: "lowsugar", name: "랩노쉬 슬림쉐이크 로스팅 흑임자", brand: "랩노쉬", desc: "로스팅 흑임자 맛 다이어트 쉐이크. 단백질 20g·식이섬유 7g.", price: 3300, stock: 50, kcal: 165, protein: 20, sugar: 4, fat: 4, specs: ["단백질 20g", "식이섬유 7g", "다이어트 쉐이크"], grades: ["A", "B", "A", "B", "B"] },
+    { slug: "labnosh-protein-banana", cat: "drink", name: "랩노쉬 프로틴 드링크 바나나", brand: "랩노쉬", desc: "단백질 27g 고함량 바나나 프로틴 드링크.", price: 3800, stock: 75, kcal: 160, protein: 27, sugar: 5, fat: 2, specs: ["단백질 27g", "바나나맛", "350ml"], grades: ["B", "B", "A", "B", "C"] },
+  ];
 
-  // 2. 비타민C 1000 (단일 옵션: 용량)
-  const pidVitaminC = createProduct("vitamin", "고함량 비타민C 1000", "영국산 비타민C 1000mg, 항산화 및 면역력 강화에 도움을 줍니다.", 15000, "https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400&h=533&fit=crop",
-    [{ groupName: "용량", values: ["60정", "120정", "180정"] }],
-    [
-      { optionKeys: ["60정"], price: 15000, stock: 80, code: "VIT-C-60" },
-      { optionKeys: ["120정"], price: 27000, stock: 45, code: "VIT-C-120" },
-      { optionKeys: ["180정"], price: 38000, stock: 2, code: "VIT-C-180" },
-    ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민C 1000mg 고함량", "영국산 원료", "항산화 기능성 인증", "정제 타입"], brand: "비타하우스", nutrition: { calories: 5, protein: 0, sugar: 0, fat: 0 }, indicatorGrades: ig("B", "B", "C", "A", "C"), additives: [ADD.cellulose, ADD.mgst, ADD.citric], dosage: "1일 1회, 1회 1정을 물과 함께 섭취하세요. 공복 시 속쓰림이 있을 수 있으니 식후 섭취를 권장합니다.", caution: "위장이 민감한 분은 식후에 섭취하세요. 과다 섭취 시 복통이나 설사가 발생할 수 있습니다.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 영국(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
-  );
+  // 첨가물 알아보기 — 먹는 상품(단백질 음료) 공통 고정 데이터 (확인 전용)
+  const FIXED_ADDITIVES = [
+    { name: "카라기난", tag: "살펴보기", desc: "점도·식감을 잡는\n해조류 유래 증점제" },
+    { name: "효소처리스테비아", tag: "알아두기", desc: "설탕 대신 단맛을 내는\n식물 유래 감미료" },
+    { name: "구연산", tag: "살펴보기", desc: "상큼한 맛을 더하는\n천연 유래 산미료" },
+    { name: "잔탄검", tag: "살펴보기", desc: "성분이 분리되지 않게 잡아주는\n발효 유래 안정제" },
+    { name: "혼합토코페롤", tag: "알아두기", desc: "산패를 막아주는\n천연 비타민E 산화방지제" },
+  ];
 
-  // 3. 비타민D3 (옵션 없음)
-  const pidVitaminD = createProduct("vitamin", "햇빛 비타민D3 2000IU", "실내 생활이 많은 현대인을 위한 비타민D3. 뼈 건강과 면역 기능에 필수적입니다.", 12000, "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400&h=533&fit=crop",
-    [],
-    [{ optionKeys: [], price: 12000, stock: 100, code: "VIT-D3-2000" }],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민D3 2000IU", "소프트캡슐", "뼈 건강 기능성 인증", "3개월분"], brand: "솔라뉴트리", nutrition: { calories: 9, protein: 0, sugar: 0, fat: 1.0 }, indicatorGrades: ig("C", "B", "A", "A", "C"), additives: [ADD.gelatin, ADD.glycerin, ADD.silica], dosage: "1일 1회, 1회 1캡슐을 식사 중 또는 식후에 섭취하세요.", caution: "비타민D를 과다 섭취하면 고칼슘혈증이 발생할 수 있습니다. 1일 섭취량을 지켜주세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
-  );
+  const proteinPid: Record<string, string> = {};
+  for (const p of PROTEIN) {
+    proteinPid[p.slug] = createProduct(
+      p.cat, p.name, p.desc, p.price, `/products/${p.slug}.png`,
+      [],
+      [{ optionKeys: [], price: p.price, stock: p.stock, code: p.slug.toUpperCase().replace(/-/g, "_") }],
+      {
+        shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)",
+        keySpecs: p.specs,
+        brand: p.brand,
+        nutrition: { calories: p.kcal, protein: p.protein, sugar: p.sugar, fat: p.fat },
+        indicatorGrades: ig(...p.grades),
+        additives: FIXED_ADDITIVES,
+        manufacturer: `제조사: ${p.brand} | 원산지: 대한민국 | 유통기한: 제조일로부터 별도 표기`,
+      }
+    );
+  }
 
-  // 4. 프로바이오틱스 (조합형: 균주×용량) → 4 SKU
-  const pidProbiotics = createProduct("probiotics", "장건강 프로바이오틱스", "19종 복합 유산균 100억 CFU. 장까지 살아서 도달하는 특허 코팅 기술 적용.", 25000, "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&h=533&fit=crop",
-    [
-      { groupName: "균주", values: ["19종 복합", "김치유산균"] },
-      { groupName: "기간", values: ["1개월분", "3개월분"] },
-    ],
-    [
-      { optionKeys: ["19종 복합", "1개월분"], price: 25000, stock: 60, code: "PRO-19-1M" },
-      { optionKeys: ["19종 복합", "3개월분"], price: 65000, stock: 20, code: "PRO-19-3M" },
-      { optionKeys: ["김치유산균", "1개월분"], price: 28000, stock: 40, code: "PRO-KM-1M" },
-      { optionKeys: ["김치유산균", "3개월분"], price: 72000, stock: 0, code: "PRO-KM-3M" },
-    ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["19종 복합 유산균", "100억 CFU 보장", "특허 코팅 기술", "냉장 보관 불필요"], brand: "락토핏랩", nutrition: { calories: 6, protein: 0.2, sugar: 0.3, fat: 0.1 }, indicatorGrades: ig("A", "B", "C", "B", "A"), additives: [ADD.malto, ADD.cellulose, ADD.silica], dosage: "1일 1회, 1회 1캡슐을 식전 또는 취침 전에 섭취하세요.", caution: "유제품 알레르기가 있는 분은 주의하세요. 항생제와 함께 섭취 시 효과가 감소할 수 있습니다.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 18개월" }
-  );
-
-  // 5. 어린이 프로바이오틱스 (단일: 맛)
-  createProduct("probiotics", "키즈 유산균 츄어블", "아이들이 좋아하는 맛으로 만든 츄어블 유산균. 방부제 무첨가.", 19000, "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&h=533&fit=crop",
-    [{ groupName: "맛", values: ["딸기", "바나나"] }],
-    [
-      { optionKeys: ["딸기"], price: 19000, stock: 35, code: "PRO-KD-ST" },
-      { optionKeys: ["바나나"], price: 19000, stock: 4, code: "PRO-KD-BN" },
-    ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["츄어블 타입", "방부제 무첨가", "유산균 50억 CFU", "어린이 맞춤 설계"], brand: "키즈웰", nutrition: { calories: 12, protein: 0.1, sugar: 2.5, fat: 0.2 }, indicatorGrades: ig("B", "C", "C", "B", "A"), additives: [ADD.xylitol, ADD.citric, ADD.malto, ADD.stevia], dosage: "1일 1회, 1회 1정을 씹어서 섭취하세요. 만 3세 이상부터 섭취 가능합니다.", caution: "알레르기 체질인 경우 성분을 확인하세요. 만 3세 미만의 영유아는 섭취하지 마세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 18개월" }
-  );
-
-  // 6. 알티지 오메가3 (단일: 용량)
-  const pidOmega3 = createProduct("omega3", "알티지 오메가3", "초임계 추출 rTG 오메가3. EPA+DHA 고함량으로 혈행 건강에 도움.", 35000, "https://images.unsplash.com/photo-1577401239170-897942555fb3?w=400&h=533&fit=crop",
-    [{ groupName: "용량", values: ["60캡슐", "120캡슐"] }],
-    [
-      { optionKeys: ["60캡슐"], price: 35000, stock: 55, code: "OMG-RTG-60" },
-      { optionKeys: ["120캡슐"], price: 62000, stock: 25, code: "OMG-RTG-120" },
-    ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["rTG 오메가3", "EPA 600mg + DHA 400mg", "초임계 추출 공법", "소프트캡슐"], brand: "노르딕씨", nutrition: { calories: 18, protein: 0, sugar: 0, fat: 2.0 }, indicatorGrades: ig("B", "A", "B", "B", "C"), additives: [ADD.gelatin, ADD.glycerin, ADD.tocopherol], dosage: "1일 1회, 1회 1캡슐을 식후에 물과 함께 섭취하세요.", caution: "수술 예정인 분은 2주 전부터 섭취를 중단하세요. 혈액응고 관련 약물 복용 시 전문가와 상담하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 노르웨이(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
-  );
-
-  // 7. 식물성 오메가3 (옵션 없음)
-  createProduct("omega3", "식물성 오메가3 DHA", "미세조류 유래 식물성 DHA. 비건 인증, 중금속 걱정 없는 깨끗한 오메가3.", 29000, "https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=400&h=533&fit=crop",
-    [],
-    [{ optionKeys: [], price: 29000, stock: 70, code: "OMG-VG-DHA" }],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["미세조류 유래 DHA", "비건 인증", "중금속 無검출", "식물성 캡슐"], brand: "그린알게", nutrition: { calories: 14, protein: 0, sugar: 0, fat: 1.5 }, indicatorGrades: ig("B", "A", "B", "B", "B"), additives: [ADD.carrageenan, ADD.glycerin, ADD.tocopherol], dosage: "1일 1회, 1회 2캡슐을 식후에 물과 함께 섭취하세요.", caution: "해조류 알레르기가 있는 분은 섭취하지 마세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 미국(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
-  );
-
-  // 8. 마그네슘 (단일: 타입)
-  createProduct("mineral", "프리미엄 마그네슘", "산화마그네슘 대비 흡수율 높은 킬레이트 마그네슘. 근육 이완과 숙면에 도움.", 16000, "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400&h=533&fit=crop",
-    [{ groupName: "타입", values: ["킬레이트", "구연산"] }],
-    [
-      { optionKeys: ["킬레이트"], price: 16000, stock: 90, code: "MIN-MG-CH" },
-      { optionKeys: ["구연산"], price: 14000, stock: 85, code: "MIN-MG-CT" },
-    ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["킬레이트/구연산 마그네슘", "높은 흡수율", "근육·신경 기능 지원", "90정 (3개월분)"], brand: "미네랄플러스", nutrition: { calories: 3, protein: 0, sugar: 0, fat: 0 }, indicatorGrades: ig("C", "B", "A", "C", "C"), additives: [ADD.mgst, ADD.cellulose, ADD.silica], dosage: "1일 1회, 1회 1정을 취침 전에 물과 함께 섭취하세요.", caution: "신장 질환이 있는 분은 전문가와 상담 후 섭취하세요. 설사가 발생할 경우 섭취량을 줄여주세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
-  );
-
-  // 9. 아연+셀레늄 (옵션 없음)
-  createProduct("mineral", "아연 + 셀레늄", "남성 건강에 필수적인 아연과 셀레늄을 한 알에. 면역력과 항산화에 도움.", 13000, "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=533&fit=crop",
-    [],
-    [{ optionKeys: [], price: 13000, stock: 65, code: "MIN-ZN-SE" }],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["아연 12mg + 셀레늄 50μg", "면역 기능 강화", "항산화 기능", "60정 (2개월분)"], brand: "데일리핏", nutrition: { calories: 2, protein: 0, sugar: 0, fat: 0 }, indicatorGrades: ig("C", "B", "B", "A", "C"), additives: [ADD.cellulose, ADD.mgst, ADD.silica], dosage: "1일 1회, 1회 1정을 식후에 물과 함께 섭취하세요.", caution: "구리 흡수를 방해할 수 있으므로 장기 복용 시 전문가와 상담하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
-  );
-
-  // 10. 저분자 콜라겐 (조합형: 타입×용량) → 4 SKU — 전 SKU 품절
-  createProduct("collagen", "저분자 피쉬 콜라겐", "분자량 500Da 이하 초저분자 콜라겐. 피부 탄력과 보습에 도움.", 28000, "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=533&fit=crop",
-    [
-      { groupName: "타입", values: ["분말", "정제"] },
-      { groupName: "용량", values: ["30일분", "60일분"] },
-    ],
-    [
-      { optionKeys: ["분말", "30일분"], price: 28000, stock: 0, code: "COL-PW-30" },
-      { optionKeys: ["분말", "60일분"], price: 50000, stock: 0, code: "COL-PW-60" },
-      { optionKeys: ["정제", "30일분"], price: 32000, stock: 0, code: "COL-TB-30" },
-      { optionKeys: ["정제", "60일분"], price: 56000, stock: 0, code: "COL-TB-60" },
-    ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["초저분자 500Da 이하", "피쉬 콜라겐 펩타이드", "피부 보습·탄력 기능성 인증", "분말/정제 선택 가능"], brand: "스킨콜라겐", nutrition: { calories: 16, protein: 3.5, sugar: 0, fat: 0 }, indicatorGrades: ig("B", "B", "B", "C", "C"), additives: [ADD.malto, ADD.citric, ADD.stevia], dosage: "1일 1회, 분말은 1포를 물이나 음료에 타서, 정제는 2정을 물과 함께 섭취하세요.", caution: "어류 알레르기가 있는 분은 섭취하지 마세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 프랑스(원료), 대한민국(제조) | 유통기한: 제조일로부터 24개월" }
-  );
-
-  // 11. 콜라겐 젤리스틱 (단일: 맛)
-  createProduct("collagen", "콜라겐 젤리스틱", "간편하게 먹는 석류맛 콜라겐 젤리. 휴대가 편리한 스틱 포장.", 22000, "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=400&h=533&fit=crop",
-    [{ groupName: "맛", values: ["석류", "블루베리", "레몬"] }],
-    [
-      { optionKeys: ["석류"], price: 22000, stock: 40, code: "COL-JL-PM" },
-      { optionKeys: ["블루베리"], price: 22000, stock: 1, code: "COL-JL-BB" },
-      { optionKeys: ["레몬"], price: 22000, stock: 30, code: "COL-JL-LM" },
-    ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["콜라겐 1000mg/포", "젤리 스틱 타입", "석류/블루베리/레몬 3종", "휴대 간편 개별포장"], brand: "카카오헬스케어", nutrition: { calories: 25, protein: 2.0, sugar: 4.5, fat: 0.1 }, indicatorGrades: ig("D", "D", "C", "C", "C"), additives: [ADD.carrageenan, ADD.cmc, ADD.pectin, ADD.stevia], dosage: "1일 1회, 1포를 그대로 섭취하세요. 냉장 보관 시 더 맛있게 드실 수 있습니다.", caution: "젤라틴 알레르기가 있는 분은 섭취하지 마세요. 어린이가 섭취 시 목에 걸리지 않도록 주의하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 12개월" }
-  );
-
-  // 12. 어린이 멀티비타민 (단일: 맛)
-  createProduct("kids", "어린이 종합비타민 젤리", "곰돌이 모양 젤리로 아이들이 즐겁게 먹는 종합비타민. 13종 비타민+미네랄.", 20000, "https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?w=400&h=533&fit=crop",
-    [{ groupName: "맛", values: ["오렌지", "딸기"] }],
-    [
-      { optionKeys: ["오렌지"], price: 20000, stock: 45, code: "KID-MV-OR" },
-      { optionKeys: ["딸기"], price: 20000, stock: 50, code: "KID-MV-ST" },
-    ],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["비타민 13종 + 미네랄", "곰돌이 모양 젤리", "인공색소 무첨가", "만 3세 이상"], brand: "꼬마비타", nutrition: { calories: 22, protein: 0.5, sugar: 3.8, fat: 0.2 }, indicatorGrades: ig("C", "C", "C", "B", "C"), additives: [ADD.pectin, ADD.xylitol, ADD.citric, ADD.carrageenan], dosage: "만 3~5세: 1일 1회 1정, 만 6세 이상: 1일 1회 2정을 씹어서 섭취하세요.", caution: "만 3세 미만은 섭취하지 마세요. 한 번에 여러 개를 입에 넣지 않도록 보호자 지도 하에 섭취하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 18개월" }
-  );
-
-  // 13. 어린이 칼슘 (옵션 없음)
-  createProduct("kids", "성장기 칼슘 + 비타민D", "뼈 건강에 필수인 칼슘과 비타민D를 한번에. 성장기 어린이에게 추천.", 17000, "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&h=533&fit=crop&q=80",
-    [],
-    [{ optionKeys: [], price: 17000, stock: 55, code: "KID-CA-VD" }],
-    { shipping: "오후 2시 이전 주문 시 당일 발송 · 배송비 3,000원 (30,000원 이상 무료배송)", keySpecs: ["칼슘 500mg + 비타민D 400IU", "성장기 맞춤 배합", "츄어블 타입", "60정 (2개월분)"], brand: "그로우업", nutrition: { calories: 8, protein: 0.3, sugar: 1.2, fat: 0.3 }, indicatorGrades: ig("C", "B", "A", "B", "C"), additives: [ADD.cellulose, ADD.xylitol, ADD.mgst], dosage: "1일 1회, 1회 1정을 씹어서 섭취하세요. 만 4세 이상부터 섭취 가능합니다.", caution: "만 4세 미만은 섭취하지 마세요. 신장 질환이 있는 어린이는 전문가와 상담 후 섭취하세요.", manufacturer: "제조사: (주)헬스케어랩 | 원산지: 대한민국 | 유통기한: 제조일로부터 24개월" }
-  );
+  // 리뷰가 참조하는 대표 상품 (기존 변수명 유지)
+  const pidMultivitamin = proteinPid["hymune-active-choco"];
+  const pidVitaminC = proteinPid["flymeal-choco"];
+  const pidVitaminD = proteinPid["labnosh-protein-banana"];
+  const pidProbiotics = proteinPid["nucare-allprotein-choco"];
+  const pidOmega3 = proteinPid["takefit-max-choco"];
 
   // --- Reviews ---
   const insertReview = db.prepare(
@@ -277,57 +201,57 @@ export function seedDatabase(db: Database.Database) {
 
   const reviewSeeds = [
     { pid: pidMultivitamin, items: [
-      { name: "김지연", rating: 5, body: "하루 한 알 챙겨 먹기 딱 좋아요. 오렌지 맛이라 거부감 없어요.", photos: [P.r1, P.r2], daysAgo: 3 },
-      { name: "박성호", rating: 4, body: "비타민 13종 가성비 최고. 60정 두 달치라 경제적이에요.", photos: [], daysAgo: 7 },
-      { name: "이현정", rating: 5, body: "무향료 무색소라 믿고 먹을 수 있어요. 피부 톤도 올라왔어요.", photos: [P.u1], daysAgo: 9 },
-      { name: "장우혁", rating: 5, body: "온 가족이 같이 먹고 있어요. 알약 크기도 적당합니다.", photos: [P.u2, P.u3], daysAgo: 12 },
-      { name: "한소희", rating: 4, body: "피곤함이 좀 줄어든 느낌. 꾸준히 먹어볼게요.", photos: [], daysAgo: 16 },
-      { name: "노태준", rating: 3, body: "효과는 보통인데 가격 대비 무난해요.", photos: [], daysAgo: 19 },
-      { name: "문가영", rating: 5, body: "재구매입니다. 포장도 깔끔하고 배송도 빨라요.", photos: [P.u4], daysAgo: 23 },
-      { name: "백승현", rating: 5, body: "아침마다 거르지 않고 챙기게 되네요. 만족합니다.", photos: [], daysAgo: 27 },
-      { name: "정유미", rating: 4, body: "냄새 없이 깔끔해서 좋아요. 두 통째 먹는 중.", photos: [P.u5], daysAgo: 31 },
-      { name: "구자철", rating: 2, body: "저한텐 큰 변화는 없었어요. 사람마다 다른 듯.", photos: [], daysAgo: 38 },
+      { name: "김지연", rating: 5, body: "운동 끝나고 딥초코로 마시면 단백질 20g이 든든해요. 진짜 초코우유 맛이에요.", photos: [P.r1, P.r2], daysAgo: 3 },
+      { name: "박성호", rating: 4, body: "제로 슈가인데 단맛이 충분해요. 한 박스 쟁여두고 먹어요.", photos: [], daysAgo: 7 },
+      { name: "이현정", rating: 5, body: "아침 대용으로 딱이에요. 250ml라 부담 없이 마셔요.", photos: [P.u1], daysAgo: 9 },
+      { name: "장우혁", rating: 5, body: "헬스장 갈 때마다 챙겨요. 단백질 보충 간편합니다.", photos: [P.u2, P.u3], daysAgo: 12 },
+      { name: "한소희", rating: 4, body: "초코맛 진하고 목 넘김이 부드러워요.", photos: [], daysAgo: 16 },
+      { name: "노태준", rating: 3, body: "맛은 좋은데 가격이 살짝 있어요.", photos: [], daysAgo: 19 },
+      { name: "문가영", rating: 5, body: "재구매했어요. 다이어트 중 단백질 채우기 좋아요.", photos: [P.u4], daysAgo: 23 },
+      { name: "백승현", rating: 5, body: "운동 직후 한 잔이면 든든. 비린맛 전혀 없어요.", photos: [], daysAgo: 27 },
+      { name: "정유미", rating: 4, body: "냉장고에 쟁여두고 마셔요. 깔끔합니다.", photos: [P.u5], daysAgo: 31 },
+      { name: "구자철", rating: 2, body: "저한텐 좀 달았어요. 호불호 갈릴 듯해요.", photos: [], daysAgo: 38 },
     ]},
     { pid: pidVitaminC, items: [
-      { name: "최민준", rating: 5, body: "1000mg인데 속 쓰림 없이 잘 먹혀요. 감기 기운에 효과 봤어요.", photos: [P.r3], daysAgo: 2 },
-      { name: "정수아", rating: 4, body: "영국산 원료라 믿음이 가요. 매일 아침 챙겨 먹고 있어요.", photos: [P.u6], daysAgo: 6 },
-      { name: "오지은", rating: 3, body: "효과는 있는데 알약이 좀 커서 삼키기 불편해요.", photos: [], daysAgo: 11 },
-      { name: "강민서", rating: 5, body: "환절기마다 챙겨요. 입안이 헐던 게 줄었어요.", photos: [P.u7], daysAgo: 14 },
-      { name: "윤하준", rating: 5, body: "가성비 끝판왕. 대용량이라 오래 먹어요.", photos: [], daysAgo: 18 },
-      { name: "서지우", rating: 4, body: "피부가 한결 밝아진 느낌이에요. 만족합니다.", photos: [P.u1, P.u8], daysAgo: 22 },
-      { name: "임도현", rating: 5, body: "신맛도 적당하고 코팅이 잘 돼 있어요.", photos: [], daysAgo: 26 },
-      { name: "조아라", rating: 2, body: "저는 속이 좀 쓰렸어요. 식후에 먹는 게 나아요.", photos: [], daysAgo: 33 },
-      { name: "김태형", rating: 4, body: "꾸준히 먹으니 피로감이 덜해요.", photos: [P.u2], daysAgo: 40 },
+      { name: "최민준", rating: 5, body: "한 끼 대용으로 든든해요. 토핑 씹히는 식감이 재밌어요.", photos: [P.r3], daysAgo: 2 },
+      { name: "정수아", rating: 4, body: "초코맛이 달달하고 단백질 22g이라 포만감 좋아요.", photos: [P.u6], daysAgo: 6 },
+      { name: "오지은", rating: 3, body: "맛은 좋은데 약간 텁텁해요. 물 많이 타면 나아요.", photos: [], daysAgo: 11 },
+      { name: "강민서", rating: 5, body: "아침 거를 때 이거 하나면 점심까지 든든해요.", photos: [P.u7], daysAgo: 14 },
+      { name: "윤하준", rating: 5, body: "식이섬유까지 챙겨져서 좋네요. 다이어트용으로 굿.", photos: [], daysAgo: 18 },
+      { name: "서지우", rating: 4, body: "토핑이 씹혀서 포만감이 오래가요.", photos: [P.u1, P.u8], daysAgo: 22 },
+      { name: "임도현", rating: 5, body: "물에 타먹기 간편하고 초코맛이 진해요.", photos: [], daysAgo: 26 },
+      { name: "조아라", rating: 2, body: "저는 좀 달아서 아쉬웠어요.", photos: [], daysAgo: 33 },
+      { name: "김태형", rating: 4, body: "운동 후 식사대용으로 잘 먹고 있어요.", photos: [P.u2], daysAgo: 40 },
     ]},
     { pid: pidVitaminD, items: [
-      { name: "강태훈", rating: 5, body: "실내 직장인에게 필수품. 혈액검사에서 비타민D 수치 올랐습니다.", photos: [P.u3], daysAgo: 5 },
-      { name: "임소연", rating: 4, body: "2000IU라 과잉 걱정 없어요. 가격도 합리적이에요.", photos: [], daysAgo: 8 },
-      { name: "신재원", rating: 5, body: "겨울 내내 먹었더니 감기 한 번도 안 걸렸어요.", photos: [P.u4], daysAgo: 13 },
-      { name: "황보름", rating: 5, body: "작은 알약이라 삼키기 편해요. 매일 챙깁니다.", photos: [], daysAgo: 17 },
-      { name: "차은우", rating: 4, body: "수치 관리용으로 좋네요. 재구매 의사 있어요.", photos: [P.u5], daysAgo: 21 },
-      { name: "남주혁", rating: 3, body: "효과 체감은 약하지만 꾸준히 먹어보려고요.", photos: [], daysAgo: 29 },
-      { name: "유인나", rating: 5, body: "가족 모두 먹어요. 흡수 잘 되는 제형이라 좋아요.", photos: [], daysAgo: 35 },
-      { name: "박보검", rating: 4, body: "햇빛 못 보는 분들께 추천합니다.", photos: [P.u6], daysAgo: 42 },
+      { name: "강태훈", rating: 5, body: "단백질 27g 고함량인데 바나나맛이 자연스러워요.", photos: [P.u3], daysAgo: 5 },
+      { name: "임소연", rating: 4, body: "350ml라 양도 넉넉하고 든든해요.", photos: [], daysAgo: 8 },
+      { name: "신재원", rating: 5, body: "운동 후 단백질 보충용으로 최고예요.", photos: [P.u4], daysAgo: 13 },
+      { name: "황보름", rating: 5, body: "바나나우유 같은 맛이라 부담 없이 마셔요.", photos: [], daysAgo: 17 },
+      { name: "차은우", rating: 4, body: "고단백인데 목 넘김이 부드러워요. 재구매 의사 있어요.", photos: [P.u5], daysAgo: 21 },
+      { name: "남주혁", rating: 3, body: "맛은 좋은데 살짝 단 편이에요.", photos: [], daysAgo: 29 },
+      { name: "유인나", rating: 5, body: "헬스 끝나고 마시기 딱이에요.", photos: [], daysAgo: 35 },
+      { name: "박보검", rating: 4, body: "휴대하기 좋고 든든합니다.", photos: [P.u6], daysAgo: 42 },
     ]},
     { pid: pidProbiotics, items: [
-      { name: "조현우", rating: 5, body: "장까지 살아서 도달하는 게 느껴질 정도로 소화가 편해졌어요.", photos: [P.u7], daysAgo: 4 },
-      { name: "배지영", rating: 4, body: "변비가 개선됐습니다. 꾸준히 먹을 예정이에요.", photos: [], daysAgo: 9 },
-      { name: "윤민석", rating: 5, body: "3개월분 구매했는데 계속 재구매할 것 같아요.", photos: [P.u8], daysAgo: 13 },
-      { name: "한지민", rating: 5, body: "아침마다 속이 편해요. 분말이 아니라 캡슐이라 간편.", photos: [], daysAgo: 17 },
-      { name: "정해인", rating: 4, body: "장 트러블이 줄었어요. 효과 만족합니다.", photos: [P.u1], daysAgo: 20 },
-      { name: "손예진", rating: 3, body: "초반엔 가스가 좀 찼는데 적응되니 괜찮아요.", photos: [], daysAgo: 24 },
-      { name: "현빈", rating: 5, body: "냉장 보관 편하고 캡슐 냄새도 없어요.", photos: [P.u2, P.u3], daysAgo: 30 },
-      { name: "김고은", rating: 4, body: "가족 장 건강용으로 잘 먹고 있어요.", photos: [], daysAgo: 37 },
+      { name: "조현우", rating: 5, body: "단백질 25g 고함량인데 락토프리라 속이 편해요.", photos: [P.u7], daysAgo: 4 },
+      { name: "배지영", rating: 4, body: "유당 때문에 배 아픈 분께 추천. 초코맛도 좋아요.", photos: [], daysAgo: 9 },
+      { name: "윤민석", rating: 5, body: "어르신 단백질 보충용으로 사드렸는데 잘 드세요.", photos: [P.u8], daysAgo: 13 },
+      { name: "한지민", rating: 5, body: "아르기닌까지 들어 운동 보충에 좋아요.", photos: [], daysAgo: 17 },
+      { name: "정해인", rating: 4, body: "맛이 진하고 든든해요. 꾸준히 먹는 중.", photos: [P.u1], daysAgo: 20 },
+      { name: "손예진", rating: 3, body: "살짝 묽은 편이지만 무난해요.", photos: [], daysAgo: 24 },
+      { name: "현빈", rating: 5, body: "락토프리라 우유 못 먹는 제게 딱이에요.", photos: [P.u2, P.u3], daysAgo: 30 },
+      { name: "김고은", rating: 4, body: "가족 단백질 보충용으로 잘 먹어요.", photos: [], daysAgo: 37 },
     ]},
     { pid: pidOmega3, items: [
-      { name: "홍성민", rating: 5, body: "rTG 오메가3 중 가성비 최고. 비린내도 전혀 없어요.", photos: [P.r4, P.r5], daysAgo: 6 },
-      { name: "서유진", rating: 5, body: "혈액검사 결과 중성지방이 줄었어요. 꾸준히 먹은 보람이 있네요.", photos: [P.u4], daysAgo: 10 },
-      { name: "권태수", rating: 4, body: "고함량 EPA+DHA 제품 중 이게 제일 잘 맞아요.", photos: [], daysAgo: 15 },
-      { name: "이나영", rating: 5, body: "캡슐이 부드럽고 트림 냄새가 없어요. 강추!", photos: [P.u5], daysAgo: 19 },
-      { name: "공유", rating: 4, body: "눈 건조함이 좀 나아진 것 같아요.", photos: [], daysAgo: 23 },
-      { name: "전도연", rating: 3, body: "캡슐이 좀 큰 편이에요. 효과는 무난.", photos: [], daysAgo: 28 },
-      { name: "주지훈", rating: 5, body: "산패 걱정 없이 신선해요. 재구매했습니다.", photos: [P.u6, P.u7], daysAgo: 34 },
-      { name: "김혜수", rating: 4, body: "혈행 개선 목적으로 잘 먹고 있어요.", photos: [], daysAgo: 41 },
+      { name: "홍성민", rating: 5, body: "단백질 24g에 당류 1g 미만! 다이어트 중 최고예요.", photos: [P.r4, P.r5], daysAgo: 6 },
+      { name: "서유진", rating: 5, body: "완전단백질이라 운동 후 회복이 빨라요. 비린맛 없어요.", photos: [P.u4], daysAgo: 10 },
+      { name: "권태수", rating: 4, body: "고함량 프로틴 중 맛이 제일 깔끔해요.", photos: [], daysAgo: 15 },
+      { name: "이나영", rating: 5, body: "초코맛 진하고 제로슈가라 부담 없어요. 강추!", photos: [P.u5], daysAgo: 19 },
+      { name: "공유", rating: 4, body: "아침 공복에 마셔도 속이 편해요.", photos: [], daysAgo: 23 },
+      { name: "전도연", rating: 3, body: "맛은 무난한데 약간 묽어요.", photos: [], daysAgo: 28 },
+      { name: "주지훈", rating: 5, body: "헬스장 필수템. 재구매했습니다.", photos: [P.u6, P.u7], daysAgo: 34 },
+      { name: "김혜수", rating: 4, body: "단백질 보충 목적으로 잘 마시고 있어요.", photos: [], daysAgo: 41 },
     ]},
   ];
 
@@ -341,9 +265,9 @@ export function seedDatabase(db: Database.Database) {
   const insertBanner = db.prepare(
     "INSERT INTO banners (id, title, subtitle, image_url, link_url, sort_order) VALUES (?, ?, ?, ?, ?, ?)"
   );
-  insertBanner.run(deterministicId(), "여름 건강 챙기기", "인기 비타민 최대 30% 할인", "/banners/summer.jpg", "/products?category=vitamin", 1);
-  insertBanner.run(deterministicId(), "프로바이오틱스 기획전", "장 건강의 시작, 유산균", "/banners/probiotics.jpg", "/products?category=probiotics", 2);
-  insertBanner.run(deterministicId(), "우리 아이 영양제", "성장기 필수 영양소 모음", "/banners/kids.jpg", "/products?category=kids", 3);
+  insertBanner.run(deterministicId(), "단백질 충전 기획전", "인기 프로틴 드링크 최대 30% 할인", "/banners/summer.jpg", "/products?category=drink", 1);
+  insertBanner.run(deterministicId(), "제로 슈가 단백질", "당 부담 없이 즐기는 저당 프로틴", "/banners/probiotics.jpg", "/products?category=lowsugar", 2);
+  insertBanner.run(deterministicId(), "간편한 한 끼 쉐이크", "든든한 식사대용 프로틴 쉐이크", "/banners/kids.jpg", "/products?category=shake", 3);
 
   // --- Demo wallet + orders for demo session ---
   const walletId = deterministicId();
@@ -359,13 +283,15 @@ export function seedDatabase(db: Database.Database) {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', ? || ' days'), ?, ?, ?, ?)`
   );
   const insertOrderItem = db.prepare(
-    "INSERT INTO order_items (id, order_id, sku_id, product_name, option_summary, image_url, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO order_items (id, order_id, sku_id, product_id, product_name, option_summary, image_url, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   );
 
-  // 주문 상품 썸네일 스냅샷용 — 상품명 → 이미지 맵 (이미 생성된 products에서 구성)
+  // 주문 상품 스냅샷용 — 상품명 → 이미지/id 맵 (이미 생성된 products에서 구성)
   const PRODUCT_IMG: Record<string, string> = {};
-  for (const row of db.prepare("SELECT name, image_url FROM products").all() as { name: string; image_url: string }[]) {
+  const PRODUCT_ID: Record<string, string> = {};
+  for (const row of db.prepare("SELECT id, name, image_url FROM products").all() as { id: string; name: string; image_url: string }[]) {
     PRODUCT_IMG[row.name] = row.image_url;
+    PRODUCT_ID[row.name] = row.id;
   }
   const FALLBACK_IMG = "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop&q=80";
   const insertWalletTx = db.prepare(
@@ -425,7 +351,7 @@ export function seedDatabase(db: Database.Database) {
     }
 
     for (const item of o.items) {
-      insertOrderItem.run(deterministicId(), oid, `demo-sku-${deterministicId().slice(0,4)}`, item.name, item.option, PRODUCT_IMG[item.name] ?? FALLBACK_IMG, item.price, item.qty, item.price * item.qty);
+      insertOrderItem.run(deterministicId(), oid, `demo-sku-${deterministicId().slice(0,4)}`, PRODUCT_ID[item.name] ?? "", item.name, item.option, PRODUCT_IMG[item.name] ?? FALLBACK_IMG, item.price, item.qty, item.price * item.qty);
     }
 
     // 결제 트랜잭션
@@ -451,108 +377,108 @@ export function seedDatabase(db: Database.Database) {
   // ===== 결제완료 (3건) =====
   const paidOrders: DemoOrder[] = [
     { ...addr, status: ORDER_STATUS.PAID, daysAgo: 0, items: [
-      { name: "데일리 멀티비타민", option: "오렌지 / 30정", price: 18000, qty: 1 },
+      { name: "하이뮨 액티브 딥초코", option: "", price: 3200, qty: 6 },
     ]},
     { ...addr2, status: ORDER_STATUS.PAID, daysAgo: 0, items: [
-      { name: "고함량 비타민C 1000", option: "120정", price: 27000, qty: 2 },
+      { name: "플라이밀 초코", option: "", price: 3300, qty: 4 },
     ]},
     { ...addr, status: ORDER_STATUS.PAID, daysAgo: 1, items: [
-      { name: "장건강 프로바이오틱스", option: "19종 복합 / 1개월분", price: 25000, qty: 1 },
-      { name: "아연 + 셀레늄", option: "", price: 13000, qty: 1 },
+      { name: "뉴케어 올프로틴 초코맛", option: "", price: 3300, qty: 3 },
+      { name: "셀렉스 프로핏 바나나", option: "", price: 3100, qty: 2 },
     ]},
   ];
 
   // ===== 배송준비 (3건) =====
   const preparingOrders: DemoOrder[] = [
     { ...addr, status: ORDER_STATUS.PREPARING, daysAgo: 1, items: [
-      { name: "알티지 오메가3", option: "120캡슐", price: 62000, qty: 1 },
+      { name: "테이크핏 맥스 초코맛", option: "", price: 3000, qty: 8 },
     ]},
     { ...addr3, status: ORDER_STATUS.PREPARING, daysAgo: 2, items: [
-      { name: "프리미엄 마그네슘", option: "킬레이트", price: 16000, qty: 2 },
+      { name: "단백한끼 14곡물", option: "", price: 2500, qty: 10 },
     ]},
     { ...addr2, status: ORDER_STATUS.PREPARING, daysAgo: 2, items: [
-      { name: "키즈 유산균 츄어블", option: "딸기", price: 19000, qty: 1 },
-      { name: "어린이 종합비타민 젤리", option: "딸기", price: 20000, qty: 1 },
+      { name: "함소아 액션가면 프로틴액트 초코", option: "", price: 2800, qty: 2 },
+      { name: "단백한끼 초코쿠키", option: "", price: 2500, qty: 4 },
     ]},
   ];
 
   // ===== 배송중 (3건) =====
   const shippingOrders: DemoOrder[] = [
     { ...addr, status: ORDER_STATUS.SHIPPING, daysAgo: 3, items: [
-      { name: "햇빛 비타민D3 2000IU", option: "", price: 12000, qty: 3 },
+      { name: "랩노쉬 프로틴 드링크 바나나", option: "", price: 3800, qty: 3 },
     ]},
     { ...addr2, status: ORDER_STATUS.SHIPPING, daysAgo: 4, items: [
-      { name: "식물성 오메가3 DHA", option: "", price: 29000, qty: 1 },
-      { name: "프리미엄 마그네슘", option: "구연산", price: 14000, qty: 1 },
+      { name: "하이뮨 액티브 비건 단백질", option: "", price: 3400, qty: 4 },
+      { name: "단백한끼 14곡물", option: "", price: 2500, qty: 3 },
     ]},
     { ...addr3, status: ORDER_STATUS.SHIPPING, daysAgo: 5, items: [
-      { name: "콜라겐 젤리스틱", option: "석류", price: 22000, qty: 2 },
+      { name: "랩노쉬 슬림쉐이크 인절미", option: "", price: 3300, qty: 6 },
     ]},
   ];
 
   // ===== 배송완료 (4건) =====
   const deliveredOrders: DemoOrder[] = [
     { ...addr, status: ORDER_STATUS.DELIVERED, daysAgo: 7, items: [
-      { name: "고함량 비타민C 1000", option: "120정", price: 27000, qty: 1 },
-      { name: "아연 + 셀레늄", option: "", price: 13000, qty: 1 },
+      { name: "플라이밀 초코", option: "", price: 3300, qty: 4 },
+      { name: "셀렉스 프로핏 바나나", option: "", price: 3100, qty: 2 },
     ]},
     { ...addr2, status: ORDER_STATUS.DELIVERED, daysAgo: 10, items: [
-      { name: "알티지 오메가3", option: "60캡슐", price: 35000, qty: 1 },
+      { name: "테이크핏 맥스 초코맛", option: "", price: 3000, qty: 10 },
     ]},
     { ...addr3, status: ORDER_STATUS.DELIVERED, daysAgo: 12, items: [
-      { name: "장건강 프로바이오틱스", option: "김치유산균 / 1개월분", price: 28000, qty: 1 },
-      { name: "데일리 멀티비타민", option: "포도 / 60정", price: 32000, qty: 1 },
+      { name: "뉴케어 올프로틴 초코맛", option: "", price: 3300, qty: 6 },
+      { name: "하이뮨 액티브 딥초코", option: "", price: 3200, qty: 4 },
     ]},
     { ...addr, status: ORDER_STATUS.DELIVERED, daysAgo: 14, items: [
-      { name: "성장기 칼슘 + 비타민D", option: "", price: 17000, qty: 2 },
+      { name: "함소아 액션가면 프로틴액트 초코", option: "", price: 2800, qty: 3 },
     ]},
   ];
 
   // ===== 취소완료 (2건) =====
   const cancelledOrders: DemoOrder[] = [
     { ...addr, status: ORDER_STATUS.CANCELLED, daysAgo: 5, cancelledDaysAgo: 4, items: [
-      { name: "장건강 프로바이오틱스", option: "19종 복합 / 3개월분", price: 65000, qty: 1 },
+      { name: "뉴케어 올프로틴 초코맛", option: "", price: 3300, qty: 12 },
     ]},
     { ...addr2, status: ORDER_STATUS.CANCELLED, daysAgo: 8, cancelledDaysAgo: 7, items: [
-      { name: "키즈 유산균 츄어블", option: "바나나", price: 19000, qty: 1 },
+      { name: "함소아 액션가면 프로틴액트 초코", option: "", price: 2800, qty: 2 },
     ]},
   ];
 
   // ===== 반품완료 (3건) =====
   const returnOrders: DemoOrder[] = [
-    { ...addr, status: ORDER_STATUS.RETURN_COMPLETED, daysAgo: 20, returnedDaysAgo: 16, returnReason: "상품 불량", returnNote: "캡슐이 일부 깨져있었습니다.", items: [
-      { name: "알티지 오메가3", option: "60캡슐", price: 35000, qty: 1 },
+    { ...addr, status: ORDER_STATUS.RETURN_COMPLETED, daysAgo: 20, returnedDaysAgo: 16, returnReason: "상품 불량", returnNote: "포장이 새서 내용물이 일부 샜어요.", items: [
+      { name: "테이크핏 맥스 초코맛", option: "", price: 3000, qty: 6 },
     ]},
     { ...addr3, status: ORDER_STATUS.RETURN_COMPLETED, daysAgo: 18, returnedDaysAgo: 15, returnReason: "단순 변심", returnNote: "", items: [
-      { name: "고함량 비타민C 1000", option: "180정", price: 38000, qty: 1 },
+      { name: "플라이밀 초코", option: "", price: 3300, qty: 4 },
     ]},
     { ...addr2, status: ORDER_STATUS.RETURN_COMPLETED, daysAgo: 25, returnedDaysAgo: 22, returnReason: "배송 중 파손", returnNote: "박스가 찌그러져서 제품이 손상되었어요.", items: [
-      { name: "데일리 멀티비타민", option: "오렌지 / 60정", price: 32000, qty: 1 },
-      { name: "햇빛 비타민D3 2000IU", option: "", price: 12000, qty: 1 },
+      { name: "하이뮨 액티브 딥초코", option: "", price: 3200, qty: 6 },
+      { name: "랩노쉬 프로틴 드링크 바나나", option: "", price: 3800, qty: 2 },
     ]},
   ];
 
   // ===== 구매확정 (3건) — 반품/교환 불가, 배송조회·재구매만 =====
   const confirmedOrders: DemoOrder[] = [
     { ...addr, status: ORDER_STATUS.CONFIRMED, daysAgo: 9, items: [
-      { name: "데일리 멀티비타민", option: "오렌지 / 60정", price: 32000, qty: 1 },
+      { name: "하이뮨 액티브 딥초코", option: "", price: 3200, qty: 8 },
     ]},
     { ...addr2, status: ORDER_STATUS.CONFIRMED, daysAgo: 11, items: [
-      { name: "햇빛 비타민D3 2000IU", option: "", price: 12000, qty: 2 },
-      { name: "고함량 비타민C 1000", option: "60정", price: 15000, qty: 1 },
+      { name: "랩노쉬 프로틴 드링크 바나나", option: "", price: 3800, qty: 4 },
+      { name: "플라이밀 초코", option: "", price: 3300, qty: 2 },
     ]},
     { ...addr3, status: ORDER_STATUS.CONFIRMED, daysAgo: 16, items: [
-      { name: "콜라겐 젤리스틱", option: "자몽", price: 22000, qty: 2 },
+      { name: "랩노쉬 슬림쉐이크 인절미", option: "", price: 3300, qty: 6 },
     ]},
   ];
 
   // ===== 교환완료 (2건) =====
   const exchangeOrders: DemoOrder[] = [
-    { ...addr, status: ORDER_STATUS.EXCHANGE_COMPLETED, daysAgo: 15, returnedDaysAgo: 13, returnReason: "오배송 (다른 상품 수령)", returnNote: "포도맛을 주문했는데 오렌지맛이 왔습니다.", items: [
-      { name: "데일리 멀티비타민", option: "포도 / 30정", price: 18000, qty: 1 },
+    { ...addr, status: ORDER_STATUS.EXCHANGE_COMPLETED, daysAgo: 15, returnedDaysAgo: 13, returnReason: "오배송 (다른 상품 수령)", returnNote: "초코맛을 주문했는데 다른 맛이 왔습니다.", items: [
+      { name: "하이뮨 액티브 딥초코", option: "", price: 3200, qty: 4 },
     ]},
-    { ...addr3, status: ORDER_STATUS.EXCHANGE_COMPLETED, daysAgo: 22, returnedDaysAgo: 19, returnReason: "상품이 설명과 다름", returnNote: "용량이 표기와 달랐습니다.", items: [
-      { name: "식물성 오메가3 DHA", option: "", price: 29000, qty: 1 },
+    { ...addr3, status: ORDER_STATUS.EXCHANGE_COMPLETED, daysAgo: 22, returnedDaysAgo: 19, returnReason: "상품이 설명과 다름", returnNote: "표기된 성분과 실제가 달랐습니다.", items: [
+      { name: "하이뮨 액티브 비건 단백질", option: "", price: 3400, qty: 3 },
     ]},
   ];
 

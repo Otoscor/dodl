@@ -1,4 +1,4 @@
-import { SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, CANCELLABLE_STATUSES, RETURNABLE_STATUSES, DISPLAY_DISCOUNT_RATE, ORDER_STATUS } from "./constants";
+import { SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, CANCELLABLE_STATUSES, RETURNABLE_STATUSES, DISPLAY_DISCOUNT_RATE, ORDER_STATUS, RETURN_SHIPPING_FEE, RETURN_FEE_REASONS, EXCHANGE_SHIPPING_FEE, EXCHANGE_FEE_REASONS } from "./constants";
 
 export function formatPrice(price: number): string {
   return price.toLocaleString("ko-KR") + "원";
@@ -28,6 +28,16 @@ export function isCancellable(status: string): boolean {
 
 export function isReturnable(status: string): boolean {
   return RETURNABLE_STATUSES.includes(status as typeof RETURNABLE_STATUSES[number]);
+}
+
+// 반품 사유에 따른 반품 배송비 — 고객 귀책(단순 변심·기타)만 차감, 그 외 무료
+export function returnShippingFee(reason: string): number {
+  return RETURN_FEE_REASONS.includes(reason) ? RETURN_SHIPPING_FEE : 0;
+}
+
+// 교환 사유에 따른 교환 배송비(왕복) — 고객 귀책(기타)만 차감, 그 외 무료
+export function exchangeShippingFee(reason: string): number {
+  return EXCHANGE_FEE_REASONS.includes(reason) ? EXCHANGE_SHIPPING_FEE : 0;
 }
 
 // 주문 상태별 노출 액션 버튼 라벨 (목록 카드용 — 동작은 추후 연결).

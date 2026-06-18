@@ -6,11 +6,9 @@ import { BackHeader } from "@/components/layout/BackHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { BottomSheet } from "@/components/ui/BottomSheet";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useToast } from "@/components/ui/Toast";
 import { formatPrice, isCancellable, isReturnable } from "@/lib/utils";
-import { RETURN_REASONS, EXCHANGE_REASONS } from "@/lib/constants";
 import type { OrderDetail } from "@/types/order";
 
 const STATUS_BADGE: Record<string, "indigo" | "amber" | "green" | "red" | "muted"> = {
@@ -33,12 +31,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
   const [cancelModal, setCancelModal] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  const [returnSheet, setReturnSheet] = useState(false);
-  const [exchangeSheet, setExchangeSheet] = useState(false);
-  const [selectedReason, setSelectedReason] = useState("");
-  const [note, setNote] = useState("");
-  const [processing, setProcessing] = useState(false);
-
   useEffect(() => {
     fetch(`/api/orders/${orderId}`)
       .then((r) => r.json())
@@ -54,58 +46,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
 
     if (data.success) {
       showToast("주문이 취소되었습니다.");
-      const updated = await fetch(`/api/orders/${orderId}`).then((r) => r.json());
-      setOrder(updated);
-    } else {
-      showToast(data.message, "error");
-    }
-  };
-
-  const handleReturn = async () => {
-    if (!selectedReason) {
-      showToast("사유를 선택해주세요.", "error");
-      return;
-    }
-    setProcessing(true);
-    const res = await fetch(`/api/orders/${orderId}/return`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason: selectedReason, note }),
-    });
-    const data = await res.json();
-    setProcessing(false);
-    setReturnSheet(false);
-    setSelectedReason("");
-    setNote("");
-
-    if (data.success) {
-      showToast("반품이 완료되었습니다.");
-      const updated = await fetch(`/api/orders/${orderId}`).then((r) => r.json());
-      setOrder(updated);
-    } else {
-      showToast(data.message, "error");
-    }
-  };
-
-  const handleExchange = async () => {
-    if (!selectedReason) {
-      showToast("사유를 선택해주세요.", "error");
-      return;
-    }
-    setProcessing(true);
-    const res = await fetch(`/api/orders/${orderId}/exchange`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason: selectedReason, note }),
-    });
-    const data = await res.json();
-    setProcessing(false);
-    setExchangeSheet(false);
-    setSelectedReason("");
-    setNote("");
-
-    if (data.success) {
-      showToast("교환이 완료되었습니다.");
       const updated = await fetch(`/api/orders/${orderId}`).then((r) => r.json());
       setOrder(updated);
     } else {
@@ -293,14 +233,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
           <Button
             variant="danger"
             fullWidth
-            onClick={() => { setSelectedReason(""); setNote(""); setReturnSheet(true); }}
+            onClick={() => router.push(`/orders/${orderId}/return`)}
           >
             반품 신청
           </Button>
           <Button
             variant="secondary"
             fullWidth
-            onClick={() => { setSelectedReason(""); setNote(""); setExchangeSheet(true); }}
+            onClick={() => router.push(`/orders/${orderId}/exchange`)}
           >
             교환 신청
           </Button>
@@ -326,80 +266,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ orderId:
         주문을 취소하면 결제 금액이 가상 지갑으로 환불됩니다.
         취소 후에는 되돌릴 수 없습니다.
       </Modal>
-
-      {/* Return BottomSheet */}
-      <BottomSheet open={returnSheet} onClose={() => setReturnSheet(false)}>
-        <div className="px-4 pb-6">
-          <h3 className="text-[18px] text-black mb-4">반품 신청</h3>
-
-          <p className="text-[14px] text-[#aaa] mb-3">사유를 선택해주세요</p>
-          <div className="space-y-2 mb-4">
-            {RETURN_REASONS.map((reason) => (
-              <label key={reason} className="flex items-center gap-3 px-3 py-2.5 border border-[#e0e0e0] rounded-[10px] cursor-pointer hover:bg-[#ebebeb] transition-colors">
-                <input
-                  type="radio"
-                  name="return-reason"
-                  value={reason}
-                  checked={selectedReason === reason}
-                  onChange={(e) => setSelectedReason(e.target.value)}
-                  className="w-4 h-4 accent-black"
-                />
-                <span className="text-[15px] text-black">{reason}</span>
-              </label>
-            ))}
-          </div>
-
-          <textarea
-            placeholder="추가 메모 (선택)"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            className="w-full h-20 px-3 py-2 text-[14px] border border-[#e0e0e0] bg-white text-black placeholder:text-[#cccccc] resize-none focus:outline-none focus:border-black rounded-[10px] mb-3"
-          />
-
-          <p className="text-[14px] text-[#aaa] mb-4">
-            환불금은 가상 지갑으로 입금됩니다.
-          </p>
-
-          <Button variant="danger" fullWidth onClick={handleReturn} disabled={processing || !selectedReason}>
-            {processing ? "처리 중..." : "반품 신청"}
-          </Button>
-        </div>
-      </BottomSheet>
-
-      {/* Exchange BottomSheet */}
-      <BottomSheet open={exchangeSheet} onClose={() => setExchangeSheet(false)}>
-        <div className="px-4 pb-6">
-          <h3 className="text-[18px] text-black mb-4">교환 신청</h3>
-
-          <p className="text-[14px] text-[#aaa] mb-3">사유를 선택해주세요</p>
-          <div className="space-y-2 mb-4">
-            {EXCHANGE_REASONS.map((reason) => (
-              <label key={reason} className="flex items-center gap-3 px-3 py-2.5 border border-[#e0e0e0] rounded-[10px] cursor-pointer hover:bg-[#ebebeb] transition-colors">
-                <input
-                  type="radio"
-                  name="exchange-reason"
-                  value={reason}
-                  checked={selectedReason === reason}
-                  onChange={(e) => setSelectedReason(e.target.value)}
-                  className="w-4 h-4 accent-black"
-                />
-                <span className="text-[15px] text-black">{reason}</span>
-              </label>
-            ))}
-          </div>
-
-          <textarea
-            placeholder="추가 메모 (선택)"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            className="w-full h-20 px-3 py-2 text-[14px] border border-[#e0e0e0] bg-white text-black placeholder:text-[#cccccc] resize-none focus:outline-none focus:border-black rounded-[10px] mb-4"
-          />
-
-          <Button variant="primary" fullWidth onClick={handleExchange} disabled={processing || !selectedReason}>
-            {processing ? "처리 중..." : "교환 신청"}
-          </Button>
-        </div>
-      </BottomSheet>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { getDb } from "../db";
 import { v4 as uuidv4 } from "uuid";
-import { isCancellable, isReturnable } from "../utils";
+import { isCancellable, isReturnable, returnShippingFee } from "../utils";
 import { WALLET_TX_TYPE, ORDER_STATUS } from "../constants";
 import type { Order, OrderDetail, OrderItem, OrderListItem } from "@/types/order";
 
@@ -118,17 +118,20 @@ export function requestReturn(
       db.prepare("UPDATE skus SET stock = stock + ? WHERE id = ?").run(item.quantity, item.sku_id);
     }
 
-    // Refund wallet
+    // Refund wallet — 환불액 = 반품 상품 금액 − 반품 배송비(사유 기반, 서버 재계산)
+    const fee = returnShippingFee(reason);
+    const refundAmount = Math.max(0, order.product_total - fee);
+
     const wallet = db.prepare(
       "SELECT * FROM wallets WHERE session_id = ?"
     ).get(sessionId) as { id: string; balance: number };
 
-    const newBalance = wallet.balance + order.total_amount;
+    const newBalance = wallet.balance + refundAmount;
     db.prepare("UPDATE wallets SET balance = ? WHERE id = ?").run(newBalance, wallet.id);
 
     db.prepare(
       "INSERT INTO wallet_transactions (id, wallet_id, type, amount, balance_after, description, reference_id) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    ).run(uuidv4(), wallet.id, WALLET_TX_TYPE.REFUND, order.total_amount, newBalance, "반품 환불", orderId);
+    ).run(uuidv4(), wallet.id, WALLET_TX_TYPE.REFUND, refundAmount, newBalance, "반품 환불", orderId);
 
     // Update order status
     db.prepare(

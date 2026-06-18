@@ -34,6 +34,7 @@ export interface ProteinProduct {
   subtitle: string; // 맛 · 용량
   blurb: string; // 한 줄 소개
   price: number; // 임의 가격 (데모)
+  image: string; // 제품 누끼 이미지 (public/products)
   tags: Tag[];
 }
 
@@ -96,6 +97,7 @@ export const PRODUCTS: ProteinProduct[] = [
     subtitle: "초코맛 · 1kg",
     blurb: "흡수 빠른 분리유청 단백질, 운동 직후 한 잔.",
     price: 42000,
+    image: "/products/hymune-active-choco.png",
     tags: ["post_workout", "low_sugar", "smooth", "tasty"],
   },
   {
@@ -104,6 +106,7 @@ export const PRODUCTS: ProteinProduct[] = [
     subtitle: "곡물맛 · 750g",
     blurb: "완두·현미 단백 블렌드, 유당 걱정 없는 비건 포뮬러.",
     price: 36000,
+    image: "/products/hymune-active-vegan.png",
     tags: ["plant_based", "lactose_free", "gut_friendly", "meal_replacement"],
   },
   {
@@ -112,6 +115,7 @@ export const PRODUCTS: ProteinProduct[] = [
     subtitle: "초코맛 · 630g",
     blurb: "씹히는 마시멜로 토핑으로 든든한 한 끼 대용.",
     price: 32000,
+    image: "/products/flymeal-choco.png",
     tags: ["meal_replacement", "topping", "tasty"],
   },
   {
@@ -120,6 +124,7 @@ export const PRODUCTS: ProteinProduct[] = [
     subtitle: "바닐라맛 · 900g",
     blurb: "천천히 흡수되는 카제인, 가벼운 체중 관리에.",
     price: 38000,
+    image: "/products/hymune-active-milkshake.png",
     tags: ["weight_management", "low_gi", "smooth", "low_sugar"],
   },
   {
@@ -128,6 +133,7 @@ export const PRODUCTS: ProteinProduct[] = [
     subtitle: "딸기맛 · 800g",
     blurb: "유당을 제거해 속 편한 운동 후 단백질 보충.",
     price: 34000,
+    image: "/products/nucare-allprotein-banana.png",
     tags: ["lactose_free", "gut_friendly", "post_workout"],
   },
   {
@@ -136,6 +142,7 @@ export const PRODUCTS: ProteinProduct[] = [
     subtitle: "베리맛 · 500g",
     blurb: "단백질에 콜라겐을 더한 이너뷰티 한 잔.",
     price: 39000,
+    image: "/products/labnosh-slim-injeolmi.png",
     tags: ["beauty", "tasty", "smooth"],
   },
   {
@@ -144,6 +151,7 @@ export const PRODUCTS: ProteinProduct[] = [
     subtitle: "자몽맛 · 450g",
     blurb: "음료처럼 가벼운 제로당 클리어 프로틴.",
     price: 28000,
+    image: "/products/selex-profit-banana.png",
     tags: ["low_sugar", "low_gi", "gut_friendly", "smooth"],
   },
   {
@@ -152,6 +160,7 @@ export const PRODUCTS: ProteinProduct[] = [
     subtitle: "쿠키맛 · 630g",
     blurb: "바삭한 그래놀라 토핑으로 즐기는 식사 대용 쉐이크.",
     price: 33000,
+    image: "/products/flymeal-brown.png",
     tags: ["meal_replacement", "topping", "tasty"],
   },
 ];
