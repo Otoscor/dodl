@@ -1,5 +1,6 @@
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { CartProvider } from "@/hooks/useCart";
+import { AddressProvider } from "@/hooks/useAddresses";
 
 export default function CommerceLayout({
   children,
@@ -8,8 +9,10 @@ export default function CommerceLayout({
 }) {
   return (
     <CartProvider>
-      <main className="pb-20">{children}</main>
-      <BottomTabBar />
+      <AddressProvider>
+        <main className="pb-20">{children}</main>
+        <BottomTabBar />
+      </AddressProvider>
     </CartProvider>
   );
 }

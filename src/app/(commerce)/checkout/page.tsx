@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BackHeader } from "@/components/layout/BackHeader";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PointInput } from "@/components/commerce/PointInput";
+import { AddressPickerOverlay } from "@/components/commerce/AddressPickerOverlay";
 import { useCart } from "@/hooks/useCart";
+import { useAddresses, formatAddress } from "@/hooks/useAddresses";
 import { formatPrice } from "@/lib/utils";
 import { MOCK_POINT_SUMMARY, MOCK_COUPONS } from "../my/mock";
 import type { CartSummary } from "@/types/cart";
@@ -27,12 +29,10 @@ const AVAILABLE_COUPONS = MOCK_COUPONS.filter((c) => !c.expired).length;
 
 type SectionKey = "delivery" | "order" | "coupon" | "payment";
 
-const inputCls =
-  "w-full bg-[#f5f5f5] border border-[#e0e0e0] rounded-[10px] px-4 py-3 text-[15px] text-black placeholder:text-[#cccccc] outline-none focus:border-black transition-colors";
-
 export default function CheckoutPage() {
   const router = useRouter();
   const { refresh } = useCart();
+  const { addresses, defaultAddress } = useAddresses();
 
   const [cart, setCart] = useState<CartSummary | null>(null);
   const [walletBalance, setWalletBalance] = useState(0);
@@ -40,12 +40,9 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorModal, setErrorModal] = useState<string | null>(null);
 
-  // 배송 정보
-  const [recipientName, setRecipientName] = useState("");
-  const [recipientPhone, setRecipientPhone] = useState("");
-  const [addressLine1, setAddressLine1] = useState("");
-  const [addressLine2, setAddressLine2] = useState("");
-  const [addrFormOpen, setAddrFormOpen] = useState(false);
+  // 배송지 — 주소록에서 선택
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [addrOpen, setAddrOpen] = useState(false);
 
   // 포인트 + 결제수단
   const [pointsApplied, setPointsApplied] = useState(0);
@@ -79,21 +76,18 @@ export default function CheckoutPage() {
     return null;
   }
 
+  // 선택 주소: 명시 선택 우선, 없으면 기본 배송지
+  const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? defaultAddress;
+
   const payAmount = Math.max(0, cart.total_amount - pointsApplied);
   const earnPoints = Math.floor(payAmount * MOCK_POINT_SUMMARY.earnRate / 100);
   const isBalanceSufficient = walletBalance >= payAmount;
 
-  const addressOk = !!addressLine1.trim();
-  const canSubmit =
-    !!recipientName.trim() &&
-    !!recipientPhone.trim() &&
-    addressOk &&
-    isBalanceSufficient &&
-    !submitting;
+  const canSubmit = !!selectedAddress && isBalanceSufficient && !submitting;
 
   const handleSubmit = async () => {
-    if (!recipientName.trim() || !recipientPhone.trim() || !addressLine1.trim()) {
-      setErrorModal("배송 정보를 모두 입력해주세요.");
+    if (!selectedAddress) {
+      setErrorModal("배송지를 선택해주세요.");
       return;
     }
     setSubmitting(true);
@@ -101,10 +95,10 @@ export default function CheckoutPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        recipientName: recipientName.trim(),
-        recipientPhone: recipientPhone.trim(),
-        addressLine1: addressLine1.trim(),
-        addressLine2: addressLine2.trim(),
+        recipientName: selectedAddress.recipientName,
+        recipientPhone: selectedAddress.recipientPhone,
+        addressLine1: `${selectedAddress.zipcode ? `[${selectedAddress.zipcode}] ` : ""}${selectedAddress.road}`,
+        addressLine2: selectedAddress.detail,
         pointsApplied,
       }),
     });
@@ -131,50 +125,27 @@ export default function CheckoutPage() {
         onToggle={() => toggle("delivery")}
       />
       {openSections.delivery && (
-        <div className="px-6 pb-6 space-y-3">
-          <LabeledInput label="수령인" required>
-            <input
-              type="text"
-              placeholder="홍길동"
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-              className={inputCls}
-            />
-          </LabeledInput>
-          <LabeledInput label="휴대폰번호" required>
-            <input
-              type="tel"
-              placeholder="000-0000-0000"
-              value={recipientPhone}
-              onChange={(e) => setRecipientPhone(e.target.value)}
-              className={inputCls}
-            />
-          </LabeledInput>
-          <LabeledInput label="주소" required>
-            {addrFormOpen || addressLine1.trim() ? (
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="주소"
-                  value={addressLine1}
-                  onChange={(e) => setAddressLine1(e.target.value)}
-                  className={inputCls}
-                />
-                <input
-                  type="text"
-                  placeholder="상세주소 (선택)"
-                  value={addressLine2}
-                  onChange={(e) => setAddressLine2(e.target.value)}
-                  className={inputCls}
-                />
+        <div className="px-6 pb-6">
+          {selectedAddress ? (
+            <div className="rounded-[14px] border border-[#e0e0e0] px-4 py-4">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[15px] font-bold text-black">{selectedAddress.recipientName}</span>
+                <button
+                  onClick={() => setAddrOpen(true)}
+                  className="px-3.5 py-1 text-[13px] border border-[#cccccc] rounded-full text-black bg-white hover:border-black transition-colors"
+                >
+                  변경
+                </button>
               </div>
-            ) : (
-              <div className="rounded-[14px] bg-[#f7f7f7] flex flex-col items-center gap-3.5 px-5 py-7">
-                <p className="text-[15px] text-[#888]">직접 입력할게요</p>
-                <Button onClick={() => setAddrFormOpen(true)}>배송지 추가하기</Button>
-              </div>
-            )}
-          </LabeledInput>
+              <p className="text-[13px] text-[#888]">{selectedAddress.recipientPhone}</p>
+              <p className="text-[13px] text-[#888] mt-1 leading-relaxed">{formatAddress(selectedAddress)}</p>
+            </div>
+          ) : (
+            <div className="rounded-[14px] bg-[#f7f7f7] flex flex-col items-center gap-3.5 px-5 py-7">
+              <p className="text-[15px] text-[#888]">배송지 정보를 입력해주세요</p>
+              <Button onClick={() => setAddrOpen(true)}>배송지 추가하기</Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -319,6 +290,14 @@ export default function CheckoutPage() {
       <Modal open={!!errorModal} onClose={() => setErrorModal(null)} title="결제 실패">
         {errorModal}
       </Modal>
+
+      <AddressPickerOverlay
+        open={addrOpen}
+        onClose={() => setAddrOpen(false)}
+        mode="select"
+        selectedId={selectedAddress?.id ?? null}
+        onSelect={(addr) => setSelectedAddressId(addr.id)}
+      />
     </div>
   );
 }
@@ -347,24 +326,5 @@ function SectionHeader({
         </span>
       </div>
     </button>
-  );
-}
-
-function LabeledInput({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <p className="text-[13px] text-[#888] mb-1.5">
-        {label}{required && <span className="text-black ml-0.5">*</span>}
-      </p>
-      {children}
-    </div>
   );
 }

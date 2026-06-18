@@ -28,7 +28,7 @@ export function processCheckout(input: CheckoutInput): CheckoutResult {
     const cartItems = db.prepare(`
       SELECT ci.id as cart_item_id, ci.quantity,
         s.id as sku_id, s.price, s.stock, s.sku_code,
-        p.name as product_name, p.id as product_id,
+        p.name as product_name, p.id as product_id, p.image_url as image_url,
         COALESCE(GROUP_CONCAT(ov.name, ' / '), '') as option_summary
       FROM cart_items ci
       JOIN skus s ON s.id = ci.sku_id
@@ -46,6 +46,7 @@ export function processCheckout(input: CheckoutInput): CheckoutResult {
       sku_code: string;
       product_name: string;
       product_id: string;
+      image_url: string;
       option_summary: string;
     }[];
 
@@ -98,10 +99,10 @@ export function processCheckout(input: CheckoutInput): CheckoutResult {
 
     // 5d. Create order items (snapshot)
     const insertOrderItem = db.prepare(
-      "INSERT INTO order_items (id, order_id, sku_id, product_name, option_summary, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+      "INSERT INTO order_items (id, order_id, sku_id, product_name, option_summary, image_url, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
     for (const item of cartItems) {
-      insertOrderItem.run(uuidv4(), orderId, item.sku_id, item.product_name, item.option_summary, item.price, item.quantity, item.price * item.quantity);
+      insertOrderItem.run(uuidv4(), orderId, item.sku_id, item.product_name, item.option_summary, item.image_url ?? "", item.price, item.quantity, item.price * item.quantity);
     }
 
     // 5e. Record wallet transaction

@@ -11,6 +11,7 @@ export const ORDER_STATUS = {
   PREPARING: "배송준비",
   SHIPPING: "배송중",
   DELIVERED: "배송완료",
+  CONFIRMED: "구매확정",
   CANCELLED: "취소완료",
   RETURN_REQUESTED: "반품요청",
   RETURN_COMPLETED: "반품완료",

@@ -30,11 +30,17 @@ export interface OrderItem {
   sku_id: string;
   product_name: string;
   option_summary: string;
+  image_url: string;
   unit_price: number;
   quantity: number;
   subtotal: number;
 }
 
 export interface OrderDetail extends Order {
+  items: OrderItem[];
+}
+
+// 주문 목록 — 각 주문에 상품 스냅샷(items) 포함
+export interface OrderListItem extends Order {
   items: OrderItem[];
 }

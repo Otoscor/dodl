@@ -12,6 +12,7 @@ import { PointInput } from "@/components/commerce/PointInput";
 import { AddressItem } from "@/components/commerce/AddressItem";
 import { ProductRow } from "@/components/commerce/ProductRow";
 import { Accordion } from "@/components/ui/Accordion";
+import { Input } from "@/components/ui/Input";
 import { LOW_STOCK_THRESHOLD } from "@/lib/constants";
 import type { OptionGroup, Sku } from "@/types/product";
 
@@ -35,6 +36,32 @@ function ProductRowCartStory({
       checked={checked}
       onCheck={(v) => { setChecked(v); onSelect(v ? "선택됨" : "선택 해제"); }}
       onRemove={() => onSelect("삭제됨")}
+    />
+  );
+}
+
+/* ── Input 내부 state wrapper ── */
+function InputStory({
+  required,
+  error,
+  disabled,
+  onSelect,
+}: {
+  required: boolean;
+  error: boolean;
+  disabled: boolean;
+  onSelect: (text: string | null) => void;
+}) {
+  const [val, setVal] = useLocalState("");
+  return (
+    <Input
+      label="받는 분"
+      required={required}
+      disabled={disabled}
+      error={error ? "올바른 값을 입력해 주세요." : undefined}
+      value={val}
+      onChange={(v) => { setVal(v); onSelect(v || null); }}
+      placeholder="오브리"
     />
   );
 }
@@ -770,6 +797,33 @@ export const STORIES: Story[] = [
       { name: "title", type: "string", desc: "헤더에 표시되는 제목 텍스트." },
       { name: "children", type: "ReactNode", desc: "펼쳐졌을 때 보여줄 내용. 회색 박스 안에 렌더됨." },
       { name: "defaultOpen", type: "boolean", desc: "초기 열림 상태. 기본값 false." },
+    ],
+  },
+  {
+    id: "input",
+    name: "Input",
+    states: ["Default", "Filled", "Error", "Disabled"],
+    knobs: [
+      { key: "required", label: "필수(*)", type: "toggle" },
+      { key: "error", label: "에러", type: "toggle" },
+      { key: "disabled", label: "비활성", type: "toggle" },
+    ],
+    defaults: { required: true, error: false, disabled: false },
+    signature: (v) => `${v.error}|${v.disabled}`,
+    render: (values, onSelect) => (
+      <InputStory
+        required={values.required as boolean}
+        error={values.error as boolean}
+        disabled={values.disabled as boolean}
+        onSelect={onSelect}
+      />
+    ),
+    propsDoc: [
+      { name: "label", type: "string", desc: "컨테이너 상단 라벨." },
+      { name: "required", type: "boolean", desc: "라벨 옆 빨강 * 표시." },
+      { name: "value / onChange", type: "string / (v: string) => void", desc: "제어 입력 값과 변경 콜백." },
+      { name: "error", type: "string", desc: "있으면 빨강 테두리 + ⚠ 메시지 노출." },
+      { name: "type", type: '"text" | "tel" | "password" | ...', desc: "input 타입. 기본 text." },
     ],
   },
 ];

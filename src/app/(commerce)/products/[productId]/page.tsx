@@ -12,9 +12,14 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useToast } from "@/components/ui/Toast";
+import { RatingSummary } from "@/components/commerce/review/RatingSummary";
+import { PhotoStrip } from "@/components/commerce/review/PhotoStrip";
+import { ReviewCard } from "@/components/commerce/review/ReviewCard";
 import { useCart } from "@/hooks/useCart";
 import { formatPrice, originalPrice } from "@/lib/utils";
-import type { ProductDetail, Sku, Review, ReviewSummary } from "@/types/product";
+import type { ProductDetail, Sku, Review } from "@/types/product";
+
+const REVIEW_PREVIEW_COUNT = 3;
 
 type SheetAction = "cart" | "buy" | "gift";
 
@@ -317,35 +322,24 @@ export default function ProductDetailPage({
 
         {/* 리뷰 — 인라인 섹션 */}
         <section ref={reviewSectionRef} className="border-t border-[#e0e0e0] scroll-mt-16">
-          <div className="px-6 pt-8 pb-2 flex items-baseline gap-2">
-            <span className="text-black text-[18px]">★</span>
-            <span className="text-[18px] text-black">
-              {product.review_summary.average_rating.toFixed(1)}
-            </span>
-            <span className="text-[14px] text-[#aaa]">
-              리뷰 {product.review_summary.review_count}개
-            </span>
+          <div className="px-6 pt-6 pb-1">
+            <h2 className="text-[17px] font-medium text-black">리뷰</h2>
           </div>
 
-          {/* 별점 분포 */}
+          {/* 평점 요약 */}
           {product.review_summary.review_count > 0 && (
-            <RatingDistributionChart
-              distribution={product.review_summary.rating_distribution}
-              total={product.review_summary.review_count}
-            />
+            <RatingSummary summary={product.review_summary} />
           )}
 
           {/* 포토 영상 리뷰 */}
           {!reviewsLoading && (
-            <PhotoStrip photos={reviews.flatMap((r) => r.photo_urls)} />
+            <PhotoStrip
+              photos={reviews.flatMap((r) => r.photo_urls)}
+              onSeeAll={() => router.push(`/products/${productId}/reviews/photos`)}
+            />
           )}
 
-          {/* 리뷰 목록 */}
-          <div className="px-6 pt-4">
-            <p className="text-[15px] text-black mb-1">
-              리뷰 ({product.review_summary.review_count})
-            </p>
-          </div>
+          {/* 리뷰 목록 (미리보기 상위 N개) */}
           <div className="px-6">
             {reviewsLoading ? (
               <div className="py-8 flex justify-center">
@@ -356,7 +350,9 @@ export default function ProductDetailPage({
                 아직 작성된 후기가 없습니다.
               </p>
             ) : (
-              reviews.map((review) => <ReviewCard key={review.id} review={review} />)
+              reviews
+                .slice(0, REVIEW_PREVIEW_COUNT)
+                .map((review) => <ReviewCard key={review.id} review={review} />)
             )}
           </div>
 
@@ -365,6 +361,7 @@ export default function ProductDetailPage({
             <div className="px-6 pt-5 pb-2">
               <button
                 type="button"
+                onClick={() => router.push(`/products/${productId}/reviews`)}
                 className="w-full rounded-[10px] border border-[#e0e0e0] py-3.5 text-[15px] text-black active:bg-[#f5f5f5]"
               >
                 상품 리뷰 전체보기 ({product.review_summary.review_count})
@@ -500,98 +497,4 @@ function buildSpecRows(product: ProductDetail): { label: string; value: string }
   rows.push({ label: "상품번호", value: product.id });
 
   return rows;
-}
-
-function RatingDistributionChart({
-  distribution, total,
-}: {
-  distribution: ReviewSummary["rating_distribution"];
-  total: number;
-}) {
-  return (
-    <div className="py-4 px-6 border-b border-[#e0e0e0] space-y-2">
-      {([5, 4, 3, 2, 1] as const).map((star) => {
-        const count = distribution[star];
-        const pct = total > 0 ? (count / total) * 100 : 0;
-        return (
-          <div key={star} className="flex items-center gap-2">
-            <span className="text-[14px] text-[#aaa] w-3 text-right shrink-0">{star}</span>
-            <span className="text-black text-[13px] shrink-0">★</span>
-            <div className="flex-1 h-[5px] rounded-full bg-[#f5f5f5] overflow-hidden">
-              <div className="h-full rounded-full bg-black" style={{ width: `${pct}%` }} />
-            </div>
-            <span className="text-[14px] text-[#aaa] w-4 shrink-0">{count}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function PhotoStrip({ photos }: { photos: string[] }) {
-  if (photos.length === 0) return null;
-  return (
-    <div className="py-4 px-6 border-b border-[#e0e0e0]">
-      <div className="flex items-center justify-between mb-2.5">
-        <p className="text-[15px] text-black">포토 영상 리뷰</p>
-        <button type="button" className="text-[13px] text-[#aaa] active:opacity-70">
-          전체보기 ›
-        </button>
-      </div>
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {photos.map((url, i) => (
-          <div key={i} className="w-[88px] h-[88px] rounded-[10px] bg-[#f5f5f5] shrink-0 overflow-hidden">
-            <img src={url} alt={`포토 리뷰 ${i + 1}`} className="w-full h-full object-cover" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ReviewCard({ review }: { review: Review }) {
-  return (
-    <div className="py-4 border-b border-[#e0e0e0] last:border-b-0">
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[15px] text-black">
-          {review.author_name}
-        </span>
-        <span className="text-[13px] text-[#aaa]">
-          {review.created_at.slice(0, 10)}
-        </span>
-      </div>
-      <div className="flex gap-0.5 mb-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <span
-            key={i}
-            className={i < review.rating ? "text-black" : "text-[#e0e0e0]"}
-            style={{ fontSize: "15px" }}
-          >
-            ★
-          </span>
-        ))}
-      </div>
-      {review.body && (
-        <p className="text-[15px] text-[#888] leading-relaxed">
-          {review.body}
-        </p>
-      )}
-      {review.photo_urls.length > 0 && (
-        <div className="flex gap-1.5 mt-2 overflow-x-auto">
-          {review.photo_urls.map((url, i) => (
-            <div key={i} className="w-[60px] h-[60px] rounded-[10px] bg-[#f5f5f5] shrink-0 overflow-hidden">
-              <img src={url} alt={`사진 ${i + 1}`} className="w-full h-full object-cover" />
-            </div>
-          ))}
-        </div>
-      )}
-      {/* 도움돼요 — 장식 (비동작) */}
-      <div className="mt-3">
-        <span className="inline-flex items-center gap-1 rounded-full border border-[#e0e0e0] px-3 py-1.5 text-[13px] text-[#888]">
-          <span className="material-icons-outlined text-[15px]">thumb_up</span>
-          도움돼요
-        </span>
-      </div>
-    </div>
-  );
 }

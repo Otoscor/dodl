@@ -2,13 +2,30 @@ import { getDb } from "../db";
 import { v4 as uuidv4 } from "uuid";
 import { isCancellable, isReturnable } from "../utils";
 import { WALLET_TX_TYPE, ORDER_STATUS } from "../constants";
-import type { Order, OrderDetail, OrderItem } from "@/types/order";
+import type { Order, OrderDetail, OrderItem, OrderListItem } from "@/types/order";
 
-export function getOrders(sessionId: string): Order[] {
+export function getOrders(sessionId: string): OrderListItem[] {
   const db = getDb();
-  return db.prepare(
+  const orders = db.prepare(
     "SELECT * FROM orders WHERE session_id = ? ORDER BY created_at DESC"
   ).all(sessionId) as Order[];
+
+  if (orders.length === 0) return [];
+
+  // 주문들의 상품을 한 번의 IN 쿼리로 가져와 그룹핑
+  const placeholders = orders.map(() => "?").join(",");
+  const items = db.prepare(
+    `SELECT * FROM order_items WHERE order_id IN (${placeholders})`
+  ).all(...orders.map((o) => o.id)) as OrderItem[];
+
+  const byOrder = new Map<string, OrderItem[]>();
+  for (const it of items) {
+    const arr = byOrder.get(it.order_id) ?? [];
+    arr.push(it);
+    byOrder.set(it.order_id, arr);
+  }
+
+  return orders.map((o) => ({ ...o, items: byOrder.get(o.id) ?? [] }));
 }
 
 export function getOrderDetail(orderId: string, sessionId: string): OrderDetail | null {

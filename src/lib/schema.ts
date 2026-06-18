@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   sku_id TEXT NOT NULL,
   product_name TEXT NOT NULL,
   option_summary TEXT NOT NULL DEFAULT '',
+  image_url TEXT NOT NULL DEFAULT '',
   unit_price INTEGER NOT NULL,
   quantity INTEGER NOT NULL,
   subtotal INTEGER NOT NULL

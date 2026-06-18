@@ -63,7 +63,7 @@ export function processGiftCheckout(input: GiftCheckoutInput): GiftCheckoutResul
     // 1. SKU + 상품 + 옵션 조회 (장바구니와 동일한 조인으로 스냅샷 확보)
     const sku = db.prepare(`
       SELECT s.id as sku_id, s.price, s.stock, s.sku_code,
-        p.name as product_name, p.id as product_id,
+        p.name as product_name, p.id as product_id, p.image_url as image_url,
         COALESCE(GROUP_CONCAT(ov.name, ' / '), '') as option_summary
       FROM skus s
       JOIN products p ON p.id = s.product_id
@@ -78,6 +78,7 @@ export function processGiftCheckout(input: GiftCheckoutInput): GiftCheckoutResul
       sku_code: string;
       product_name: string;
       product_id: string;
+      image_url: string;
       option_summary: string;
     } | undefined;
 
@@ -137,8 +138,8 @@ export function processGiftCheckout(input: GiftCheckoutInput): GiftCheckoutResul
 
     // 5d. 주문 상품 스냅샷 (1건)
     db.prepare(
-      "INSERT INTO order_items (id, order_id, sku_id, product_name, option_summary, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-    ).run(uuidv4(), orderId, sku.sku_id, sku.product_name, sku.option_summary, sku.price, quantity, productTotal);
+      "INSERT INTO order_items (id, order_id, sku_id, product_name, option_summary, image_url, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    ).run(uuidv4(), orderId, sku.sku_id, sku.product_name, sku.option_summary, sku.image_url ?? "", sku.price, quantity, productTotal);
 
     // 5e. 지갑 거래 기록
     db.prepare(

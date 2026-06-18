@@ -2,26 +2,21 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/Button";
 import { BackHeader } from "@/components/layout/BackHeader";
-import { formatPrice } from "@/lib/utils";
-import type { Order } from "@/types/order";
+import { OrderCard } from "@/components/commerce/OrderCard";
+import type { OrderListItem } from "@/types/order";
 
-const STATUS_BADGE: Record<string, "indigo" | "amber" | "green" | "red" | "muted"> = {
-  "결제완료": "indigo",
-  "배송준비": "amber",
-  "배송중": "amber",
-  "배송완료": "green",
-  "취소완료": "red",
-  "반품완료": "red",
-  "교환완료": "amber",
-};
+// created_at → "YYYY.MM.DD"
+function dateKey(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+}
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,10 +25,19 @@ export default function OrdersPage() {
       .then((data) => { setOrders(data.orders); setLoading(false); });
   }, []);
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) return <><BackHeader title="주문 내역" /><LoadingSpinner /></>;
+
+  // 날짜별 그룹 (API가 created_at DESC로 정렬해 반환 → 순서 유지)
+  const groups: { date: string; items: OrderListItem[] }[] = [];
+  for (const order of orders) {
+    const date = dateKey(order.created_at);
+    const last = groups[groups.length - 1];
+    if (last && last.date === date) last.items.push(order);
+    else groups.push({ date, items: [order] });
+  }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-10">
       <BackHeader title="주문 내역" />
 
       {orders.length === 0 ? (
@@ -44,33 +48,16 @@ export default function OrdersPage() {
           action={<Link href="/products"><Button variant="secondary" size="sm">상품 보러가기</Button></Link>}
         />
       ) : (
-        <div className="divide-y divide-[#e0e0e0]">
-          {orders.map((order) => (
-            <Link
-              key={order.id}
-              href={`/orders/${order.id}`}
-              className="block px-6 py-6 hover:bg-[#f5f5f5] transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-mono text-[13px] text-[#aaa]">{order.order_number}</p>
-                  <p className="text-[12px] text-[#cccccc] mt-0.5">
-                    {new Date(order.created_at).toLocaleDateString("ko-KR")}
-                  </p>
-                </div>
-                <Badge variant={STATUS_BADGE[order.status] || "muted"}>
-                  {order.status}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[15px] text-[#888]">{order.recipient_name}</span>
-                <span className="font-mono text-[16px] text-black">
-                  {formatPrice(order.total_amount)}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        groups.map((group) => (
+          <div key={group.date} className="border-t-8 border-[#f5f5f5] first:border-t-0">
+            <h2 className="px-6 pt-6 pb-1 text-[17px] font-bold text-black">{group.date}</h2>
+            <div className="divide-y divide-[#f0f0f0]">
+              {group.items.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))}
+            </div>
+          </div>
+        ))
       )}
     </div>
   );

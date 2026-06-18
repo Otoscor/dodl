@@ -1,4 +1,4 @@
-import { SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, CANCELLABLE_STATUSES, RETURNABLE_STATUSES, DISPLAY_DISCOUNT_RATE } from "./constants";
+import { SHIPPING_FEE, FREE_SHIPPING_THRESHOLD, CANCELLABLE_STATUSES, RETURNABLE_STATUSES, DISPLAY_DISCOUNT_RATE, ORDER_STATUS } from "./constants";
 
 export function formatPrice(price: number): string {
   return price.toLocaleString("ko-KR") + "원";
@@ -28,4 +28,28 @@ export function isCancellable(status: string): boolean {
 
 export function isReturnable(status: string): boolean {
   return RETURNABLE_STATUSES.includes(status as typeof RETURNABLE_STATUSES[number]);
+}
+
+// 주문 상태별 노출 액션 버튼 라벨 (목록 카드용 — 동작은 추후 연결).
+// 정책: 취소=결제완료·배송준비, 반품/교환=배송완료. 구매확정은 반품/교환 불가.
+export function getOrderActions(status: string): string[] {
+  switch (status) {
+    case ORDER_STATUS.PAID:
+    case ORDER_STATUS.PREPARING:
+      return ["주문취소"];
+    case ORDER_STATUS.SHIPPING:
+      return ["배송조회"];
+    case ORDER_STATUS.DELIVERED:
+      return ["배송조회", "반품접수", "교환접수"];
+    case ORDER_STATUS.CONFIRMED:
+      return ["배송조회", "재구매"];
+    case ORDER_STATUS.CANCELLED:
+      return ["취소상세", "재구매"];
+    case ORDER_STATUS.RETURN_COMPLETED:
+      return ["반품상세", "재구매"];
+    case ORDER_STATUS.EXCHANGE_COMPLETED:
+      return ["교환상세", "재구매"];
+    default:
+      return [];
+  }
 }

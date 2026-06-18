@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Input } from '@/components/ui/Input';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +14,10 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    if (!id || !password) {
+      setError('아이디와 비밀번호를 입력하세요.');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -43,33 +48,21 @@ export default function LoginPage() {
         <p className="text-sm text-[#888] mb-8">계속하려면 로그인하세요.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs text-[#888] mb-1.5 uppercase tracking-[0.08em]">
-              아이디
-            </label>
-            <input
-              type="text"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              autoComplete="username"
-              required
-              className="w-full px-3 py-2 border border-[#e0e0e0] rounded-[10px] text-sm text-black placeholder:text-[#cccccc] focus:outline-none focus:border-black transition-colors"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs text-[#888] mb-1.5 uppercase tracking-[0.08em]">
-              비밀번호
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-              className="w-full px-3 py-2 border border-[#e0e0e0] rounded-[10px] text-sm text-black focus:outline-none focus:border-black transition-colors"
-            />
-          </div>
+          <Input
+            label="아이디"
+            required
+            value={id}
+            onChange={setId}
+            autoComplete="username"
+          />
+          <Input
+            label="비밀번호"
+            required
+            type="password"
+            value={password}
+            onChange={setPassword}
+            autoComplete="current-password"
+          />
 
           {error && (
             <p className="text-xs text-red-500">{error}</p>

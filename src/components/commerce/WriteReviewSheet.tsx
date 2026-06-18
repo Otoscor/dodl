@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 
 interface WriteReviewSheetProps {
@@ -103,17 +104,13 @@ export function WriteReviewSheet({ open, onClose, productName, onSuccess }: Writ
         </div>
 
         {/* 이름 */}
-        <div>
-          <p className="text-[15px] text-[#888] mb-1.5">이름</p>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="닉네임을 입력해주세요"
-            className="w-full px-3 py-2.5 bg-white text-[15px] text-black placeholder:text-[#cccccc] outline-none rounded-[10px] border border-[#e0e0e0]"
-            maxLength={20}
-          />
-        </div>
+        <Input
+          label="이름"
+          value={name}
+          onChange={setName}
+          placeholder="닉네임을 입력해주세요"
+          maxLength={20}
+        />
 
         {/* 본문 */}
         <div>

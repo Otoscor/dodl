@@ -1,6 +1,6 @@
 import type Database from "better-sqlite3";
 import { v5 as uuidv5 } from "uuid";
-import { INITIAL_WALLET_BALANCE, WALLET_TX_TYPE, ORDER_STATUS } from "./constants";
+import { WALLET_TX_TYPE, ORDER_STATUS } from "./constants";
 
 const DEMO_SESSION = "demo-session-001";
 const NS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"; // DNS namespace
@@ -258,31 +258,76 @@ export function seedDatabase(db: Database.Database) {
      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', ? || ' days'))`
   );
 
+  // 리뷰 포토 풀 — 로컬 에셋 + unsplash(영양제·건강 테마). 리뷰 사진은 <img>라 next 설정 불필요.
+  const P = {
+    r1: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&h=400&fit=crop&q=80",
+    r2: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400&h=400&fit=crop&q=80",
+    r3: "https://images.unsplash.com/photo-1626716493137-b67fe9501e76?w=400&h=400&fit=crop&q=80",
+    r4: "https://images.unsplash.com/photo-1626202373152-8db1760c8f61?w=400&h=400&fit=crop&q=80",
+    r5: "https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&h=400&fit=crop&q=80",
+    u1: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop&q=80",
+    u2: "https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&h=400&fit=crop&q=80",
+    u3: "https://images.unsplash.com/photo-1585435557343-3b092031a831?w=400&h=400&fit=crop&q=80",
+    u4: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&h=400&fit=crop&q=80",
+    u5: "https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=400&h=400&fit=crop&q=80",
+    u6: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=400&fit=crop&q=80",
+    u7: "https://images.unsplash.com/photo-1577174881658-0f30ed549adc?w=400&h=400&fit=crop&q=80",
+    u8: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=400&h=400&fit=crop&q=80",
+  };
+
   const reviewSeeds = [
     { pid: pidMultivitamin, items: [
-      { name: "김지연", rating: 5, body: "하루 한 알 챙겨 먹기 딱 좋아요. 오렌지 맛이라 거부감 없어요.", photos: ["/reviews/r1.jpg", "/reviews/r2.jpg"], daysAgo: 3 },
+      { name: "김지연", rating: 5, body: "하루 한 알 챙겨 먹기 딱 좋아요. 오렌지 맛이라 거부감 없어요.", photos: [P.r1, P.r2], daysAgo: 3 },
       { name: "박성호", rating: 4, body: "비타민 13종 가성비 최고. 60정 두 달치라 경제적이에요.", photos: [], daysAgo: 7 },
-      { name: "이현정", rating: 5, body: "무향료 무색소라 믿고 먹을 수 있어요. 피부 톤도 올라왔어요.", photos: [], daysAgo: 14 },
+      { name: "이현정", rating: 5, body: "무향료 무색소라 믿고 먹을 수 있어요. 피부 톤도 올라왔어요.", photos: [P.u1], daysAgo: 9 },
+      { name: "장우혁", rating: 5, body: "온 가족이 같이 먹고 있어요. 알약 크기도 적당합니다.", photos: [P.u2, P.u3], daysAgo: 12 },
+      { name: "한소희", rating: 4, body: "피곤함이 좀 줄어든 느낌. 꾸준히 먹어볼게요.", photos: [], daysAgo: 16 },
+      { name: "노태준", rating: 3, body: "효과는 보통인데 가격 대비 무난해요.", photos: [], daysAgo: 19 },
+      { name: "문가영", rating: 5, body: "재구매입니다. 포장도 깔끔하고 배송도 빨라요.", photos: [P.u4], daysAgo: 23 },
+      { name: "백승현", rating: 5, body: "아침마다 거르지 않고 챙기게 되네요. 만족합니다.", photos: [], daysAgo: 27 },
+      { name: "정유미", rating: 4, body: "냄새 없이 깔끔해서 좋아요. 두 통째 먹는 중.", photos: [P.u5], daysAgo: 31 },
+      { name: "구자철", rating: 2, body: "저한텐 큰 변화는 없었어요. 사람마다 다른 듯.", photos: [], daysAgo: 38 },
     ]},
     { pid: pidVitaminC, items: [
-      { name: "최민준", rating: 5, body: "1000mg인데 속 쓰림 없이 잘 먹혀요. 감기 기운에 효과 봤어요.", photos: ["/reviews/r3.jpg"], daysAgo: 2 },
-      { name: "정수아", rating: 4, body: "영국산 원료라 믿음이 가요. 매일 아침 챙겨 먹고 있어요.", photos: [], daysAgo: 10 },
-      { name: "오지은", rating: 3, body: "효과는 있는데 알약이 좀 커서 삼키기 불편해요.", photos: [], daysAgo: 25 },
+      { name: "최민준", rating: 5, body: "1000mg인데 속 쓰림 없이 잘 먹혀요. 감기 기운에 효과 봤어요.", photos: [P.r3], daysAgo: 2 },
+      { name: "정수아", rating: 4, body: "영국산 원료라 믿음이 가요. 매일 아침 챙겨 먹고 있어요.", photos: [P.u6], daysAgo: 6 },
+      { name: "오지은", rating: 3, body: "효과는 있는데 알약이 좀 커서 삼키기 불편해요.", photos: [], daysAgo: 11 },
+      { name: "강민서", rating: 5, body: "환절기마다 챙겨요. 입안이 헐던 게 줄었어요.", photos: [P.u7], daysAgo: 14 },
+      { name: "윤하준", rating: 5, body: "가성비 끝판왕. 대용량이라 오래 먹어요.", photos: [], daysAgo: 18 },
+      { name: "서지우", rating: 4, body: "피부가 한결 밝아진 느낌이에요. 만족합니다.", photos: [P.u1, P.u8], daysAgo: 22 },
+      { name: "임도현", rating: 5, body: "신맛도 적당하고 코팅이 잘 돼 있어요.", photos: [], daysAgo: 26 },
+      { name: "조아라", rating: 2, body: "저는 속이 좀 쓰렸어요. 식후에 먹는 게 나아요.", photos: [], daysAgo: 33 },
+      { name: "김태형", rating: 4, body: "꾸준히 먹으니 피로감이 덜해요.", photos: [P.u2], daysAgo: 40 },
     ]},
     { pid: pidVitaminD, items: [
-      { name: "강태훈", rating: 5, body: "실내 직장인에게 필수품. 혈액검사에서 비타민D 수치 올랐습니다.", photos: [], daysAgo: 5 },
-      { name: "임소연", rating: 4, body: "2000IU라 과잉 걱정 없어요. 가격도 합리적이에요.", photos: [], daysAgo: 18 },
-      { name: "신재원", rating: 5, body: "겨울 내내 먹었더니 감기 한 번도 안 걸렸어요.", photos: [], daysAgo: 30 },
+      { name: "강태훈", rating: 5, body: "실내 직장인에게 필수품. 혈액검사에서 비타민D 수치 올랐습니다.", photos: [P.u3], daysAgo: 5 },
+      { name: "임소연", rating: 4, body: "2000IU라 과잉 걱정 없어요. 가격도 합리적이에요.", photos: [], daysAgo: 8 },
+      { name: "신재원", rating: 5, body: "겨울 내내 먹었더니 감기 한 번도 안 걸렸어요.", photos: [P.u4], daysAgo: 13 },
+      { name: "황보름", rating: 5, body: "작은 알약이라 삼키기 편해요. 매일 챙깁니다.", photos: [], daysAgo: 17 },
+      { name: "차은우", rating: 4, body: "수치 관리용으로 좋네요. 재구매 의사 있어요.", photos: [P.u5], daysAgo: 21 },
+      { name: "남주혁", rating: 3, body: "효과 체감은 약하지만 꾸준히 먹어보려고요.", photos: [], daysAgo: 29 },
+      { name: "유인나", rating: 5, body: "가족 모두 먹어요. 흡수 잘 되는 제형이라 좋아요.", photos: [], daysAgo: 35 },
+      { name: "박보검", rating: 4, body: "햇빛 못 보는 분들께 추천합니다.", photos: [P.u6], daysAgo: 42 },
     ]},
     { pid: pidProbiotics, items: [
-      { name: "조현우", rating: 5, body: "장까지 살아서 도달하는 게 느껴질 정도로 소화가 편해졌어요.", photos: [], daysAgo: 4 },
-      { name: "배지영", rating: 4, body: "변비가 개선됐습니다. 꾸준히 먹을 예정이에요.", photos: [], daysAgo: 12 },
-      { name: "윤민석", rating: 5, body: "3개월분 구매했는데 계속 재구매할 것 같아요.", photos: [], daysAgo: 22 },
+      { name: "조현우", rating: 5, body: "장까지 살아서 도달하는 게 느껴질 정도로 소화가 편해졌어요.", photos: [P.u7], daysAgo: 4 },
+      { name: "배지영", rating: 4, body: "변비가 개선됐습니다. 꾸준히 먹을 예정이에요.", photos: [], daysAgo: 9 },
+      { name: "윤민석", rating: 5, body: "3개월분 구매했는데 계속 재구매할 것 같아요.", photos: [P.u8], daysAgo: 13 },
+      { name: "한지민", rating: 5, body: "아침마다 속이 편해요. 분말이 아니라 캡슐이라 간편.", photos: [], daysAgo: 17 },
+      { name: "정해인", rating: 4, body: "장 트러블이 줄었어요. 효과 만족합니다.", photos: [P.u1], daysAgo: 20 },
+      { name: "손예진", rating: 3, body: "초반엔 가스가 좀 찼는데 적응되니 괜찮아요.", photos: [], daysAgo: 24 },
+      { name: "현빈", rating: 5, body: "냉장 보관 편하고 캡슐 냄새도 없어요.", photos: [P.u2, P.u3], daysAgo: 30 },
+      { name: "김고은", rating: 4, body: "가족 장 건강용으로 잘 먹고 있어요.", photos: [], daysAgo: 37 },
     ]},
     { pid: pidOmega3, items: [
-      { name: "홍성민", rating: 5, body: "rTG 오메가3 중 가성비 최고. 비린내도 전혀 없어요.", photos: ["/reviews/r4.jpg", "/reviews/r5.jpg"], daysAgo: 6 },
-      { name: "서유진", rating: 5, body: "혈액검사 결과 중성지방이 줄었어요. 꾸준히 먹은 보람이 있네요.", photos: [], daysAgo: 15 },
-      { name: "권태수", rating: 4, body: "고함량 EPA+DHA 제품 중 이게 제일 잘 맞아요.", photos: [], daysAgo: 28 },
+      { name: "홍성민", rating: 5, body: "rTG 오메가3 중 가성비 최고. 비린내도 전혀 없어요.", photos: [P.r4, P.r5], daysAgo: 6 },
+      { name: "서유진", rating: 5, body: "혈액검사 결과 중성지방이 줄었어요. 꾸준히 먹은 보람이 있네요.", photos: [P.u4], daysAgo: 10 },
+      { name: "권태수", rating: 4, body: "고함량 EPA+DHA 제품 중 이게 제일 잘 맞아요.", photos: [], daysAgo: 15 },
+      { name: "이나영", rating: 5, body: "캡슐이 부드럽고 트림 냄새가 없어요. 강추!", photos: [P.u5], daysAgo: 19 },
+      { name: "공유", rating: 4, body: "눈 건조함이 좀 나아진 것 같아요.", photos: [], daysAgo: 23 },
+      { name: "전도연", rating: 3, body: "캡슐이 좀 큰 편이에요. 효과는 무난.", photos: [], daysAgo: 28 },
+      { name: "주지훈", rating: 5, body: "산패 걱정 없이 신선해요. 재구매했습니다.", photos: [P.u6, P.u7], daysAgo: 34 },
+      { name: "김혜수", rating: 4, body: "혈행 개선 목적으로 잘 먹고 있어요.", photos: [], daysAgo: 41 },
     ]},
   ];
 
@@ -314,8 +359,15 @@ export function seedDatabase(db: Database.Database) {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', ? || ' days'), ?, ?, ?, ?)`
   );
   const insertOrderItem = db.prepare(
-    "INSERT INTO order_items (id, order_id, sku_id, product_name, option_summary, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO order_items (id, order_id, sku_id, product_name, option_summary, image_url, unit_price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
   );
+
+  // 주문 상품 썸네일 스냅샷용 — 상품명 → 이미지 맵 (이미 생성된 products에서 구성)
+  const PRODUCT_IMG: Record<string, string> = {};
+  for (const row of db.prepare("SELECT name, image_url FROM products").all() as { name: string; image_url: string }[]) {
+    PRODUCT_IMG[row.name] = row.image_url;
+  }
+  const FALLBACK_IMG = "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop&q=80";
   const insertWalletTx = db.prepare(
     "INSERT INTO wallet_transactions (id, wallet_id, type, amount, balance_after, description, reference_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', ? || ' days'))"
   );
@@ -373,7 +425,7 @@ export function seedDatabase(db: Database.Database) {
     }
 
     for (const item of o.items) {
-      insertOrderItem.run(deterministicId(), oid, `demo-sku-${deterministicId().slice(0,4)}`, item.name, item.option, item.price, item.qty, item.price * item.qty);
+      insertOrderItem.run(deterministicId(), oid, `demo-sku-${deterministicId().slice(0,4)}`, item.name, item.option, PRODUCT_IMG[item.name] ?? FALLBACK_IMG, item.price, item.qty, item.price * item.qty);
     }
 
     // 결제 트랜잭션
@@ -480,6 +532,20 @@ export function seedDatabase(db: Database.Database) {
     ]},
   ];
 
+  // ===== 구매확정 (3건) — 반품/교환 불가, 배송조회·재구매만 =====
+  const confirmedOrders: DemoOrder[] = [
+    { ...addr, status: ORDER_STATUS.CONFIRMED, daysAgo: 9, items: [
+      { name: "데일리 멀티비타민", option: "오렌지 / 60정", price: 32000, qty: 1 },
+    ]},
+    { ...addr2, status: ORDER_STATUS.CONFIRMED, daysAgo: 11, items: [
+      { name: "햇빛 비타민D3 2000IU", option: "", price: 12000, qty: 2 },
+      { name: "고함량 비타민C 1000", option: "60정", price: 15000, qty: 1 },
+    ]},
+    { ...addr3, status: ORDER_STATUS.CONFIRMED, daysAgo: 16, items: [
+      { name: "콜라겐 젤리스틱", option: "자몽", price: 22000, qty: 2 },
+    ]},
+  ];
+
   // ===== 교환완료 (2건) =====
   const exchangeOrders: DemoOrder[] = [
     { ...addr, status: ORDER_STATUS.EXCHANGE_COMPLETED, daysAgo: 15, returnedDaysAgo: 13, returnReason: "오배송 (다른 상품 수령)", returnNote: "포도맛을 주문했는데 오렌지맛이 왔습니다.", items: [
@@ -492,7 +558,7 @@ export function seedDatabase(db: Database.Database) {
 
   const allOrders = [
     ...paidOrders, ...preparingOrders, ...shippingOrders,
-    ...deliveredOrders, ...cancelledOrders, ...returnOrders, ...exchangeOrders,
+    ...deliveredOrders, ...confirmedOrders, ...cancelledOrders, ...returnOrders, ...exchangeOrders,
   ];
 
   for (const o of allOrders) {

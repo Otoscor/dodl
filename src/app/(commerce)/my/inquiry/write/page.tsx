@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { BackHeader } from "@/components/layout/BackHeader";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { BottomSheet } from "@/components/ui/BottomSheet";
 import { useToast } from "@/components/ui/Toast";
 import { formatPrice } from "@/lib/utils";
@@ -162,19 +163,14 @@ export default function InquiryWritePage() {
         </section>
 
         {/* 제목 */}
-        <section className="bg-[#f7f7f7] rounded-[14px] px-5 py-4">
-          <p className="text-[13px] text-[#888] mb-1.5">
-            제목 <span className="text-[#ff5a5a]">*</span>
-          </p>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="제목을 입력해주세요."
-            maxLength={50}
-            className="w-full bg-transparent text-[16px] text-black placeholder:text-[#bbb] outline-none"
-          />
-        </section>
+        <Input
+          label="제목"
+          required
+          value={title}
+          onChange={setTitle}
+          placeholder="제목을 입력해주세요."
+          maxLength={50}
+        />
 
         {/* 내용 */}
         <section>

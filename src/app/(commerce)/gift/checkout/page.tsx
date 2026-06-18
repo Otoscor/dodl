@@ -1,12 +1,15 @@
 "use client";
 
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BackHeader } from "@/components/layout/BackHeader";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Input } from "@/components/ui/Input";
 import { PointInput } from "@/components/commerce/PointInput";
+import { AddressPickerOverlay } from "@/components/commerce/AddressPickerOverlay";
+import type { SavedAddress } from "@/hooks/useAddresses";
 import { formatPrice, calculateShippingFee } from "@/lib/utils";
 import { MOCK_POINT_SUMMARY, MOCK_COUPONS } from "../../my/mock";
 import type { GiftItem, GiftAddressMode } from "@/lib/queries/gift";
@@ -27,9 +30,6 @@ const CARD_OPTIONS = ["신한카드", "국민카드", "하나카드", "우리카
 const AVAILABLE_COUPONS = MOCK_COUPONS.filter((c) => !c.expired).length;
 
 type SectionKey = "recipient" | "address" | "order" | "coupon" | "payment";
-
-const inputCls =
-  "w-full bg-[#f5f5f5] border border-[#e0e0e0] rounded-[10px] px-4 py-3 text-[15px] text-black placeholder:text-[#cccccc] outline-none focus:border-black transition-colors";
 
 export default function GiftCheckoutPage() {
   return (
@@ -57,9 +57,16 @@ function GiftCheckoutContent() {
 
   // 배송지
   const [addressMode, setAddressMode] = useState<GiftAddressMode>("sender");
-  const [addressLine1, setAddressLine1] = useState("");
-  const [addressLine2, setAddressLine2] = useState("");
-  const [addrFormOpen, setAddrFormOpen] = useState(false);
+  const [addressLine1, setAddressLine1] = useState(""); // 도로명주소
+  const [addressLine2, setAddressLine2] = useState(""); // 상세주소
+  const [addressZip, setAddressZip] = useState("");
+  const [addrSheetOpen, setAddrSheetOpen] = useState(false);
+
+  const handleAddressSelect = (addr: SavedAddress) => {
+    setAddressZip(addr.zipcode);
+    setAddressLine1(addr.road);
+    setAddressLine2(addr.detail);
+  };
 
   // 보내는 사람
   const [senderName, setSenderName] = useState(ME.name);
@@ -179,24 +186,22 @@ function GiftCheckoutContent() {
       />
       {openSections.recipient && (
         <div className="px-6 pb-6 space-y-3">
-          <LabeledInput label="실명" required>
-            <input
-              type="text"
-              placeholder="오브리"
-              value={recipientName}
-              onChange={(e) => setRecipientName(e.target.value)}
-              className={inputCls}
-            />
-          </LabeledInput>
-          <LabeledInput label="휴대폰번호" required>
-            <input
-              type="tel"
-              placeholder="000-0000-0000"
-              value={recipientPhone}
-              onChange={(e) => setRecipientPhone(e.target.value)}
-              className={inputCls}
-            />
-          </LabeledInput>
+          <Input
+            label="실명"
+            required
+            value={recipientName}
+            onChange={setRecipientName}
+            placeholder="오브리"
+          />
+          <Input
+            label="휴대폰번호"
+            required
+            type="tel"
+            inputMode="tel"
+            value={recipientPhone}
+            onChange={setRecipientPhone}
+            placeholder="000-0000-0000"
+          />
         </div>
       )}
 
@@ -204,24 +209,22 @@ function GiftCheckoutContent() {
       <div className="border-t border-[#f0f0f0] px-6 py-5">
         <h2 className="text-[16px] font-medium text-black mb-4">보내는 사람 정보</h2>
         <div className="space-y-3">
-          <LabeledInput label="실명" required>
-            <input
-              type="text"
-              placeholder="오브리"
-              value={senderName}
-              onChange={(e) => setSenderName(e.target.value)}
-              className={inputCls}
-            />
-          </LabeledInput>
-          <LabeledInput label="휴대폰번호" required>
-            <input
-              type="tel"
-              placeholder="000-0000-0000"
-              value={senderPhone}
-              onChange={(e) => setSenderPhone(e.target.value)}
-              className={inputCls}
-            />
-          </LabeledInput>
+          <Input
+            label="실명"
+            required
+            value={senderName}
+            onChange={setSenderName}
+            placeholder="오브리"
+          />
+          <Input
+            label="휴대폰번호"
+            required
+            type="tel"
+            inputMode="tel"
+            value={senderPhone}
+            onChange={setSenderPhone}
+            placeholder="000-0000-0000"
+          />
         </div>
       </div>
 
@@ -254,27 +257,30 @@ function GiftCheckoutContent() {
           </div>
 
           {addressMode === "sender" ? (
-            addrFormOpen || addressLine1.trim() ? (
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="주소"
-                  value={addressLine1}
-                  onChange={(e) => setAddressLine1(e.target.value)}
-                  className={inputCls}
-                />
-                <input
-                  type="text"
-                  placeholder="상세주소 (선택)"
-                  value={addressLine2}
-                  onChange={(e) => setAddressLine2(e.target.value)}
-                  className={inputCls}
-                />
+            addressLine1.trim() ? (
+              <div className="rounded-[14px] border border-[#e0e0e0] px-4 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    {addressZip && (
+                      <span className="inline-block rounded-[6px] bg-[#f0f0f0] px-2 py-0.5 text-[12px] text-[#777] mb-1.5">
+                        {addressZip}
+                      </span>
+                    )}
+                    <p className="text-[15px] text-black leading-snug">{addressLine1}</p>
+                    {addressLine2 && <p className="text-[14px] text-[#888] mt-0.5">{addressLine2}</p>}
+                  </div>
+                  <button
+                    onClick={() => setAddrSheetOpen(true)}
+                    className="shrink-0 rounded-full border border-[#d0d0d0] bg-white px-3.5 py-1.5 text-[13px] font-medium text-[#333] active:bg-[#f0f0f0]"
+                  >
+                    변경
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="rounded-[14px] bg-[#f7f7f7] flex flex-col items-center gap-3.5 px-5 py-7">
                 <p className="text-[15px] text-[#888]">직접 입력할게요</p>
-                <Button onClick={() => setAddrFormOpen(true)}>배송지 추가하기</Button>
+                <Button onClick={() => setAddrSheetOpen(true)}>배송지 추가하기</Button>
               </div>
             )
           ) : (
@@ -432,6 +438,15 @@ function GiftCheckoutContent() {
       <Modal open={!!errorModal} onClose={() => setErrorModal(null)} title="결제 실패">
         {errorModal}
       </Modal>
+
+      {/* 선물 배송지 선택/추가 (받는 분 정보는 상단에서 별도 수집하므로 숨김) */}
+      <AddressPickerOverlay
+        open={addrSheetOpen}
+        onClose={() => setAddrSheetOpen(false)}
+        mode="select"
+        showRecipient={false}
+        onSelect={handleAddressSelect}
+      />
     </div>
   );
 }
@@ -460,24 +475,5 @@ function SectionHeader({
         </span>
       </div>
     </button>
-  );
-}
-
-function LabeledInput({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <p className="text-[13px] text-[#888] mb-1.5">
-        {label}{required && <span className="text-black ml-0.5">*</span>}
-      </p>
-      {children}
-    </div>
   );
 }

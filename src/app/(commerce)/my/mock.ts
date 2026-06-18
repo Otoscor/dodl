@@ -374,6 +374,24 @@ export const MOCK_NOTIFICATION_SETTINGS: MockNotificationSetting[] = [
   { id: "night", label: "야간 알림 (21시~08시)", description: "야간 시간대 푸시 수신", defaultOn: false },
 ];
 
+// 우편번호 찾기 — 주소 검색 결과 (목 데이터)
+export interface MockPostalResult {
+  zipcode: string;
+  road: string; // 도로명주소
+  jibun: string; // 지번주소
+}
+
+export const MOCK_POSTAL_RESULTS: MockPostalResult[] = [
+  { zipcode: "06236", road: "서울 강남구 테헤란로 152", jibun: "역삼동 737" },
+  { zipcode: "06164", road: "서울 강남구 테헤란로 521", jibun: "삼성동 159" },
+  { zipcode: "13529", road: "경기 성남시 분당구 판교역로 235", jibun: "삼평동 681" },
+  { zipcode: "04524", road: "서울 중구 세종대로 110", jibun: "태평로1가 31" },
+  { zipcode: "03187", road: "서울 종로구 세종대로 175", jibun: "세종로 81" },
+  { zipcode: "07335", road: "서울 영등포구 여의대로 108", jibun: "여의도동 36" },
+  { zipcode: "48058", road: "부산 해운대구 센텀중앙로 79", jibun: "우동 1495" },
+  { zipcode: "21554", road: "인천 남동구 정각로 29", jibun: "구월동 1138" },
+];
+
 // 선물하기 — 받는 분(친구) 목록 (목 데이터)
 export interface MockFriend {
   id: string;
