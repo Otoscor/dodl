@@ -45,6 +45,7 @@ interface GiftCheckoutInput {
   senderName: string;
   senderPhone: string;
   giftMessage: string;
+  pointsApplied?: number;
 }
 
 interface GiftCheckoutResult {
@@ -95,16 +96,17 @@ export function processGiftCheckout(input: GiftCheckoutInput): GiftCheckoutResul
     const productTotal = sku.price * quantity;
     const shippingFee = calculateShippingFee(productTotal);
     const totalAmount = productTotal + shippingFee;
+    const chargedAmount = Math.max(0, totalAmount - (input.pointsApplied ?? 0));
 
     // 4. 지갑 잔액 확인
     const wallet = getOrCreateWallet(input.sessionId);
-    if (wallet.balance < totalAmount) {
-      throw new Error(`잔액이 부족합니다. (잔액: ${wallet.balance.toLocaleString()}원, 결제금액: ${totalAmount.toLocaleString()}원)`);
+    if (wallet.balance < chargedAmount) {
+      throw new Error(`잔액이 부족합니다. (잔액: ${wallet.balance.toLocaleString()}원, 결제금액: ${chargedAmount.toLocaleString()}원)`);
     }
 
     // 5. 원자적 처리
     // 5a. 지갑 차감
-    const newBalance = wallet.balance - totalAmount;
+    const newBalance = wallet.balance - chargedAmount;
     db.prepare("UPDATE wallets SET balance = ? WHERE id = ?").run(newBalance, wallet.id);
 
     // 5b. 재고 차감 (WHERE 가드)
@@ -141,7 +143,7 @@ export function processGiftCheckout(input: GiftCheckoutInput): GiftCheckoutResul
     // 5e. 지갑 거래 기록
     db.prepare(
       "INSERT INTO wallet_transactions (id, wallet_id, type, amount, balance_after, description, reference_id) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    ).run(uuidv4(), wallet.id, WALLET_TX_TYPE.PAYMENT, totalAmount, newBalance, "선물 결제", orderId);
+    ).run(uuidv4(), wallet.id, WALLET_TX_TYPE.PAYMENT, chargedAmount, newBalance, "선물 결제", orderId);
 
     // 선물하기는 장바구니를 비우지 않음 (카트 비경유)
     return { orderId, orderNumber };

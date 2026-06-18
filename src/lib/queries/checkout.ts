@@ -10,6 +10,7 @@ interface CheckoutInput {
   recipientPhone: string;
   addressLine1: string;
   addressLine2: string;
+  pointsApplied?: number;
 }
 
 interface CheckoutResult {
@@ -63,16 +64,17 @@ export function processCheckout(input: CheckoutInput): CheckoutResult {
     const productTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shippingFee = calculateShippingFee(productTotal);
     const totalAmount = productTotal + shippingFee;
+    const chargedAmount = Math.max(0, totalAmount - (input.pointsApplied ?? 0));
 
     // 4. Check wallet balance
     const wallet = getOrCreateWallet(input.sessionId);
-    if (wallet.balance < totalAmount) {
-      throw new Error(`잔액이 부족합니다. (잔액: ${wallet.balance.toLocaleString()}원, 결제금액: ${totalAmount.toLocaleString()}원)`);
+    if (wallet.balance < chargedAmount) {
+      throw new Error(`잔액이 부족합니다. (잔액: ${wallet.balance.toLocaleString()}원, 결제금액: ${chargedAmount.toLocaleString()}원)`);
     }
 
     // 5. Atomic processing
     // 5a. Deduct wallet balance
-    const newBalance = wallet.balance - totalAmount;
+    const newBalance = wallet.balance - chargedAmount;
     db.prepare("UPDATE wallets SET balance = ? WHERE id = ?").run(newBalance, wallet.id);
 
     // 5b. Deduct stock (double safety with WHERE clause)
@@ -105,7 +107,7 @@ export function processCheckout(input: CheckoutInput): CheckoutResult {
     // 5e. Record wallet transaction
     db.prepare(
       "INSERT INTO wallet_transactions (id, wallet_id, type, amount, balance_after, description, reference_id) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    ).run(uuidv4(), wallet.id, WALLET_TX_TYPE.PAYMENT, totalAmount, newBalance, "주문 결제", orderId);
+    ).run(uuidv4(), wallet.id, WALLET_TX_TYPE.PAYMENT, chargedAmount, newBalance, "주문 결제", orderId);
 
     // 5f. Clear cart
     db.prepare("DELETE FROM cart_items WHERE session_id = ?").run(input.sessionId);

@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     senderName,
     senderPhone,
     giftMessage = "",
+    pointsApplied = 0,
   } = body;
 
   const mode: GiftAddressMode = addressMode === "recipient" ? "recipient" : "sender";
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
     senderName,
     senderPhone: senderPhone ?? "",
     giftMessage,
+    pointsApplied: Math.max(0, Number(pointsApplied) || 0),
   });
 
   return NextResponse.json(result, { status: result.success ? 200 : 400 });
