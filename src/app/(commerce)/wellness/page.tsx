@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useToast } from "@/components/ui/Toast";
+import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 import { WELLNESS_INTRO, WELLNESS_BRANDS, type WellnessProduct } from "./data";
 
 export default function WellnessPage() {
-  const { showToast } = useToast();
+  const router = useRouter();
   const [activeBrandId, setActiveBrandId] = useState(WELLNESS_BRANDS[0].id);
   const [imgError, setImgError] = useState(false);
   const activeBrand =
@@ -64,7 +64,7 @@ export default function WellnessPage() {
           <ProductCard
             key={product.id}
             product={product}
-            onOpen={() => showToast("준비 중입니다", "info")}
+            onOpen={() => router.push(`/wellness/${product.id}`)}
           />
         ))}
       </div>
