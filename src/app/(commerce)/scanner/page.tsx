@@ -4,17 +4,30 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "@/lib/animation";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { QUESTIONS, TAG_LABEL } from "./data";
+import { QUESTIONS, RESULT_CATEGORY } from "./data";
+import { formatPrice } from "@/lib/utils";
 import { recommend } from "./recommend";
+import { svgPath } from "blobs/v2";
 import { InteractionSheet } from "./InteractionSheet";
-import { getPreset, InteractionType, STORAGE_KEY, STAGGER_KEY } from "./interactions";
+import {
+  getPreset,
+  getBlobSpeed,
+  InteractionType,
+  BlobSpeed,
+  BlobStyle,
+  DEFAULT_BLOB_STYLE,
+  STORAGE_KEY,
+  STAGGER_KEY,
+  BLOB_KEY,
+  BLOB_SPEED_KEY,
+  BLOB_STYLE_KEY,
+} from "./interactions";
 
 function readStoredInteraction(): InteractionType {
-  if (typeof window === "undefined") return "slide";
+  if (typeof window === "undefined") return "fade";
   const v = window.localStorage.getItem(STORAGE_KEY);
   if (v === "slide" || v === "fade" || v === "pop" || v === "instant") return v;
-  return "slide";
+  return "fade";
 }
 
 function readStoredStagger(): boolean {
@@ -24,20 +37,59 @@ function readStoredStagger(): boolean {
   return v === "1";
 }
 
+function readStoredBlob(): boolean {
+  if (typeof window === "undefined") return false;
+  const v = window.localStorage.getItem(BLOB_KEY);
+  if (v === null) return false; // 기본값: 꺼짐
+  return v === "1";
+}
+
+function readStoredBlobSpeed(): BlobSpeed {
+  if (typeof window === "undefined") return "normal";
+  const v = window.localStorage.getItem(BLOB_SPEED_KEY);
+  if (v === "calm" || v === "normal" || v === "lively") return v;
+  return "normal";
+}
+
+function readStoredBlobStyle(): BlobStyle {
+  if (typeof window === "undefined") return DEFAULT_BLOB_STYLE;
+  try {
+    const raw = window.localStorage.getItem(BLOB_STYLE_KEY);
+    if (!raw) return DEFAULT_BLOB_STYLE;
+    const p = JSON.parse(raw);
+    return {
+      blur: typeof p.blur === "number" ? p.blur : DEFAULT_BLOB_STYLE.blur,
+      opacity: typeof p.opacity === "number" ? p.opacity : DEFAULT_BLOB_STYLE.opacity,
+      scale: typeof p.scale === "number" ? p.scale : DEFAULT_BLOB_STYLE.scale,
+    };
+  } catch {
+    return DEFAULT_BLOB_STYLE;
+  }
+}
+
 export default function ScannerPage() {
   const router = useRouter();
   const [step, setStep] = useState(0); // 0~2: 질문, 3: 결과
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [direction, setDirection] = useState(1); // 1: 다음, -1: 이전/리셋
 
-  const [interaction, setInteraction] = useState<InteractionType>("slide");
+  const [interaction, setInteraction] = useState<InteractionType>("fade");
   const [stagger, setStagger] = useState(true); // false: 한 번에, true: 시간차
+  const [blobOn, setBlobOn] = useState(false); // 배경 blob 애니메이션
+  const [blobSpeed, setBlobSpeed] = useState<BlobSpeed>("normal");
+  const [blobStyle, setBlobStyle] = useState<BlobStyle>(DEFAULT_BLOB_STYLE);
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  const updateBlobStyle = (patch: Partial<BlobStyle>) =>
+    setBlobStyle((s) => ({ ...s, ...patch }));
 
   // localStorage에서 초기값 복원 (마운트 후 1회)
   useEffect(() => {
     setInteraction(readStoredInteraction());
     setStagger(readStoredStagger());
+    setBlobOn(readStoredBlob());
+    setBlobSpeed(readStoredBlobSpeed());
+    setBlobStyle(readStoredBlobStyle());
   }, []);
 
   // 선택 변경 시 저장
@@ -52,6 +104,24 @@ export default function ScannerPage() {
       window.localStorage.setItem(STAGGER_KEY, stagger ? "1" : "0");
     }
   }, [stagger]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BLOB_KEY, blobOn ? "1" : "0");
+    }
+  }, [blobOn]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BLOB_SPEED_KEY, blobSpeed);
+    }
+  }, [blobSpeed]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(BLOB_STYLE_KEY, JSON.stringify(blobStyle));
+    }
+  }, [blobStyle]);
 
   const preset = getPreset(interaction);
 
@@ -111,41 +181,50 @@ export default function ScannerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* 헤더 */}
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md">
-        <div className="flex items-center justify-between h-14 px-6">
-          {!isResult ? (
-            <button
-              onClick={handleBack}
-              aria-label="뒤로"
-              className="w-8 h-8 -ml-2 flex items-center justify-center text-[#888] hover:text-black transition-colors"
-            >
-              <span className="material-icons-outlined text-[22px]">arrow_back</span>
-            </button>
+    <div className="relative min-h-screen bg-white">
+      {/* 배경 blob 그라데이션 (부유 + 형태 변형) */}
+      <AmbientBackground enabled={blobOn} speed={blobSpeed} style={blobStyle} />
+
+      {/* 헤더 — 글래스 효과 없이 solid (배경 그라데이션은 하단에만) */}
+      <header className="sticky top-0 z-30 bg-white">
+        <div className="flex items-center h-14 px-6">
+          <button
+            onClick={handleBack}
+            aria-label="뒤로"
+            className="w-8 h-8 -ml-2 flex items-center justify-center text-[#888] hover:text-black transition-colors"
+          >
+            <span className="material-icons-outlined text-[22px]">arrow_back</span>
+          </button>
+          {isResult ? (
+            <h1 className="ml-1 text-[17px] text-black">스캐너 결과</h1>
           ) : (
-            <span className="w-8 h-8" />
+            <button
+              onClick={handleRestart}
+              className="ml-auto text-[14px] text-[#888] hover:text-black transition-colors"
+            >
+              다시하기
+            </button>
           )}
-          <span className="text-[12px] tracking-[0.1em] uppercase text-[#aaa] font-mono">
-            {isResult ? "RESULT" : `0${step + 1} / 0${QUESTIONS.length}`}
-          </span>
         </div>
       </header>
 
-      <div className="px-6 pb-24 overflow-x-hidden">
-        {/* 캡션 + 타이틀 — 정적 (애니메이션 미적용) */}
-        <div className="pt-4">
-          <CaptionRow
-            label={isResult ? "단백질 스캐너 결과" : "단백질 스캐너"}
-            presetLabel={preset.label}
-            onOpen={() => setSheetOpen(true)}
-          />
-          <h1 className="text-[22px] leading-snug tracking-[-0.01em] text-black mb-8">
-            {isResult
-              ? "내 선택에 딱 맞는 단백질 쉐이크 3"
-              : `0${step + 1}. ${question.title}`}
-          </h1>
-        </div>
+      <div className="relative z-10 px-6 pt-4 pb-24 overflow-x-hidden">
+        {/* 스텝 인디케이터 + 타이틀 + 캡션 — 질문 단계에서만, 정적 (애니메이션 미적용) */}
+        {!isResult && (
+          <div>
+            <StepIndicator
+              current={step}
+              presetLabel={preset.label}
+              onOpen={() => setSheetOpen(true)}
+            />
+            <h1 className="text-[22px] leading-snug tracking-[-0.01em] text-black">
+              {question.title}
+            </h1>
+            <p className="mt-2 mb-8 text-[14px] leading-relaxed text-[#aaa]">
+              {question.description}
+            </p>
+          </div>
+        )}
 
         {/* 선택지 / 결과 카드 — 이 영역만 애니메이션 적용 */}
         <AnimatePresence mode="wait" custom={direction}>
@@ -159,10 +238,10 @@ export default function ScannerPage() {
                     {...itemMotion}
                     onClick={() => handleSelect(i)}
                     whileTap={preset.optionWhileTap}
-                    className={`w-full text-left px-5 py-4 rounded-[10px] border text-[15px] leading-snug transition-colors ${
+                    className={`w-full text-left p-6 rounded-[14px] border text-[15px] leading-snug transition-colors ${
                       isSelected
-                        ? "border-black bg-[#ebebeb] text-black"
-                        : "border-[#e0e0e0] bg-[#f5f5f5] text-[#333] hover:bg-[#ebebeb]"
+                        ? "border-black bg-white text-black"
+                        : "border-[#1A1919]/5 bg-white text-[#333]"
                     }`}
                   >
                     {option.label}
@@ -171,39 +250,24 @@ export default function ScannerPage() {
               })}
             </motion.div>
           ) : (
-            <motion.div key="result" {...containerMotion} className="flex flex-col gap-4">
-              {results.map(({ product, reasons }, i) => (
-                <motion.article
-                  key={product.id}
-                  {...itemMotion}
-                  className="rounded-[10px] border border-[#e0e0e0] bg-white p-5"
-                >
-                  <Badge variant={i === 0 ? "red" : "default"}>{`No.${i + 1}`}</Badge>
-                  <h2 className="mt-3 text-[17px] leading-snug text-black">
+            <motion.div key="result" {...containerMotion} className="flex flex-col gap-10">
+              {results.map(({ product }) => (
+                <motion.article key={product.id} {...itemMotion} className="flex flex-col">
+                  {/* 공백 이미지 박스 (디자인용) */}
+                  <div className="w-full aspect-square rounded-[12px] bg-[#f5f5f5]" />
+                  <p className="mt-4 text-center text-[13px] text-[#888]">
+                    {RESULT_CATEGORY}
+                  </p>
+                  <h2 className="mt-1 text-center text-[16px] leading-snug text-black">
                     {product.name}
                   </h2>
-                  <p className="mt-1 font-mono text-[13px] text-[#888] tracking-[0.02em]">
-                    {product.subtitle}
+                  <p className="mt-1 text-center text-[16px] font-medium text-black">
+                    {formatPrice(product.price)}
                   </p>
-                  <p className="mt-3 text-[14px] leading-relaxed text-[#888]">
-                    {product.blurb}
-                  </p>
-                  {reasons.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-1.5">
-                      {reasons.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-[12px] text-[#888] bg-[#f5f5f5] rounded-[6px] px-2 py-0.5"
-                        >
-                          {TAG_LABEL[tag]}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </motion.article>
               ))}
 
-              <motion.div {...itemMotion} className="mt-4">
+              <motion.div {...itemMotion}>
                 <Button variant="secondary" fullWidth onClick={handleRestart}>
                   처음으로
                 </Button>
@@ -221,23 +285,119 @@ export default function ScannerPage() {
         onChange={setInteraction}
         stagger={stagger}
         onStaggerChange={setStagger}
+        blobOn={blobOn}
+        onBlobChange={setBlobOn}
+        blobSpeed={blobSpeed}
+        onBlobSpeedChange={setBlobSpeed}
+        blobStyle={blobStyle}
+        onBlobStyleChange={updateBlobStyle}
       />
     </div>
   );
 }
 
-function CaptionRow({
-  label,
+/* ---------- 배경 blob (blobs/v2 + framer-motion morph) ---------- */
+// 흑백 테마의 유일한 예외 — 따뜻한 피치/크림 그라데이션 blob이 화면 하단에서
+// 부유하며 형태가 변형된다. (상단은 깨끗한 흰 배경 유지)
+// blobs.svgPath로 동일 구조(같은 extraPoints/size)의 패스를 시드별로 생성 → d 키프레임 morph.
+
+const BLOB_VIEWBOX = 400;
+
+function makeBlobPaths(seeds: number[]): string[] {
+  const paths = seeds.map((seed) =>
+    svgPath({ seed, extraPoints: 6, randomness: 4, size: BLOB_VIEWBOX })
+  );
+  return [...paths, paths[0]]; // 처음 형태로 되돌아와 매끄럽게 반복
+}
+
+const BLOB_PATHS_A = makeBlobPaths([2, 17, 38, 54]);
+const BLOB_PATHS_B = makeBlobPaths([9, 23, 41, 66]);
+
+function AmbientBackground({
+  enabled,
+  speed,
+  style,
+}: {
+  enabled: boolean;
+  speed: BlobSpeed;
+  style: BlobStyle;
+}) {
+  if (!enabled) return null;
+  const { floatDuration, morphDuration } = getBlobSpeed(speed);
+  const { blur, opacity, scale: s } = style;
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {/* Blob A — 좌하단, 피치 */}
+      <motion.div
+        className="absolute -bottom-40 -left-16 h-[520px] w-[520px]"
+        style={{ filter: `blur(${blur}px)`, opacity }}
+        animate={{ x: [0, 30, -14, 0], y: [0, -18, 14, 0], scale: [s, s * 1.08, s * 0.96, s] }}
+        transition={{ duration: floatDuration, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <svg viewBox={`0 0 ${BLOB_VIEWBOX} ${BLOB_VIEWBOX}`} className="h-full w-full">
+          <defs>
+            <linearGradient id="blobA" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#ffe2cc" />
+              <stop offset="100%" stopColor="#ffcca6" />
+            </linearGradient>
+          </defs>
+          <motion.path
+            fill="url(#blobA)"
+            d={BLOB_PATHS_A[0]}
+            animate={{ d: BLOB_PATHS_A }}
+            transition={{ duration: morphDuration, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </svg>
+      </motion.div>
+
+      {/* Blob B — 우하단, 크림→애프리콧 */}
+      <motion.div
+        className="absolute -bottom-44 -right-20 h-[520px] w-[520px]"
+        style={{ filter: `blur(${blur}px)`, opacity: opacity * 0.92 }}
+        animate={{ x: [0, -24, 16, 0], y: [0, 16, -16, 0], scale: [s, s * 0.94, s * 1.1, s] }}
+        transition={{ duration: floatDuration * 1.18, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <svg viewBox={`0 0 ${BLOB_VIEWBOX} ${BLOB_VIEWBOX}`} className="h-full w-full">
+          <defs>
+            <linearGradient id="blobB" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#fff0e2" />
+              <stop offset="100%" stopColor="#ffd9bd" />
+            </linearGradient>
+          </defs>
+          <motion.path
+            fill="url(#blobB)"
+            d={BLOB_PATHS_B[0]}
+            animate={{ d: BLOB_PATHS_B }}
+            transition={{ duration: morphDuration * 1.25, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </svg>
+      </motion.div>
+    </div>
+  );
+}
+
+function StepIndicator({
+  current,
   presetLabel,
   onOpen,
 }: {
-  label: string;
+  current: number;
   presetLabel: string;
   onOpen: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between mb-3">
-      <p className="text-[12px] tracking-[0.1em] uppercase text-[#aaa]">{label}</p>
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-1.5 text-[13px]">
+        {QUESTIONS.map((q, i) => (
+          <span key={q.id} className="flex items-center gap-1.5">
+            {i > 0 && <span className="text-[#d0d0d0]">·</span>}
+            <span className={i === current ? "text-black font-medium" : "text-[#bbb]"}>
+              {q.step}
+            </span>
+          </span>
+        ))}
+      </div>
       <button
         onClick={onOpen}
         aria-label="인터랙션 설정"

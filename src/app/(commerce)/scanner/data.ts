@@ -22,7 +22,9 @@ export interface QuizOption {
 
 export interface QuizQuestion {
   id: string;
+  step: string; // 스텝 인디케이터 라벨 (목적 · 부담 · 식감)
   title: string;
+  description: string; // 타이틀 아래 서브 캡션
   options: QuizOption[];
 }
 
@@ -31,8 +33,12 @@ export interface ProteinProduct {
   name: string;
   subtitle: string; // 맛 · 용량
   blurb: string; // 한 줄 소개
+  price: number; // 임의 가격 (데모)
   tags: Tag[];
 }
+
+// 결과 카드 카테고리 라벨 (레퍼런스 고정 문구)
+export const RESULT_CATEGORY = "단백질 쉐이크";
 
 // 각 질문의 가중치 (1번 목적이 가장 중요)
 export const QUESTION_WEIGHT: Record<string, number> = {
@@ -44,7 +50,9 @@ export const QUESTION_WEIGHT: Record<string, number> = {
 export const QUESTIONS: QuizQuestion[] = [
   {
     id: "goal",
+    step: "목적",
     title: "지금 단백질 음료를 찾는 가장 큰 이유는?",
+    description: "지금 마음에 가장 가까운 것을 하나만 골라 주세요.",
     options: [
       { label: "운동 후 단백질을 채우고 싶어요", tags: ["post_workout"] },
       { label: "식사 대신 든든하게 먹고 싶어요", tags: ["meal_replacement"] },
@@ -58,7 +66,9 @@ export const QUESTIONS: QuizQuestion[] = [
   },
   {
     id: "reduce",
+    step: "부담",
     title: "어떤 부담을 줄이고 싶어요?",
+    description: "줄이고 싶은 부담을 선택해 주세요.",
     options: [
       { label: "유당이 신경 쓰여요", tags: ["lactose_free"] },
       { label: "혈당 스파이크가 신경 쓰여요", tags: ["low_gi"] },
@@ -68,7 +78,9 @@ export const QUESTIONS: QuizQuestion[] = [
   },
   {
     id: "texture",
+    step: "식감",
     title: "분말 쉐이크 식감 선호는?",
+    description: "선호하는 분말 쉐이크 식감을 골라 주세요.",
     options: [
       { label: "토핑 있는 · 씹는 재미 · 든든함", tags: ["topping"] },
       { label: "토핑 없음 · 속편안 · 부드러움", tags: ["smooth"] },
@@ -83,6 +95,7 @@ export const PRODUCTS: ProteinProduct[] = [
     name: "퓨어 웨이 아이솔레이트",
     subtitle: "초코맛 · 1kg",
     blurb: "흡수 빠른 분리유청 단백질, 운동 직후 한 잔.",
+    price: 42000,
     tags: ["post_workout", "low_sugar", "smooth", "tasty"],
   },
   {
@@ -90,6 +103,7 @@ export const PRODUCTS: ProteinProduct[] = [
     name: "식물성 피 프로틴 쉐이크",
     subtitle: "곡물맛 · 750g",
     blurb: "완두·현미 단백 블렌드, 유당 걱정 없는 비건 포뮬러.",
+    price: 36000,
     tags: ["plant_based", "lactose_free", "gut_friendly", "meal_replacement"],
   },
   {
@@ -97,6 +111,7 @@ export const PRODUCTS: ProteinProduct[] = [
     name: "마시멜로 토핑 단백질쉐이크",
     subtitle: "초코맛 · 630g",
     blurb: "씹히는 마시멜로 토핑으로 든든한 한 끼 대용.",
+    price: 32000,
     tags: ["meal_replacement", "topping", "tasty"],
   },
   {
@@ -104,6 +119,7 @@ export const PRODUCTS: ProteinProduct[] = [
     name: "슬로우 카제인 쉐이크",
     subtitle: "바닐라맛 · 900g",
     blurb: "천천히 흡수되는 카제인, 가벼운 체중 관리에.",
+    price: 38000,
     tags: ["weight_management", "low_gi", "smooth", "low_sugar"],
   },
   {
@@ -111,6 +127,7 @@ export const PRODUCTS: ProteinProduct[] = [
     name: "락토프리 웨이 쉐이크",
     subtitle: "딸기맛 · 800g",
     blurb: "유당을 제거해 속 편한 운동 후 단백질 보충.",
+    price: 34000,
     tags: ["lactose_free", "gut_friendly", "post_workout"],
   },
   {
@@ -118,6 +135,7 @@ export const PRODUCTS: ProteinProduct[] = [
     name: "콜라겐 단백질 쉐이크",
     subtitle: "베리맛 · 500g",
     blurb: "단백질에 콜라겐을 더한 이너뷰티 한 잔.",
+    price: 39000,
     tags: ["beauty", "tasty", "smooth"],
   },
   {
@@ -125,6 +143,7 @@ export const PRODUCTS: ProteinProduct[] = [
     name: "제로슈가 클리어 프로틴",
     subtitle: "자몽맛 · 450g",
     blurb: "음료처럼 가벼운 제로당 클리어 프로틴.",
+    price: 28000,
     tags: ["low_sugar", "low_gi", "gut_friendly", "smooth"],
   },
   {
@@ -132,6 +151,7 @@ export const PRODUCTS: ProteinProduct[] = [
     name: "그래놀라 토핑 프로틴",
     subtitle: "쿠키맛 · 630g",
     blurb: "바삭한 그래놀라 토핑으로 즐기는 식사 대용 쉐이크.",
+    price: 33000,
     tags: ["meal_replacement", "topping", "tasty"],
   },
 ];

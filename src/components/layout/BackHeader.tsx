@@ -11,7 +11,7 @@ export function BackHeader({ title, rightAction }: BackHeaderProps) {
   const router = useRouter();
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-30 bg-white">
       <div className="flex items-center h-16 px-6">
         <button
           onClick={() => router.back()}
