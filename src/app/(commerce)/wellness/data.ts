@@ -44,7 +44,7 @@ export const WELLNESS_BRANDS: WellnessBrand[] = [
         name: "덱스콤 G7 스타터 패키지\n(2개입/20일, 3개입/30일)",
         price: 150000,
         notes: ["계정당 1회 한정", "라이언 피규어 증정"],
-        image: "",
+        image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=400&fit=crop&q=80",
         description:
           "덱스콤 G7은 손가락 채혈 없이 실시간으로 혈당을 모니터링할 수 있는 연속혈당측정기(CGM)입니다. 스타터 패키지로 CGM 경험을 합리적으로 시작해보세요.",
         specs: [
@@ -68,7 +68,7 @@ export const WELLNESS_BRANDS: WellnessBrand[] = [
         name: "덱스콤 G7\n(10일) / 1개",
         price: 100000,
         notes: [],
-        image: "",
+        image: "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?w=400&h=400&fit=crop&q=80",
         description:
           "덱스콤 G7 센서 1개 단품입니다. 10일간 손가락 채혈 없이 실시간 혈당을 확인할 수 있습니다.",
         specs: [
