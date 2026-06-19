@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "sync-docs": "cp public/docs/design-system.html docs/ && cp public/docs/screen-design.html docs/ && cp public/docs/policy.html docs/"
+    "lint": "eslint"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

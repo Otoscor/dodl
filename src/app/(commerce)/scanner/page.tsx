@@ -24,6 +24,8 @@ const GRADE_BOX: Record<Grade, string> = {
   A: "bg-black text-white",
   B: "bg-[#e0e0e0] text-black",
   C: "bg-[#f5f5f5] text-[#888]",
+  D: "bg-[#f5f5f5] text-[#bbb] border border-[#eee]",
+  E: "bg-white text-[#bbb] border border-[#e0e0e0]",
 };
 import { svgPath } from "blobs/v2";
 import { InteractionSheet } from "./InteractionSheet";
@@ -364,7 +366,8 @@ export default function ScannerPage() {
                   <motion.div
                     key={product.id}
                     {...itemMotion}
-                    className="rounded-[12px] border border-[#e0e0e0] overflow-hidden bg-white"
+                    onClick={() => router.push(`/scanner/${product.id}`)}
+                    className="rounded-[12px] border border-[#e0e0e0] overflow-hidden bg-white cursor-pointer active:bg-[#fafafa] transition-colors"
                   >
                     {/* 상품 정보 — 이미지 + 이름 + 태그 + 평점 */}
                     <div className="p-4 space-y-3">
@@ -432,7 +435,10 @@ export default function ScannerPage() {
                           {formatPrice(product.price)}
                         </p>
                         <button
-                          onClick={() => showToast("장바구니에 담았습니다")}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            showToast("장바구니에 담았습니다");
+                          }}
                           className="shrink-0 rounded-full bg-black px-5 py-2.5 text-[14px] font-medium text-white active:bg-[#333] transition-colors whitespace-nowrap"
                         >
                           장바구니 담기

@@ -25,7 +25,7 @@ payment gateway), and the database is a local seeded SQLite file. All UI text is
 - **framer-motion 12** — React spring/slide/fade animations (scanner interactions)
 - **gsap 3 + @gsap/react 2** — timeline-based animation (installed, available)
 - **lenis 1** — smooth scroll inertia (installed, available)
-- Dev tooling: ESLint 9 (`eslint-config-next`), Puppeteer 25 (screenshot script)
+- Dev tooling: ESLint 9 (`eslint-config-next`)
 
 Animation exports are centralised in `src/lib/animation.ts` — import from there, not directly.
 
@@ -38,17 +38,7 @@ npm run dev        # dev server → http://localhost:3000
 npm run build      # production build
 npm run start      # run production build
 npm run lint       # ESLint
-npm run sync-docs  # copy public/docs/*.html design docs into docs/
 ```
-
-`scripts/capture-screens.mjs` (Puppeteer) captures screenshots of the running app.
-
-**Project slash command:**
-- `/update-docs` — reads current code as source of truth and updates the 4 design docs
-  (`design-system.html`, `screen-design.html`, `policy.html`, `figma-checklist.html`),
-  regenerates screenshots, and updates `CLAUDE.md`. Accepts scope args:
-  `design-system | screen-design | policy | figma-checklist | claude | screens` (default: `all`).
-  Defined in `.claude/commands/update-docs.md`.
 
 ## Environment Setup
 
@@ -73,7 +63,7 @@ AUTH_SECRET=dodl-k9x2mQ8pLrN5vTjY     # arbitrary secret stored in the dodl_auth
 Cookie-based, no real account system.
 
 - **`src/middleware.ts`** — guards all routes except `/login`, `/api/auth/*`,
-  `_next/static`, `_next/image`, `favicon.ico`, and `docs/`. Compares the `dodl_auth`
+  `_next/static`, `_next/image`, `favicon.ico`, and static image files. Compares the `dodl_auth`
   cookie against `AUTH_SECRET`; redirects to `/login` on mismatch.
 - **`src/app/api/auth/login/route.ts`** (POST) — validates `{ id, password }` against
   `AUTH_USERS`. On success sets two httpOnly cookies: `dodl_auth` (7 days) and
@@ -111,7 +101,7 @@ src/
       upload/            #   review photo upload
     login/               # login page (outside the commerce group)
     layout.tsx           # root layout: 430px mobile container, Toast provider, Material Icons
-    page.tsx             # dev landing page (links to prototype + docs)
+    page.tsx             # dev landing page (link to prototype)
   components/
     layout/              # TitleBar, BottomTabBar, BackHeader, HomeCartIcon
     commerce/            # BannerCarousel, CategoryGrid, ProductCard, OptionSelector,

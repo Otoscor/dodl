@@ -15,11 +15,20 @@ export type Tag =
   | "topping"
   | "smooth";
 
-// 6개 건강 지표 등급 (목업 · 흑백 표기)
-export type Grade = "A" | "B" | "C";
+// 건강 지표 등급 (A–E · 흑백 표기)
+export type Grade = "A" | "B" | "C" | "D" | "E";
 
 // 속성 필터 태그 (결과 화면 필터/칩)
 export type AttrFilter = "식물성" | "락토프리" | "제로슈거" | "클린라벨" | "Non-GMO";
+
+// 핵심 영양 (상세 페이지)
+export interface Nutrition {
+  calories: number; // kcal
+  protein: number; // g
+  sugar: number; // g
+  fat: number; // g
+  fiber: number; // g (식이섬유)
+}
 
 export interface QuizOption {
   label: string;
@@ -42,23 +51,30 @@ export interface ProteinProduct {
   price: number; // 임의 가격 (데모)
   image: string; // 제품 누끼 이미지 (public/products)
   tags: Tag[];
-  grades: Grade[]; // METRICS 순서와 정렬 (6개, 목업)
+  grades: Grade[]; // DETAIL_METRICS 순서 (7개); 결과 카드/정렬은 앞 6개만 사용
   rating: number; // 평점 (목업)
   reviewCount: number; // 리뷰 수 (목업)
   attrs: AttrFilter[]; // 속성 필터 태그 (목업)
+  origin: string; // 원산지 (상세)
+  nutrition: Nutrition; // 핵심 영양 (상세)
 }
 
 // 결과 카드 카테고리 라벨 (레퍼런스 고정 문구)
 export const RESULT_CATEGORY = "단백질 쉐이크";
 
-// 6개 건강 지표 (등급 표기 순서)
+// 6개 건강 지표 (결과 카드/정렬 순서)
 export const METRICS = ["다이어트", "혈당", "근육", "포만감", "피부", "속편함"] as const;
 
-// 등급 → 상태 문구 (지표 등급 그리드)
+// 상세 지표등급표 = 결과 6지표 + 클린라벨 (7개)
+export const DETAIL_METRICS = [...METRICS, "클린라벨"] as const;
+
+// 등급 → 상태 문구 (A–E)
 export const GRADE_STATUS: Record<Grade, string> = {
   A: "적극 권장",
   B: "권장",
   C: "주의",
+  D: "권장 안 함",
+  E: "경고",
 };
 
 // 속성 필터 목록 (빠른 칩 + 필터 시트)
@@ -126,10 +142,12 @@ export const PRODUCTS: ProteinProduct[] = [
     price: 42000,
     image: "/products/hymune-active-choco.png",
     tags: ["post_workout", "low_sugar", "smooth", "tasty"],
-    grades: ["B", "B", "A", "B", "C", "B"],
+    grades: ["B", "B", "A", "B", "C", "B", "D"],
     rating: 4.3,
     reviewCount: 412,
     attrs: ["락토프리", "제로슈거"],
+    origin: "대한민국",
+    nutrition: { calories: 104, protein: 20, sugar: 1, fat: 0, fiber: 1 },
   },
   {
     id: "plant-pea-grain",
@@ -139,10 +157,12 @@ export const PRODUCTS: ProteinProduct[] = [
     price: 36000,
     image: "/products/hymune-active-vegan.png",
     tags: ["plant_based", "lactose_free", "gut_friendly", "meal_replacement"],
-    grades: ["B", "B", "B", "A", "B", "A"],
+    grades: ["B", "B", "B", "A", "B", "A", "A"],
     rating: 4.4,
     reviewCount: 537,
     attrs: ["식물성", "락토프리", "클린라벨", "Non-GMO"],
+    origin: "대한민국",
+    nutrition: { calories: 150, protein: 15, sugar: 2, fat: 2, fiber: 5 },
   },
   {
     id: "marshmallow-topping",
@@ -152,10 +172,12 @@ export const PRODUCTS: ProteinProduct[] = [
     price: 32000,
     image: "/products/flymeal-choco.png",
     tags: ["meal_replacement", "topping", "tasty"],
-    grades: ["C", "C", "B", "A", "C", "B"],
+    grades: ["C", "C", "B", "A", "C", "B", "E"],
     rating: 4.5,
     reviewCount: 289,
     attrs: [],
+    origin: "중국",
+    nutrition: { calories: 210, protein: 12, sugar: 9, fat: 4, fiber: 2 },
   },
   {
     id: "casein-vanilla",
@@ -165,10 +187,12 @@ export const PRODUCTS: ProteinProduct[] = [
     price: 38000,
     image: "/products/hymune-active-milkshake.png",
     tags: ["weight_management", "low_gi", "smooth", "low_sugar"],
-    grades: ["A", "A", "B", "A", "C", "B"],
+    grades: ["A", "A", "B", "A", "C", "B", "C"],
     rating: 4.2,
     reviewCount: 310,
     attrs: ["제로슈거"],
+    origin: "대한민국",
+    nutrition: { calories: 120, protein: 18, sugar: 0, fat: 1, fiber: 1 },
   },
   {
     id: "lactofree-whey-berry",
@@ -178,10 +202,12 @@ export const PRODUCTS: ProteinProduct[] = [
     price: 34000,
     image: "/products/nucare-allprotein-banana.png",
     tags: ["lactose_free", "gut_friendly", "post_workout"],
-    grades: ["B", "C", "A", "B", "C", "A"],
+    grades: ["B", "C", "A", "B", "C", "A", "C"],
     rating: 4.1,
     reviewCount: 198,
     attrs: ["락토프리"],
+    origin: "대한민국",
+    nutrition: { calories: 110, protein: 20, sugar: 2, fat: 0, fiber: 1 },
   },
   {
     id: "collagen-protein",
@@ -191,10 +217,12 @@ export const PRODUCTS: ProteinProduct[] = [
     price: 39000,
     image: "/products/labnosh-slim-injeolmi.png",
     tags: ["beauty", "tasty", "smooth"],
-    grades: ["C", "C", "C", "B", "A", "B"],
+    grades: ["C", "C", "C", "B", "A", "B", "B"],
     rating: 4.6,
     reviewCount: 521,
     attrs: ["클린라벨"],
+    origin: "대한민국",
+    nutrition: { calories: 90, protein: 10, sugar: 1, fat: 1, fiber: 0 },
   },
   {
     id: "zero-sugar-clear",
@@ -204,10 +232,12 @@ export const PRODUCTS: ProteinProduct[] = [
     price: 28000,
     image: "/products/selex-profit-banana.png",
     tags: ["low_sugar", "low_gi", "gut_friendly", "smooth"],
-    grades: ["A", "A", "C", "C", "B", "A"],
+    grades: ["A", "A", "C", "C", "B", "A", "B"],
     rating: 4.4,
     reviewCount: 365,
     attrs: ["제로슈거"],
+    origin: "대한민국",
+    nutrition: { calories: 80, protein: 15, sugar: 0, fat: 0, fiber: 2 },
   },
   {
     id: "granola-topping",
@@ -217,12 +247,72 @@ export const PRODUCTS: ProteinProduct[] = [
     price: 33000,
     image: "/products/flymeal-brown.png",
     tags: ["meal_replacement", "topping", "tasty"],
-    grades: ["C", "B", "B", "A", "C", "C"],
+    grades: ["C", "B", "B", "A", "C", "C", "D"],
     rating: 4.3,
     reviewCount: 274,
     attrs: ["클린라벨"],
+    origin: "대한민국",
+    nutrition: { calories: 190, protein: 13, sugar: 7, fat: 5, fiber: 3 },
   },
 ];
+
+// 등급 정렬 가중치 (낮을수록 좋음)
+const GRADE_RANK: Record<Grade, number> = { A: 0, B: 1, C: 2, D: 3, E: 4 };
+
+// id로 스캐너 상품 조회 (상세 페이지)
+export function findProteinProduct(id: string): ProteinProduct | null {
+  return PRODUCTS.find((p) => p.id === id) ?? null;
+}
+
+// "왜 이런 평가일까" 사유 — 지표·등급 기반 템플릿
+export function gradeReason(metric: string, grade: Grade): string {
+  const status = GRADE_STATUS[grade];
+  const tone: Record<Grade, string> = {
+    A: `${metric} 측면에서 특히 우수한 구성이에요. 관련 성분이 균형 있게 충족돼 적극 추천돼요.`,
+    B: `${metric}에 도움이 되는 구성이에요. 큰 부담 없이 무난하게 선택할 수 있어요.`,
+    C: `${metric}는 보통 수준이에요. 목적에 따라 다른 제품과 비교해 보는 걸 권해요.`,
+    D: `${metric} 측면에서는 권장하기 어려운 편이에요. 해당 목적이라면 신중히 검토하세요.`,
+    E: `${metric}에 부담이 될 수 있는 구성이에요. 민감하다면 섭취를 피하는 게 좋아요.`,
+  };
+  return `'${status}' 등급이에요. ${tone[grade]}`;
+}
+
+// 이런 분께 (추천/고민) — 등급·속성 기반 파생
+export function audienceFor(p: ProteinProduct): { recommend: string[]; caution: string[] } {
+  const recommend: string[] = [];
+  const caution: string[] = [];
+  METRICS.forEach((m, i) => {
+    const r = GRADE_RANK[p.grades[i]];
+    if (r <= 1) recommend.push(`${m} 관리를 신경 쓰는 분`);
+    if (r >= 3) caution.push(`${m} 부담을 줄이고 싶은 분`);
+  });
+  if (p.attrs.includes("식물성")) recommend.push("식물성·비건 단백질을 찾는 분");
+  if (p.attrs.includes("락토프리")) recommend.push("유당이 불편했던 분");
+  if (recommend.length === 0) recommend.push("단백질을 가볍게 챙기고 싶은 분");
+  if (caution.length === 0) caution.push("가벼운 저칼로리 음료를 찾는 분");
+  return { recommend: recommend.slice(0, 3), caution: caution.slice(0, 2) };
+}
+
+// 가장 약한(등급 낮은) 지표 인덱스 — "비슷한 제품" 기준
+export function weakestMetricIndex(p: ProteinProduct): number {
+  let idx = 0;
+  let worst = -1;
+  METRICS.forEach((_, i) => {
+    if (GRADE_RANK[p.grades[i]] > worst) {
+      worst = GRADE_RANK[p.grades[i]];
+      idx = i;
+    }
+  });
+  return idx;
+}
+
+// 비슷한 제품 — 특정 지표 등급이 더 좋은 다른 제품
+export function similarBy(p: ProteinProduct, metricIndex: number): ProteinProduct[] {
+  const mine = GRADE_RANK[p.grades[metricIndex]];
+  return PRODUCTS.filter((x) => x.id !== p.id && GRADE_RANK[x.grades[metricIndex]] < mine)
+    .sort((a, b) => GRADE_RANK[a.grades[metricIndex]] - GRADE_RANK[b.grades[metricIndex]])
+    .slice(0, 4);
+}
 
 // 추천 이유 칩 라벨
 export const TAG_LABEL: Record<Tag, string> = {

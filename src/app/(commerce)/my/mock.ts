@@ -55,7 +55,6 @@ export const MY_MENU: MyMenuGroup[] = [
   {
     title: "약관·기타",
     items: [
-      { label: "이용약관·정책", href: "/docs/policy.html" },
       { label: "로그아웃", action: "logout" },
     ],
   },
