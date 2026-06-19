@@ -10,8 +10,8 @@ import { AddressPickerOverlay } from "@/components/commerce/AddressPickerOverlay
 import { useAddresses, formatAddress, type SavedAddress } from "@/hooks/useAddresses";
 import { RETURN_REASONS, EXCHANGE_REASONS } from "@/lib/constants";
 import { formatPrice, isReturnable, returnShippingFee, exchangeShippingFee } from "@/lib/utils";
-import type { OrderDetail, OrderItem } from "@/types/order";
-import type { ProductDetail } from "@/types/product";
+import type { OrderDetail } from "@/types/order";
+import type { ProductListItem } from "@/types/product";
 
 const DELIVERY_NOTES = ["문 앞에 놓아주세요", "경비실에 맡겨주세요", "택배함에 넣어주세요", "수령 전 연락주세요"];
 const RETURN_CENTER = "경기도 이천시 덕평로 1234, dodl 물류센터 반품팀 (06236)";
@@ -61,9 +61,9 @@ export function OrderClaimForm({ orderId, mode }: { orderId: string; mode: Claim
   const [pickup, setPickup] = useState<SavedAddress | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  // 교환 전용 — 상품별 옵션 그룹 + 선택값(오버라이드)
-  const [productMap, setProductMap] = useState<Record<string, ProductDetail>>({});
-  const [optionSel, setOptionSel] = useState<Record<string, Record<string, string>>>({});
+  // 교환 전용 — 전체 상품(같은 브랜드 다른 맛 탐색용) + 품목별 교환 희망 상품 선택
+  const [allProducts, setAllProducts] = useState<ProductListItem[]>([]);
+  const [swapSel, setSwapSel] = useState<Record<string, string>>({}); // itemId → 대상 productId ("" = 현재 상품 유지)
 
   useEffect(() => {
     fetch(`/api/orders/${orderId}`)
@@ -72,18 +72,14 @@ export function OrderClaimForm({ orderId, mode }: { orderId: string; mode: Claim
       .catch(() => setLoading(false));
   }, [orderId]);
 
-  // 교환 모드: 주문 품목의 상품 옵션 조회
+  // 교환 모드: 상품 목록 조회 (같은 브랜드 다른 맛 후보)
   useEffect(() => {
-    if (mode !== "exchange" || !order) return;
-    const ids = [...new Set(order.items.map((i) => i.product_id).filter(Boolean))];
-    Promise.all(
-      ids.map((id) => fetch(`/api/products/${id}`).then((r) => r.json()).then((d: ProductDetail) => [id, d] as const).catch(() => null))
-    ).then((pairs) => {
-      const map: Record<string, ProductDetail> = {};
-      for (const p of pairs) if (p) map[p[0]] = p[1];
-      setProductMap(map);
-    });
-  }, [mode, order]);
+    if (mode !== "exchange") return;
+    fetch(`/api/products`)
+      .then((r) => r.json())
+      .then((d: { products?: ProductListItem[] }) => setAllProducts(d.products ?? []))
+      .catch(() => {});
+  }, [mode]);
 
   if (loading) return <><BackHeader title={cfg.title} /><LoadingSpinner /></>;
   if (!order) {
@@ -114,31 +110,24 @@ export function OrderClaimForm({ orderId, mode }: { orderId: string; mode: Claim
 
   const toggle = (k: keyof typeof open) => setOpen((s) => ({ ...s, [k]: !s[k] }));
 
-  // 현재 옵션 요약("오렌지 / 30정")에서 특정 그룹의 기본 선택값을 추정
-  const defaultValueFor = (item: OrderItem, groupValues: string[]): string => {
-    const tokens = item.option_summary.split("/").map((t) => t.trim());
-    return tokens.find((t) => groupValues.includes(t)) ?? groupValues[0] ?? "";
+  // 같은 브랜드의 다른 맛/종류 상품 후보
+  const siblingsFor = (productId: string): ProductListItem[] => {
+    const cur = allProducts.find((p) => p.id === productId);
+    if (!cur) return [];
+    return allProducts.filter((p) => p.brand === cur.brand && p.id !== productId);
   };
-  const selectedValue = (itemId: string, groupName: string, fallback: string): string =>
-    optionSel[itemId]?.[groupName] ?? fallback;
-  const setOption = (itemId: string, groupName: string, value: string) =>
-    setOptionSel((s) => ({ ...s, [itemId]: { ...s[itemId], [groupName]: value } }));
 
-  // 교환 희망 옵션을 note 앞단에 합성
+  // 교환 희망 상품(다른 맛)을 note 앞단에 합성
   const buildNote = (): string => {
     if (mode !== "exchange") return note;
     const lines: string[] = [];
     for (const item of order.items) {
-      const pd = productMap[item.product_id];
-      if (!pd?.option_groups?.length) continue;
-      const chosen = pd.option_groups
-        .map((g) => selectedValue(item.id, g.name, defaultValueFor(item, g.values.map((v) => v.name))))
-        .filter(Boolean)
-        .join(" / ");
-      if (chosen) lines.push(`교환 희망: ${item.product_name} → ${chosen}`);
+      const targetId = swapSel[item.id];
+      if (!targetId) continue;
+      const tp = allProducts.find((p) => p.id === targetId);
+      if (tp) lines.push(`교환 희망: ${item.product_name} → ${tp.name}`);
     }
-    const head = lines.join("\n");
-    return [head, note].filter(Boolean).join("\n");
+    return [lines.join("\n"), note].filter(Boolean).join("\n");
   };
 
   const handleSubmit = async () => {
@@ -167,7 +156,8 @@ export function OrderClaimForm({ orderId, mode }: { orderId: string; mode: Claim
       <Section title="상품 선택" open={open.product} onToggle={() => toggle("product")}>
         <div className="space-y-4">
           {order.items.map((item) => {
-            const pd = mode === "exchange" ? productMap[item.product_id] : undefined;
+            const siblings = mode === "exchange" ? siblingsFor(item.product_id) : [];
+            const target = swapSel[item.id] ?? "";
             return (
               <div key={item.id}>
                 <div className="flex items-center gap-3">
@@ -189,35 +179,23 @@ export function OrderClaimForm({ orderId, mode }: { orderId: string; mode: Claim
                   </div>
                 </div>
 
-                {/* 교환 희망 옵션 (exchange + 옵션 있는 상품) */}
-                {pd?.option_groups?.length ? (
-                  <div className="mt-3 ml-8 rounded-[12px] bg-[#f9f9f9] px-4 py-3.5 space-y-3">
-                    <p className="text-[13px] font-medium text-[#555]">교환 희망 옵션</p>
-                    {pd.option_groups.map((g) => {
-                      const values = g.values.map((v) => v.name);
-                      const sel = selectedValue(item.id, g.name, defaultValueFor(item, values));
-                      return (
-                        <div key={g.id}>
-                          <p className="text-[12px] text-[#aaa] mb-1.5">{g.name}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {g.values.map((v) => (
-                              <button
-                                key={v.id}
-                                type="button"
-                                onClick={() => setOption(item.id, g.name, v.name)}
-                                className={`px-3 py-1.5 rounded-full text-[13px] border transition-colors ${
-                                  sel === v.name ? "border-black bg-black text-white" : "border-[#e0e0e0] text-[#555] active:bg-[#f0f0f0]"
-                                }`}
-                              >
-                                {v.name}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
+                {/* 교환 희망 상품 — 같은 브랜드 다른 맛 스왑 (exchange + 후보 있을 때) */}
+                {mode === "exchange" && siblings.length > 0 && (
+                  <div className="mt-3 ml-8 rounded-[12px] bg-[#f9f9f9] px-4 py-3.5">
+                    <p className="text-[13px] font-medium text-[#555] mb-2.5">교환 희망 상품 (다른 맛)</p>
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      <SwapCard keep selected={!target} onClick={() => setSwapSel((s) => ({ ...s, [item.id]: "" }))} />
+                      {siblings.map((sp) => (
+                        <SwapCard
+                          key={sp.id}
+                          product={sp}
+                          selected={target === sp.id}
+                          onClick={() => setSwapSel((s) => ({ ...s, [item.id]: sp.id }))}
+                        />
+                      ))}
+                    </div>
                   </div>
-                ) : null}
+                )}
               </div>
             );
           })}
@@ -352,6 +330,39 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="text-[#888]">{label}</span>
       <span className="font-mono text-black">{value}</span>
     </div>
+  );
+}
+
+function SwapCard({
+  product, keep, selected, onClick,
+}: {
+  product?: ProductListItem;
+  keep?: boolean;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`shrink-0 w-[88px] rounded-[10px] border p-1.5 text-left transition-colors ${
+        selected ? "border-black" : "border-[#e0e0e0]"
+      }`}
+    >
+      <div className="w-full aspect-square rounded-[8px] bg-white overflow-hidden flex items-center justify-center mb-1">
+        {keep ? (
+          <span className="material-icons-outlined text-[24px] text-[#bbb]">block</span>
+        ) : product?.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+        ) : (
+          <span className="material-icons-outlined text-[24px] text-[#cccccc]">medication</span>
+        )}
+      </div>
+      <p className="text-[11px] text-black leading-tight line-clamp-2 h-[28px]">
+        {keep ? "현재 상품 유지" : product?.name}
+      </p>
+    </button>
   );
 }
 

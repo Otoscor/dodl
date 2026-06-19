@@ -4,9 +4,27 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "@/lib/animation";
 import { Button } from "@/components/ui/Button";
-import { QUESTIONS, RESULT_CATEGORY } from "./data";
+import { BottomSheet } from "@/components/ui/BottomSheet";
+import { useToast } from "@/components/ui/Toast";
+import {
+  QUESTIONS,
+  METRICS,
+  GRADE_STATUS,
+  ATTR_FILTERS,
+  SORT_OPTIONS,
+  type Grade,
+  type AttrFilter,
+  type SortKey,
+} from "./data";
 import { formatPrice } from "@/lib/utils";
 import { recommend } from "./recommend";
+
+// 지표 등급 원형 배지 — 흑백 톤 (A 진함 → C 옅음)
+const GRADE_BOX: Record<Grade, string> = {
+  A: "bg-black text-white",
+  B: "bg-[#e0e0e0] text-black",
+  C: "bg-[#f5f5f5] text-[#888]",
+};
 import { svgPath } from "blobs/v2";
 import { InteractionSheet } from "./InteractionSheet";
 import {
@@ -79,6 +97,18 @@ export default function ScannerPage() {
   const [blobSpeed, setBlobSpeed] = useState<BlobSpeed>("normal");
   const [blobStyle, setBlobStyle] = useState<BlobStyle>(DEFAULT_BLOB_STYLE);
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  // 결과 화면 필터/정렬
+  const { showToast } = useToast();
+  const [selectedAttrs, setSelectedAttrs] = useState<AttrFilter[]>([]);
+  const [sortKey, setSortKey] = useState<SortKey>("추천순");
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [sortSheetOpen, setSortSheetOpen] = useState(false);
+
+  const toggleAttr = (a: AttrFilter) =>
+    setSelectedAttrs((prev) =>
+      prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]
+    );
 
   const updateBlobStyle = (patch: Partial<BlobStyle>) =>
     setBlobStyle((s) => ({ ...s, ...patch }));
@@ -158,6 +188,21 @@ export default function ScannerPage() {
     () => (isResult ? recommend(answers) : []),
     [isResult, answers]
   );
+
+  // Top 3 위에서 필터(속성 AND) + 정렬(추천순 / 지표 등급순) 적용
+  const displayed = useMemo(() => {
+    let list = results.map((r) => r.product);
+    if (selectedAttrs.length > 0) {
+      list = list.filter((p) => selectedAttrs.every((a) => p.attrs.includes(a)));
+    }
+    const mi = (METRICS as readonly string[]).indexOf(sortKey);
+    if (mi >= 0) {
+      const rank: Record<string, number> = { A: 0, B: 1, C: 2 };
+      list = [...list].sort((a, b) => rank[a.grades[mi]] - rank[b.grades[mi]]);
+    }
+    return list;
+  }, [results, selectedAttrs, sortKey]);
+
 
   const handleSelect = (optionIndex: number) => {
     setDirection(1);
@@ -250,34 +295,162 @@ export default function ScannerPage() {
               })}
             </motion.div>
           ) : (
-            <motion.div key="result" {...containerMotion} className="flex flex-col gap-10">
-              {results.map(({ product }) => (
-                <motion.article key={product.id} {...itemMotion} className="flex flex-col">
-                  {/* 제품 이미지 */}
-                  <div className="w-full aspect-square rounded-[12px] bg-[#f5f5f5] overflow-hidden flex items-center justify-center">
-                    {product.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
-                    ) : (
-                      <span className="material-icons-outlined text-[40px] text-[#d0d0d0]">local_drink</span>
-                    )}
-                  </div>
-                  <p className="mt-4 text-center text-[13px] text-[#888]">
-                    {RESULT_CATEGORY}
-                  </p>
-                  <h2 className="mt-1 text-center text-[16px] leading-snug text-black">
-                    {product.name}
-                  </h2>
-                  <p className="mt-1 text-center text-[16px] font-medium text-black">
-                    {formatPrice(product.price)}
-                  </p>
-                </motion.article>
-              ))}
+            <motion.div key="result" {...containerMotion} className="flex flex-col gap-4">
+              {/* 정보 배너 (닫기 가능) */}
+              <motion.div
+                {...itemMotion}
+                className="flex items-start gap-3 rounded-[12px] bg-[#f9f9f9] border border-[#e0e0e0] p-4"
+              >
+                <span className="material-icons-outlined text-[20px] text-[#555] shrink-0 mt-0.5">
+                  info
+                </span>
+                <div className="flex-1">
+                  <p className="text-[14px] font-medium text-black">성분 영양을 6개 강강 지표로 분석했어요</p>
+                  <p className="text-[13px] text-[#888] mt-0.5">최근에 더 맞는 제품을 골라보세요.</p>
+                </div>
+                <button
+                  onClick={() => {}}
+                  className="text-[20px] text-[#bbb] hover:text-[#888] transition-colors shrink-0"
+                >
+                  <span className="material-icons-outlined">close</span>
+                </button>
+              </motion.div>
 
-              <motion.div {...itemMotion}>
-                <Button variant="secondary" fullWidth onClick={handleRestart}>
-                  처음으로
-                </Button>
+              {/* 속성 탭 필터 */}
+              <motion.div
+                {...itemMotion}
+                className="-mx-6 px-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
+                <div className="flex gap-2.5 w-max">
+                  {ATTR_FILTERS.map((a) => {
+                    const on = selectedAttrs.includes(a);
+                    return (
+                      <button
+                        key={a}
+                        onClick={() => toggleAttr(a)}
+                        className={`shrink-0 rounded-[8px] px-3 py-2 text-[13px] font-medium transition-colors whitespace-nowrap ${
+                          on
+                            ? "bg-black text-white border border-black"
+                            : "border border-[#d0d0d0] text-[#555] hover:border-black"
+                        }`}
+                      >
+                        {a}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
+
+              {/* 섹션 카드 / 빈 상태 */}
+              {displayed.length === 0 ? (
+                <motion.div
+                  {...itemMotion}
+                  className="py-16 flex flex-col items-center text-center"
+                >
+                  <span className="material-icons-outlined text-[40px] text-[#d0d0d0]">
+                    filter_alt_off
+                  </span>
+                  <p className="mt-3 text-[14px] text-[#888]">조건에 맞는 추천이 없어요</p>
+                  <button
+                    onClick={() => setSelectedAttrs([])}
+                    className="mt-4 rounded-[10px] border border-[#e0e0e0] px-4 py-2 text-[13px] text-[#555]"
+                  >
+                    필터 초기화
+                  </button>
+                </motion.div>
+              ) : (
+                displayed.map((product) => (
+                  <motion.div
+                    key={product.id}
+                    {...itemMotion}
+                    className="rounded-[12px] border border-[#e0e0e0] overflow-hidden bg-white"
+                  >
+                    {/* 상품 정보 — 이미지 + 이름 + 태그 + 평점 */}
+                    <div className="p-4 space-y-3">
+                      <div className="flex gap-3">
+                        <div className="w-[64px] h-[64px] shrink-0 rounded-[10px] bg-[#f5f5f5] overflow-hidden flex items-center justify-center">
+                          {product.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <span className="material-icons-outlined text-[26px] text-[#cccccc]">
+                              nutrition
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[15px] font-medium text-black leading-snug line-clamp-2">
+                            {product.name}
+                          </p>
+                          {product.attrs.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {product.attrs.map((a) => (
+                                <span
+                                  key={a}
+                                  className="rounded-[5px] bg-[#f5f5f5] px-1.5 py-0.5 text-[9px] text-[#888]"
+                                >
+                                  {a}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className="text-[12px] text-[#ff8c00]">★ {product.rating}</span>
+                            <span className="text-[12px] text-[#aaa]">({product.reviewCount})</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 등급 그리드 — 2열, 큰 글자 A/B/C */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {METRICS.map((m, i) => {
+                          const g = product.grades[i];
+                          return (
+                            <div key={m} className="flex items-center gap-2">
+                              <div
+                                className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-[15px] font-bold ${GRADE_BOX[g]}`}
+                              >
+                                {g}
+                              </div>
+                              <div className="flex-1 leading-tight">
+                                <p className="text-[13px] text-black">{m}</p>
+                                <p className="text-[11px] text-[#aaa]">{GRADE_STATUS[g]}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* 가격 + 장바구니 버튼 (가로) */}
+                      <div className="flex items-center justify-between gap-3 pt-2">
+                        <p className="text-[18px] font-bold text-black">
+                          {formatPrice(product.price)}
+                        </p>
+                        <button
+                          onClick={() => showToast("장바구니에 담았습니다")}
+                          className="shrink-0 rounded-full bg-black px-5 py-2.5 text-[14px] font-medium text-white active:bg-[#333] transition-colors whitespace-nowrap"
+                        >
+                          장바구니 담기
+                        </button>
+                      </div>
+                    </div>
+
+                  </motion.div>
+                ))
+              )}
+
+              <motion.div {...itemMotion} className="pt-4">
+                <button
+                  onClick={handleRestart}
+                  className="w-full rounded-[10px] border border-[#e0e0e0] bg-white py-3 text-[15px] font-medium text-[#555] active:bg-[#f5f5f5] transition-colors"
+                >
+                  다시하기
+                </button>
               </motion.div>
             </motion.div>
           )}
@@ -299,6 +472,71 @@ export default function ScannerPage() {
         blobStyle={blobStyle}
         onBlobStyleChange={updateBlobStyle}
       />
+
+      {/* 필터 시트 */}
+      <BottomSheet open={filterSheetOpen} onClose={() => setFilterSheetOpen(false)}>
+        <div className="px-6 pt-2 pb-8">
+          <h3 className="text-[16px] font-medium text-black mb-3">필터</h3>
+          <div className="flex flex-col">
+            {ATTR_FILTERS.map((a) => {
+              const on = selectedAttrs.includes(a);
+              return (
+                <button
+                  key={a}
+                  onClick={() => toggleAttr(a)}
+                  className="flex items-center justify-between py-3"
+                >
+                  <span className={`text-[15px] ${on ? "text-black font-medium" : "text-[#555]"}`}>
+                    {a}
+                  </span>
+                  <span
+                    className={`material-icons-outlined text-[22px] ${on ? "text-black" : "text-[#ccc]"}`}
+                  >
+                    {on ? "check_box" : "check_box_outline_blank"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button variant="secondary" fullWidth onClick={() => setSelectedAttrs([])}>
+              초기화
+            </Button>
+            <Button variant="primary" fullWidth onClick={() => setFilterSheetOpen(false)}>
+              적용
+            </Button>
+          </div>
+        </div>
+      </BottomSheet>
+
+      {/* 정렬 시트 */}
+      <BottomSheet open={sortSheetOpen} onClose={() => setSortSheetOpen(false)}>
+        <div className="px-6 pt-2 pb-8">
+          <h3 className="text-[16px] font-medium text-black mb-2">정렬</h3>
+          <div className="flex flex-col">
+            {SORT_OPTIONS.map((opt) => {
+              const on = sortKey === opt;
+              return (
+                <button
+                  key={opt}
+                  onClick={() => {
+                    setSortKey(opt);
+                    setSortSheetOpen(false);
+                  }}
+                  className="flex items-center justify-between py-3"
+                >
+                  <span className={`text-[15px] ${on ? "text-black font-medium" : "text-[#555]"}`}>
+                    {opt === "추천순" ? "추천순" : `${opt}순`}
+                  </span>
+                  {on && (
+                    <span className="material-icons-outlined text-[20px] text-black">check</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </BottomSheet>
     </div>
   );
 }
