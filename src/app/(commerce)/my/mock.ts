@@ -12,7 +12,6 @@ export interface MyMenuItem {
   label: string;
   href?: string; // 있으면 실제 이동
   value?: string; // 우측에 표시할 보조 텍스트
-  action?: "logout"; // 특수 액션(로그아웃 모달 등)
 }
 
 export interface MyMenuGroup {
@@ -50,12 +49,6 @@ export const MY_MENU: MyMenuGroup[] = [
       { label: "배송지 관리", href: "/my/addresses" },
       { label: "결제수단 관리", href: "/my/payments" },
       { label: "알림 설정", href: "/my/notifications" },
-    ],
-  },
-  {
-    title: "약관·기타",
-    items: [
-      { label: "로그아웃", action: "logout" },
     ],
   },
 ];

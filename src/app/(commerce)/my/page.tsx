@@ -2,23 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { TitleBar } from "@/components/layout/TitleBar";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { MOCK_ASSETS, MY_MENU, MyMenuItem } from "./mock";
 
 export default function MyPage() {
-  const router = useRouter();
   const { showToast } = useToast();
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [logoutOpen, setLogoutOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     fetch("/api/wallet")
@@ -32,13 +26,6 @@ export default function MyPage() {
   if (loading) return <LoadingSpinner />;
 
   const handleMockTap = () => showToast("준비 중입니다.", "info");
-
-  const handleLogout = async () => {
-    setLoggingOut(true);
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
-  };
 
   return (
     <div className="min-h-screen bg-white pb-6">
@@ -94,32 +81,12 @@ export default function MyPage() {
                   key={item.label}
                   item={item}
                   onMockTap={handleMockTap}
-                  onLogout={() => setLogoutOpen(true)}
                 />
               ))}
             </div>
           </div>
         ))}
       </div>
-
-      {/* 로그아웃 확인 모달 */}
-      <Modal
-        open={logoutOpen}
-        onClose={() => setLogoutOpen(false)}
-        title="로그아웃"
-        actions={
-          <>
-            <Button variant="secondary" fullWidth onClick={() => setLogoutOpen(false)}>
-              취소
-            </Button>
-            <Button variant="primary" fullWidth disabled={loggingOut} onClick={handleLogout}>
-              {loggingOut ? "처리 중..." : "로그아웃"}
-            </Button>
-          </>
-        }
-      >
-        로그아웃 하시겠어요?
-      </Modal>
     </div>
   );
 }
@@ -127,11 +94,9 @@ export default function MyPage() {
 function MenuRow({
   item,
   onMockTap,
-  onLogout,
 }: {
   item: MyMenuItem;
   onMockTap: () => void;
-  onLogout: () => void;
 }) {
   const inner = (
     <>
@@ -146,13 +111,6 @@ function MenuRow({
   );
   const className = "w-full flex items-center justify-between py-4 text-left";
 
-  if (item.href?.startsWith("/docs")) {
-    return (
-      <a href={item.href} className={className} target="_blank" rel="noreferrer">
-        {inner}
-      </a>
-    );
-  }
   if (item.href) {
     return (
       <Link href={item.href} className={className}>
@@ -161,7 +119,7 @@ function MenuRow({
     );
   }
   return (
-    <button onClick={item.action === "logout" ? onLogout : onMockTap} className={className}>
+    <button onClick={onMockTap} className={className}>
       {inner}
     </button>
   );

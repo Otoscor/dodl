@@ -40,40 +40,6 @@ npm run start      # run production build
 npm run lint       # ESLint
 ```
 
-## Environment Setup
-
-Auth requires two env vars in **`.env.local`** (not committed):
-
-```
-AUTH_USERS=aubrey:aubrey111!          # comma-separated id:password pairs
-AUTH_SECRET=dodl-k9x2mQ8pLrN5vTjY     # arbitrary secret stored in the dodl_auth cookie
-```
-
-- `AUTH_USERS` — `id:password` pairs separated by commas, e.g. `a:pw1,b:pw2`.
-- `AUTH_SECRET` — any non-empty string. Stored verbatim in the `dodl_auth` cookie and
-  compared on every request.
-- **Without both set, the middleware redirects every route to `/login` and login always fails.**
-- **Restart the dev server after editing `.env.local`** — Next.js only reads env at boot.
-- The login route un-escapes `\!` → `!` to work around a Vercel proxy quirk, so passwords
-  containing `!` work correctly.
-- Never commit real secret values; keep them in `.env.local`.
-
-## Authentication Flow
-
-Cookie-based, no real account system.
-
-- **`src/middleware.ts`** — guards all routes except `/login`, `/api/auth/*`,
-  `_next/static`, `_next/image`, `favicon.ico`, and static image files. Compares the `dodl_auth`
-  cookie against `AUTH_SECRET`; redirects to `/login` on mismatch.
-- **`src/app/api/auth/login/route.ts`** (POST) — validates `{ id, password }` against
-  `AUTH_USERS`. On success sets two httpOnly cookies: `dodl_auth` (7 days) and
-  `dodl_session` (30 days).
-- **`src/app/api/auth/logout/route.ts`** (POST) — expires both cookies (`Max-Age=0`).
-  My page calls this, shows a confirm modal, then redirects to `/login`.
-- **`src/app/login/page.tsx`** — client login form → POST `/api/auth/login` → redirect `/`.
-- **`src/lib/session.ts`** — `getSessionId()` reads/creates the `dodl_session` UUID cookie.
-  All cart, order, and wallet data is **scoped to this session id**.
-
 ## Directory Structure
 
 ```
@@ -91,15 +57,12 @@ src/
       order-complete/    #   post-purchase confirmation
       scanner/           #   단백질 스캐너 — 3-step quiz → Top 3 protein shake recommendation
     api/                 # REST routes mirroring features
-      auth/login/        #   POST — set auth cookies
-      auth/logout/       #   POST — expire auth cookies (로그아웃)
       cart/  (+ [cartItemId]/)
       checkout/
       orders/  (+ [orderId]/ and cancel/ return/ exchange/)
       products/  (+ [productId]/ and reviews/)
       wallet/
       upload/            #   review photo upload
-    login/               # login page (outside the commerce group)
     layout.tsx           # root layout: 430px mobile container, Toast provider, Material Icons
     page.tsx             # dev landing page (link to prototype)
   components/
@@ -123,7 +86,6 @@ src/
     animation.ts         # re-exports framer-motion, gsap, @gsap/react, lenis
     queries/             # products, cart, checkout, orders, wallet
   types/                 # product.ts, cart.ts, order.ts, wallet.ts
-  middleware.ts          # auth guard
 ```
 
 **Data-access pattern:** API routes do **not** write raw SQL. They call helper functions
@@ -200,8 +162,5 @@ When editing:
 
 ## Verifying Locally
 
-1. Ensure `.env.local` has `AUTH_USERS` and `AUTH_SECRET`.
-2. `npm run dev` → open http://localhost:3000.
-3. You'll be redirected to `/login`. Sign in with a configured `AUTH_USERS` pair
-   (e.g. `aubrey` / `aubrey111!`) to reach the commerce home.
-4. Logout: My page → 로그아웃 → confirm modal → redirects to `/login`.
+1. `npm run dev` → open http://localhost:3000.
+2. 랜딩 페이지에서 프로토타입 카드 클릭 → `/home` 진입.
