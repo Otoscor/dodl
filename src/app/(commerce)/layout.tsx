@@ -10,8 +10,10 @@ export default function CommerceLayout({
   return (
     <CartProvider>
       <AddressProvider>
-        <main className="pb-20">{children}</main>
-        <BottomTabBar />
+        <div className="mx-auto max-w-[430px] min-h-full bg-surface-base relative">
+          <main className="pb-20">{children}</main>
+          <BottomTabBar />
+        </div>
       </AddressProvider>
     </CartProvider>
   );

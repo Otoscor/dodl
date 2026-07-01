@@ -27,9 +27,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full bg-[#f5f5f5]">
         <ToastProvider>
-          <div className="mx-auto max-w-[430px] min-h-full bg-surface-base relative ">
-            {children}
-          </div>
+          {children}
         </ToastProvider>
       </body>
     </html>

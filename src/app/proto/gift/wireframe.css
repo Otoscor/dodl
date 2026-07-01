@@ -1,0 +1,44 @@
+/* ──────────────────────────────────────────────────────────────
+   wireframe.css — 선물하기 프로토타입 와이어프레임 스코프(.wf-root)
+   디자인 요소 없이 무채색 박스/보더/플레이스홀더로만 구성.
+   ────────────────────────────────────────────────────────────── */
+.wf-root {
+  color: #4b4b4b;
+  --wf-line: #c9c9c9;
+  --wf-fill: #ececec;
+  --wf-muted: #9a9a9a;
+  --wf-ink: #333333;
+}
+
+/* 이미지 플레이스홀더 — 대각선 X */
+.wf-img {
+  background-color: var(--wf-fill);
+  border: 1px solid var(--wf-line);
+  background-image: linear-gradient(
+      to top right,
+      transparent calc(50% - 0.5px),
+      var(--wf-line) calc(50% - 0.5px),
+      var(--wf-line) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    ),
+    linear-gradient(
+      to top left,
+      transparent calc(50% - 0.5px),
+      var(--wf-line) calc(50% - 0.5px),
+      var(--wf-line) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    );
+}
+
+/* 텍스트 라인 플레이스홀더 */
+.wf-line {
+  background: var(--wf-fill);
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wf-root * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,26 @@
+/* ──────────────────────────────────────────────────────────────
+   proto.css — Figma 디자인 100% 재현용 격리 스코프
+   전역 globals.css(흑백 토큰·monospace·자간)에서 빠져나오기 위한
+   .proto-root 스코프. Figma 코드는 raw hex/임의값을 쓰므로 색 토큰은
+   영향을 받지 않고, 여기서는 폰트/자간/기본색만 리셋한다.
+   한글: Pretendard, 라틴: Inter (Figma 디자인 폰트) 페어링.
+   ────────────────────────────────────────────────────────────── */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+
+.proto-root {
+  font-family: var(--font-inter), "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif;
+  letter-spacing: normal;
+  color: #1a1919;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Figma 디자인 토큰 (참고용 — 컴포넌트는 구체값을 직접 사용) */
+  --onsurface-primary: #1a1919;
+  --onsurface-tertiary: #8a8585;
+  --onsurface-fourth: #bebbbb;
+  --onsurface-tertiaryline: rgba(26, 25, 25, 0.05);
+  --core-whitet16: rgba(255, 255, 255, 0.16);
+  --typo-subhead: 15px;
+  --typo-body: 17px;
+  --space-r-20: 20px;
+}

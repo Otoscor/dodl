@@ -10,11 +10,20 @@ const cards = [
     cta: "열기",
     primary: true,
   },
+  {
+    href: "/proto",
+    external: false,
+    icon: "widgets",
+    title: "프로토타입 허브 (Figma)",
+    description: "장바구니·스캐너 등 프로세스별 프로토타입",
+    cta: "열기",
+    primary: false,
+  },
 ];
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col px-6 py-12 bg-surface-base">
+    <div className="min-h-screen flex flex-col px-6 py-12 bg-surface-base mx-auto max-w-[430px]">
       {/* 헤더 */}
       <header className="mb-12">
         <h1 className="text-[28px] text-text-primary tracking-tight">
